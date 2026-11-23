@@ -13,6 +13,7 @@
 //   layout (TEX0 pointer at +0x70).
 // Coordinates: x 0..639, y 0..447 of the frame (the GS draws fields: Ot_draw halves y); with 0x800 the GS's own 12.4.
 #include "oni_render.h"
+#include "oni_vu1.h"
 #include "oni_tex.h"
 
 #include "bozo/ee/dispatcher.h"
@@ -183,8 +184,9 @@ namespace oni::sprite
             // A frame draw in screen space (identity matrix), in the table's order over the background: the frame pass
             // has the GS's own blend, the alpha test and point sampling (the overlay pass reduces them to plain blends).
             static constexpr float kScreen[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-            bozo::render::Renderer::instance().draw(material(attr, pts[count - 1].rgba, tex0, textured), kScreen, tris.data(),
-                                                    static_cast<uint32_t>(tris.size()), texture);
+            (void)kScreen;
+            oni::vu1::queueDraw(material(attr, pts[count - 1].rgba, tex0, textured), tris.data(), static_cast<uint32_t>(tris.size()),
+                                texture);
             ++g_drawn;
         }
 

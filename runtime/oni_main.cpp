@@ -8,6 +8,7 @@
 #include "bozo/port.h"
 #include "oni_functions.h"
 #include "oni_cheats.h"
+#include "oni_vu1.h"
 #include "oni_port.h"
 #include <algorithm>
 #include <chrono>
@@ -107,6 +108,7 @@ int main(int argc, char **argv)
     bozo::port::Registry registry;
     oni::install(d.runtime(), registry);
     oni::installState(*host.stateSections());
+    oni::vu1::setThreaded(window); // the models' chains on a thread of their own in real time
     std::string error;
     if (!host.setUp(d, oni_external_table, oni_external_count, &registry, error))
     {

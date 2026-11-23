@@ -308,6 +308,21 @@ The window's settings (F2) have a Cheats tab, as the other ports'. Infinite heal
 at each frame's end Life goes back to Max_life. Checked in the courtyard's zombie fight: standing still to frame 6400
 Samanosuke is at 98 / 128 without it, 128 / 128 with it. `ONI_CHEAT_HEALTH=1` turns it on without the window.
 
+## The models off the game's thread; the frame's draws in one order (runtime/oni_vu1.cpp, 2026-11-23)
+
+Room 1's gate (half a dozen zombie samurai) costs ~11 ms of VIF1 / VU1 / GIF work a frame (1.8 million VU pairs, 30,000
+triangles) on top of the game's own: the window fell to 57 frames/s and the sound underran. Nothing the game reads
+depends on that work (it only makes draws), so in the window each chain is copied when sent (VIF1's words with their
+places, or the GIF stream) and run in order on a thread of its own while the game goes on; the texture registry is
+locked (the game thread uploads, the models' thread looks up). Every frame draw now goes through one ordered list:
+the packets' draws, and those the game thread makes (the room's depth and picture, the 2D of the ordering table and
+Pit_trans, the movies' fade) with `oni::vu1::queueDraw`, handed to the renderer at the frame's end (`drain`) in the
+game's order: the event's cinema bars (Pit_trans) over the characters, as on the GS. The crowd fight then holds
+60 frames/s with no underrun. The headless runner keeps one thread (deterministic); `ONI_VU1_THREAD=0/1` chooses.
+
+SCISSOR_1 / _2 are now followed per draw (the game sets the whole field); a mis-encoded default and a case that fell
+into SCISSOR from the MIPTBP registers (both found on the way) had clipped everything or nothing.
+
 ## Next
 
 - Movie captions; the effects of later scenes (magic, the souls), checked as they are reached.

@@ -14,6 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -36,6 +37,8 @@ namespace oni::tex
         void io(bozo::state::Archive &a, Params &p) { bozo::state::pod(a, p); }
         void io(bozo::state::Archive &a, Upload &u) { bozo::state::fields(a, u.p, u.bytes, u.generation); }
 
+        // The registry is the game thread's (its uploads) and the models' thread's (their textures, their GIF uploads).
+        std::recursive_mutex g_lock;
         std::unordered_map<uint32_t, Params> g_packets; // load packet address -> its parameters
         std::map<uint32_t, Upload> g_uploads;            // by destination block (x = y = 0 uploads; others logged)
         uint64_t g_generation = 0;
@@ -86,6 +89,7 @@ namespace oni::tex
         // sceGsSetDefLoadImage(lp, dbp, dbw, dpsm, x, y, w, h): the parameters are kept for the upload.
         void setDefLoadImage(uint8_t *, R5900Context *ctx, Runtime *)
         {
+            std::lock_guard<std::recursive_mutex> lock(g_lock);
             Params p;
             p.dbp = static_cast<uint32_t>(s16(ctx->r[5].uw[0])) & 0x3fffu;
             p.dbw = static_cast<uint32_t>(s16(ctx->r[6].uw[0])) & 0x3fu;
@@ -123,6 +127,7 @@ namespace oni::tex
         // sceGsExecLoadImage(lp, src): the upload's texels, copied as they are.
         void execLoadImage(uint8_t *ram, R5900Context *ctx, Runtime *)
         {
+            std::lock_guard<std::recursive_mutex> lock(g_lock);
             const auto found = g_packets.find(ctx->r[4].uw[0]);
             const uint32_t src = ctx->r[5].uw[0] & 0x1ffffffu;
             if (found != g_packets.end())
@@ -179,6 +184,7 @@ namespace oni::tex
 
     std::shared_ptr<const bozo::render::Texture> fromTex0(uint64_t tex0)
     {
+        std::lock_guard<std::recursive_mutex> lock(g_lock);
         const uint32_t tbp = static_cast<uint32_t>(tex0 & 0x3fffu);
         const uint32_t psm = static_cast<uint32_t>(tex0 >> 20 & 0x3fu);
         const uint32_t tw = 1u << (tex0 >> 26 & 0xfu), th = 1u << (tex0 >> 30 & 0xfu);
@@ -262,6 +268,7 @@ namespace oni::tex
 
     void upload(uint64_t bitbltbuf, uint64_t trxpos, uint64_t trxreg, const uint8_t *texels, size_t bytes)
     {
+        std::lock_guard<std::recursive_mutex> lock(g_lock);
         Params p;
         p.dbp = static_cast<uint32_t>(bitbltbuf >> 32) & 0x3fffu;
         p.dbw = static_cast<uint32_t>(bitbltbuf >> 48) & 0x3fu;
@@ -283,6 +290,7 @@ namespace oni::tex
 
     void state(bozo::state::Archive &a)
     {
+        std::lock_guard<std::recursive_mutex> lock(g_lock);
         bozo::state::fields(a, g_packets, g_uploads, g_generation);
         if (a.loading())
             g_cache.clear(); // decoded from the uploads it had

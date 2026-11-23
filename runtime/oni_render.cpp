@@ -42,6 +42,7 @@ namespace oni::render
         else
             r.clearBackdrop();
         oni::sprite::submit(ram);
+        oni::vu1::drain(); // the frame's draws (picture, models, effects, 2D) to the renderer in their order
         r.publishOverlay(s);
         r.endFrame();
         oni::vu1::frameStats();

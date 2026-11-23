@@ -3,6 +3,7 @@
 // the GIF packets the programs kick, turned into the frame's draws.
 #pragma once
 #include "bozo/ops_vu0.h"
+#include "bozo/render/renderer.h"
 #include "bozo/state.h"
 
 #include <emmintrin.h>
@@ -10,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 
 namespace oni::vu1
 {
@@ -113,6 +115,13 @@ namespace oni::vu1
     void runGifChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag);
     // VIF1's, VU1's and the GS's registers and memories in save states.
     void state(bozo::state::Archive &a);
+    // Whether the chains run on a thread of their own (the window; ONI_VU1_THREAD overrides), and the frame's draws
+    // they made handed to the renderer in their order once they are all done (the frame's end, on the game's thread).
+    void setThreaded(bool on);
+    // A frame draw (screen space, GS primitive coordinates) from the game's thread, in its place among the packets' draws.
+    void queueDraw(const bozo::render::Material &material, const bozo::render::Vertex *vertices, uint32_t count,
+                   std::shared_ptr<const bozo::render::Texture> texture);
+    void drain();
     // The frame's counts (ONI_VU1_TRACE=1), reset for the next frame.
     void frameStats();
 } // namespace oni::vu1

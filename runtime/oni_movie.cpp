@@ -10,6 +10,7 @@
 // completes at once (no DMA, no interrupt), and vblankHandler runs natively (TMB_Recomp's, with Onimusha's addresses):
 // it also ends the game frame while a movie shows, since the main thread sleeps through the movie.
 #include "oni_render.h"
+#include "oni_vu1.h"
 
 #include "bozo/ee/dispatcher.h"
 #include "bozo/render/movie.h"
@@ -177,7 +178,8 @@ namespace oni::movie
                     v[i].rgba = alpha << 24;
                 }
                 static constexpr float kScreen[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-                bozo::render::Renderer::instance().draw(m, kScreen, v, 6, nullptr);
+                (void)kScreen;
+                oni::vu1::queueDraw(m, v, 6, nullptr);
             }
             oni::render::publish(ram);
             bozo::port::frameEnd(rt, ctx); // last: it may defer a stop

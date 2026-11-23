@@ -10,7 +10,12 @@
 #include "bozo/state.h"
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
+#include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <thread>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -45,6 +50,9 @@ namespace oni::vu1
             uint64_t tex0[2] = {}, tex1[2] = {}, clamp[2] = {}, alpha[2] = {}, test[2] = {}, zbuf[2] = {};
             uint64_t fogcol = 0, texa = 0;
             uint64_t frame[2] = {};
+            // SCISSOR_1 / _2: SCAX0, SCAX1, SCAY0, SCAY1 in the frame buffer's pixels (the field's lines); the whole field
+            // until the game sets it.
+            uint64_t scissor[2] = {0x00df0000027f0000ull, 0x00df0000027f0000ull};
             uint64_t bitbltbuf = 0, trxpos = 0, trxreg = 0;
             std::vector<uint8_t> image; // an IMAGE transfer's texels so far (TRXDIR started it)
             bool imaging = false;
@@ -57,7 +65,7 @@ namespace oni::vu1
             int fanFirst = -1; // a fan's first vertex is kept in queue[0]
             // The batch being built: the material it was built with and its triangles.
             std::vector<Vertex> batch;
-            uint64_t batchKey[9] = {};
+            uint64_t batchKey[10] = {};
             bool skip = false;       // the batch is not drawn (it writes nothing the PC frame keeps, or reads an unknown target)
             bool fromTarget = false; // the batch samples the shadow target: u, v from the position
             bool fromPrevious = false; // the batch samples the previous frame (a display buffer read back)
@@ -73,18 +81,33 @@ namespace oni::vu1
         constexpr uint8_t kShadowImage = 3;      // its renderer auxiliary image
         std::set<uint32_t> g_targets; // off-screen targets' first blocks (FRAME.FBP x 32)
 
+        // The draws made from the packets, in their order, until the frame's end hands them to the renderer (drain: on the
+        // game's thread, after the room's picture and before the 2D).
+        struct PendingDraw
+        {
+            float clip[4]; // the GS's scissor on the frame (GS primitive coordinates)
+            Material material;
+            std::vector<Vertex> vertices;
+            std::shared_ptr<const bozo::render::Texture> texture;
+        };
+        std::vector<PendingDraw> g_pending;
+        void waitForWorker(); // (below: the chains' thread)
+
         void flush()
         {
             Gs &gs = g_gs;
             if (gs.batchOpen && !gs.batch.empty() && !gs.skip)
             {
-                static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-                // The GS's scissor: the frame (640 x 448 here, the fields' 224 lines doubled).
+                // SCISSOR: x as it is, the field's lines doubled to the frame's (an event's cinema bars are outside it).
+                const uint64_t sc = gs.scissor[(gs.prim >> 9) & 1];
                 const bozo::render::Screen s = oni::render::screen();
-                bozo::render::Renderer::instance().setClip(s.originX, s.originY, s.originX + s.width, s.originY + s.height);
-                bozo::render::Renderer::instance().draw(gs.material, kIdentity, gs.batch.data(),
-                                                        static_cast<uint32_t>(gs.batch.size()), gs.texture);
-                bozo::render::Renderer::instance().clearClip();
+                const float x0 = static_cast<float>(sc & 0x7ff), x1 = static_cast<float>((sc >> 16) & 0x7ff) + 1.0f;
+                const float y0 = static_cast<float>((sc >> 32) & 0x7ff), y1 = static_cast<float>((sc >> 48) & 0x7ff) + 1.0f;
+                PendingDraw d{{s.originX + std::max(0.0f, x0), s.originY + std::max(0.0f, y0 * 2.0f),
+                               s.originX + std::min(s.width, x1), s.originY + std::min(s.height, y1 * 2.0f)},
+                              gs.material, std::move(gs.batch), gs.texture};
+                g_pending.push_back(std::move(d));
+                gs.batch = {};
                 ++gs.batches;
             }
             else if (gs.batchOpen && !gs.batch.empty() && trace() >= 2)
@@ -101,12 +124,12 @@ namespace oni::vu1
         {
             Gs &gs = g_gs;
             const int c = (gs.prim >> 9) & 1;
-            const uint64_t key[9] = {gs.prim & 0x7f8, gs.tex0[c], gs.tex1[c], gs.clamp[c], gs.alpha[c], gs.test[c], gs.zbuf[c], gs.fogcol,
-                                     gs.frame[c]};
-            if (gs.batchOpen && std::equal(key, key + 9, gs.batchKey))
+            const uint64_t key[10] = {gs.prim & 0x7f8, gs.tex0[c], gs.tex1[c], gs.clamp[c], gs.alpha[c], gs.test[c], gs.zbuf[c], gs.fogcol,
+                                      gs.frame[c], gs.scissor[c]};
+            if (gs.batchOpen && std::equal(key, key + 10, gs.batchKey))
                 return;
             flush();
-            std::copy(key, key + 9, gs.batchKey);
+            std::copy(key, key + 10, gs.batchKey);
             gs.skip = false;
             gs.batchOpen = true;
             Material m;
@@ -403,6 +426,7 @@ namespace oni::vu1
         }
 
         uint64_t g_unknownAd = 0;
+        const char *g_source = "?"; // what sends the packets being parsed (traces)
 
         // A register write (A+D or REGLIST).
         void writeRegister(uint32_t reg, uint64_t value)
@@ -456,7 +480,15 @@ namespace oni::vu1
             case 0x1c: // TEXCLUT
             case 0x22: // SCANMSK
             case 0x34: case 0x35: case 0x36: case 0x37: // MIPTBP
-            case 0x40: case 0x41: // SCISSOR
+                break;
+            case 0x40:
+                gs.scissor[0] = value;
+                if (trace() >= 2)
+                    std::printf("[oni:gif] SCISSOR_1 (%s) x %llu..%llu y %llu..%llu\n", g_source, (unsigned long long)(value & 0x7ff),
+                                (unsigned long long)((value >> 16) & 0x7ff), (unsigned long long)((value >> 32) & 0x7ff),
+                                (unsigned long long)((value >> 48) & 0x7ff));
+                break;
+            case 0x41: gs.scissor[1] = value; break;
             case 0x44: case 0x45: case 0x46: // DIMX, DTHE, COLCLAMP
             case 0x49: case 0x4a: case 0x4b: // PABE, FBA
             case 0x54: // HWREG
@@ -594,6 +626,7 @@ namespace oni::vu1
 
         void kick(Vu1Io &io, uint32_t qword)
         {
+            g_source = "vu1";
             if (trace() >= 3)
                 std::printf("[oni:vu1] xgkick %03x\n", qword);
             const auto t0 = std::chrono::steady_clock::now();
@@ -825,6 +858,7 @@ namespace oni::vu1
 
     void state(bozo::state::Archive &a)
     {
+        waitForWorker(); // (a frame boundary: nothing is pending)
         using bozo::state::fields;
         Vif &v = vif();
         // VIF1's registers, VU1's (the vector, integer and special registers of the context holding them), its two
@@ -853,6 +887,178 @@ namespace oni::vu1
             gs.batchOpen = false;
             gs.texture = nullptr;
         }
+    }
+
+    namespace
+    {
+        // A chain's data, copied when the game sends it (it may change its memory once the transfer is "done"), and
+        // run in order: VIF1's stream (with each word's place) or the GIF's.
+        struct Job
+        {
+            enum class Kind
+            {
+                Vif,
+                Gif,
+                Draw, // a frame draw made on the game's thread (the 2D, the room's picture), in its place among the others
+            } kind = Kind::Vif;
+            uint32_t tag = 0;
+            std::vector<uint32_t> words, grid;
+            std::vector<uint8_t> stream;
+            PendingDraw draw;
+        };
+
+        void gifStream(uint32_t tag, const std::vector<uint8_t> &stream)
+        {
+            g_source = "gif";
+            const uint32_t qwords = static_cast<uint32_t>(stream.size() / 16);
+            static const bool gifTrace = std::getenv("ONI_GIF_TRACE") != nullptr;
+            if (gifTrace)
+            {
+                std::printf("[oni:gifchain] tag %x: %u qwords\n", tag, qwords);
+                for (uint32_t q = 0, n = 0; q < qwords && n < 12; ++n)
+                {
+                    uint64_t t[2];
+                    std::memcpy(t, stream.data() + 16 * q, 16);
+                    const uint32_t nloop = t[0] & 0x7fff, flg = (t[0] >> 58) & 3, nreg = ((t[0] >> 60) & 15) ? ((t[0] >> 60) & 15) : 16;
+                    std::printf("[oni:gifchain]   nloop %u flg %u pre %llu prim %03llx nreg %u regs %016llx\n", nloop, flg,
+                                (unsigned long long)((t[0] >> 46) & 1), (unsigned long long)((t[0] >> 47) & 0x7ff), nreg,
+                                (unsigned long long)t[1]);
+                    q += 1 + (flg == 0 ? nloop * nreg : flg == 1 ? (nloop * nreg + 1) / 2 : nloop);
+                }
+            }
+            for (uint32_t at = 0; at < qwords;)
+            {
+                const uint32_t used = gifPacket([&](uint32_t i, uint64_t q[2]) { std::memcpy(q, stream.data() + 16 * (at + i), 16); },
+                                                qwords - at);
+                if (!used)
+                    break;
+                at += used;
+            }
+            flush();
+        }
+
+        void execute(Job &job)
+        {
+            if (job.kind == Job::Kind::Draw)
+                g_pending.push_back(std::move(job.draw));
+            else if (job.kind == Job::Kind::Vif)
+            {
+                ++g_chains;
+                const auto t0 = std::chrono::steady_clock::now();
+                vifStream(vif(), job.words, job.grid);
+                flush();
+                g_chainNs += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+            }
+            else
+                gifStream(job.tag, job.stream);
+        }
+
+        // The chains run on a thread of their own while the game goes on (the window: real time); nothing the game
+        // reads depends on them. Without it (the headless runner, ONI_VU1_THREAD=0) each runs when it is sent.
+        struct Worker
+        {
+            std::mutex mutex;
+            std::condition_variable wake, idle;
+            std::deque<Job> jobs;
+            bool busy = false;
+
+            void start()
+            {
+                std::thread([this] {
+                    for (;;)
+                    {
+                        Job job;
+                        {
+                            std::unique_lock<std::mutex> lock(mutex);
+                            wake.wait(lock, [this] { return !jobs.empty(); });
+                            job = std::move(jobs.front());
+                            jobs.pop_front();
+                            busy = true;
+                        }
+                        execute(job);
+                        {
+                            std::lock_guard<std::mutex> lock(mutex);
+                            busy = false;
+                            if (jobs.empty())
+                                idle.notify_all();
+                        }
+                    }
+                }).detach();
+            }
+            void push(Job &&job)
+            {
+                {
+                    std::lock_guard<std::mutex> lock(mutex);
+                    jobs.push_back(std::move(job));
+                }
+                wake.notify_one();
+            }
+            void wait()
+            {
+                std::unique_lock<std::mutex> lock(mutex);
+                idle.wait(lock, [this] { return jobs.empty() && !busy; });
+            }
+        };
+        std::atomic<bool> g_threaded{false};
+        Worker *g_worker = nullptr;
+
+        void submit(Job &&job)
+        {
+            if (g_threaded.load(std::memory_order_relaxed))
+            {
+                if (!g_worker)
+                {
+                    g_worker = new Worker;
+                    g_worker->start();
+                }
+                g_worker->push(std::move(job));
+            }
+            else
+                execute(job);
+        }
+
+        void waitForWorker()
+        {
+            if (g_worker)
+                g_worker->wait();
+        }
+    } // namespace
+
+    void setThreaded(bool on)
+    {
+        const char *e = std::getenv("ONI_VU1_THREAD");
+        g_threaded.store(e ? *e != '0' : on, std::memory_order_relaxed);
+    }
+
+    void queueDraw(const Material &material, const Vertex *vertices, uint32_t count,
+                   std::shared_ptr<const bozo::render::Texture> texture)
+    {
+        Job job;
+        job.kind = Job::Kind::Draw;
+        job.draw.clip[0] = job.draw.clip[1] = job.draw.clip[2] = job.draw.clip[3] = 0.0f; // none
+        job.draw.material = material;
+        job.draw.vertices.assign(vertices, vertices + count);
+        job.draw.texture = std::move(texture);
+        submit(std::move(job));
+    }
+
+    void drain()
+    {
+        waitForWorker();
+        auto &r = bozo::render::Renderer::instance();
+        static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+        // The GS's scissor: the frame (640 x 448 here, the fields' 224 lines doubled).
+        const bozo::render::Screen s = oni::render::screen();
+        (void)s;
+        for (PendingDraw &d : g_pending)
+        {
+            r.setClip(d.clip[0], d.clip[1], d.clip[2], d.clip[3]);
+            if (trace() >= 2 && &d == &g_pending.front())
+                std::printf("[oni:vu1] clip %.0f %.0f %.0f %.0f\n", d.clip[0], d.clip[1], d.clip[2], d.clip[3]);
+            r.draw(d.material, kIdentity, d.vertices.data(), static_cast<uint32_t>(d.vertices.size()), d.texture);
+        }
+        r.clearClip();
+        g_pending.clear();
     }
 
     void runGifChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag)
@@ -888,31 +1094,11 @@ namespace oni::vu1
             if (end)
                 break;
         }
-        const uint32_t qwords = static_cast<uint32_t>(stream.size() / 16);
-        static const bool gifTrace = std::getenv("ONI_GIF_TRACE") != nullptr;
-        if (gifTrace)
-        {
-            std::printf("[oni:gifchain] tag %x: %u qwords\n", tag, qwords);
-            for (uint32_t q = 0, n = 0; q < qwords && n < 12; ++n)
-            {
-                uint64_t t[2];
-                std::memcpy(t, stream.data() + 16 * q, 16);
-                const uint32_t nloop = t[0] & 0x7fff, flg = (t[0] >> 58) & 3, nreg = ((t[0] >> 60) & 15) ? ((t[0] >> 60) & 15) : 16;
-                std::printf("[oni:gifchain]   nloop %u flg %u pre %llu prim %03llx nreg %u regs %016llx\n", nloop, flg,
-                            (unsigned long long)((t[0] >> 46) & 1), (unsigned long long)((t[0] >> 47) & 0x7ff), nreg,
-                            (unsigned long long)t[1]);
-                q += 1 + (flg == 0 ? nloop * nreg : flg == 1 ? (nloop * nreg + 1) / 2 : nloop);
-            }
-        }
-        for (uint32_t at2 = 0; at2 < qwords;)
-        {
-            const uint32_t used = gifPacket([&](uint32_t i, uint64_t q[2]) { std::memcpy(q, stream.data() + 16 * (at2 + i), 16); },
-                                            qwords - at2);
-            if (!used)
-                break;
-            at2 += used;
-        }
-        flush();
+        Job job;
+        job.kind = Job::Kind::Gif;
+        job.tag = tag;
+        job.stream = std::move(stream);
+        submit(std::move(job));
     }
 
     void runChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag)
@@ -921,7 +1107,6 @@ namespace oni::vu1
         static const bool on = [] { const char *e = std::getenv("ONI_VU1"); return !(e && *e == '0'); }();
         if (!on)
             return;
-        Vif &v = vif();
         std::vector<uint32_t> words, grid; // the stream, and each word's place (a tag's VIF codes at offsets 2, 3)
         uint32_t place = 0;
         auto qwords = [&](uint32_t address, uint32_t count)
@@ -980,11 +1165,10 @@ namespace oni::vu1
             if (end)
                 break;
         }
-        ++g_chains;
-        const auto t0 = std::chrono::steady_clock::now();
-        vifStream(v, words, grid);
-        flush();
-        g_chainNs += std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - t0).count();
+        Job job;
+        job.words = std::move(words);
+        job.grid = std::move(grid);
+        submit(std::move(job));
     }
 
     void frameStats()

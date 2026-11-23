@@ -55,7 +55,7 @@ the game, scene by scene.
 | Native 3D models: the 15 VU1 microprograms translated to C++, the models' VIF1 chains run natively, their GIF packets drawn (Samanosuke, Kaede, the soldiers) | ✅ |
 | Shadows (the shadow volumes counted in an off-screen buffer, then darkening the frame), depth against the pre-rendered rooms (the cut's Z buffer) | ✅ |
 | The game playable: the first room drawn and controllable, its fight, the next room's event | ✅ |
-| The rest of the game, room by room | 🔧 |
+| The rest of the game, room by room (the gauntlet's event, room 1's gate fight so far) | 🔧 |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
 | Cheats (F2 → Cheats): infinite health | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |

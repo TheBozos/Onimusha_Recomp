@@ -8,6 +8,7 @@
 // same two field buffers (the game's own code may read or patch them: cut_replace). Bg_disp still runs (its camera,
 // lights, shadows, BG movies); the frame publishes the picture rebuilt from the field buffers as its backdrop.
 #include "oni_render.h"
+#include "oni_vu1.h"
 
 #include "bozo/ee/dispatcher.h"
 #include "oni_functions.h"
@@ -214,7 +215,8 @@ namespace oni::bg
             }
             const bozo::render::Vertex quad[6] = {corner[0], corner[1], corner[2], corner[1], corner[3], corner[2]};
             static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-            bozo::render::Renderer::instance().draw(m, kIdentity, quad, 6, shown);
+            (void)kIdentity;
+            oni::vu1::queueDraw(m, quad, 6, shown);
         }
 
         // The room's depth: Bgz_disp 0x123800 sends, at the end of each frame, the cut's Z buffer (one field: 640 x 224
@@ -516,7 +518,8 @@ namespace oni::bg
         }
         const bozo::render::Vertex quad[6] = {corner[0], corner[1], corner[2], corner[1], corner[3], corner[2]};
         static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-        bozo::render::Renderer::instance().draw(m, kIdentity, quad, 6, g_depth);
+        (void)kIdentity;
+        oni::vu1::queueDraw(m, quad, 6, g_depth);
     }
 
     // ONI_BGMV_TRACE=1: what Get_bgmv_adrs (a cut's background movie among the loaded ones) answers.
