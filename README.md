@@ -35,7 +35,8 @@ subtitles over the pre-rendered cuts, then the game hands over with the HUD. The
 VU1 microprograms, translated to C++, run on the models' VIF1 chains and their GIF packets become the frame's draws,
 with the room's own depth (the cut's Z buffer) so the scenery stands in front of them, and their shadow volumes cast on
 the pre-rendered ground; the animated backgrounds (the rooms' IPU movies) play in their place. Save states work, the
-port's own state included. Next: the remaining screen effects, the rest of the game.
+port's own state included; the game's own effect chains (dust, glints, the motion blur) are drawn. Next: the rest of
+the game, scene by scene.
 
 | Milestone on BozoEngine | |
 |---|:---:|

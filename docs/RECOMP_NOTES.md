@@ -287,7 +287,21 @@ Room 0's only movie cut is 21 (the shrine, `MOV000L`); `ONI_FORCE_CUT=<frames>:<
 room and cut. The picture and depth textures are new objects when their pixels change: BozoEngine's renderer knows a
 texture by its object (changed in place, the movie's frames never reached the screen).
 
+## Effects: the game's own GIF chains (runtime/oni_model.cpp, runtime/oni_vu1.cpp, 2026-11-23)
+
+With native graphics BozoEngine's `sceDmaSend` completes a VIF1 / GIF transfer without reading it, so every chain the
+game sends itself was dropped. In the first room, each frame: `Gifreg_set_dma` (`0x12e7a4`, GS registers),
+`Screen_blur_draw` (`0x18ae74`), `Bg_disp`'s field upload (`0x122134` / `0x12214c`); in a fight also `Esp_sp_draw`
+(`0x180de4`: the dust at the feet, context-2 sprites, additive at alpha 0x10) and `Spr_draw` (`0x180b5c`: glints).
+The port's `sceDmaSend` now runs a GIF chain (channel 2, `0x1000a000`) through the same GIF interpreter as the VU1
+packets (`oni::vu1::runGifChain`: the source chain's data as one stream: PACKED, REGLIST, IMAGE), except `Bg_disp`'s
+(the picture is drawn natively), then hands the call to the engine's own (`bozo::port::callLibrary`).
+`Screen_blur_draw`'s motion blur textures from the other display buffer (blocks 0 / 0x8c0: the previous frame) over
+the new one: the renderer's previous frame (`fromFrame`, `kPreviousFrame`), u, v its field texels; at rest its alpha
+is 0 and it changes nothing. `ONI_DMA_TRACE=1` lists the sends, `ONI_GIF_TRACE=1` the chains' GIF tags,
+`ONI_GIF_CHAINS=0` leaves them out.
+
 ## Next
 
-- `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
+- Movie captions; the effects of later scenes (magic, the souls), checked as they are reached.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.

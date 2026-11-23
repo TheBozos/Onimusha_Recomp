@@ -12,6 +12,7 @@
 #include "bozo/ee/dispatcher.h"
 #include "oni_vu1.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
@@ -56,8 +57,27 @@ namespace oni::model
         }
     } // namespace
 
+    // sceDmaSend(channel, tag): the chains the game sends itself (sprites, effects, the screen blur, the background's
+    // own); BozoEngine's libdma completes them without reading them (native graphics). ONI_DMA_TRACE=1 lists them.
+    void dmaSend(uint8_t *ram, R5900Context *ctx, Runtime *rt)
+    {
+        static const bool trace = std::getenv("ONI_DMA_TRACE") != nullptr;
+        if (trace)
+        {
+            const uint32_t handle = ctx->r[4].uw[0], tag = ctx->r[5].uw[0];
+            std::printf("[oni:dma] sceDmaSend channel %x tag %x from %x\n", handle, tag, ctx->r[31].uw[0]);
+        }
+        // The GIF's chains drawn natively, except the background's (Bg_disp draws the picture itself).
+        static const bool gif = [] { const char *e = std::getenv("ONI_GIF_CHAINS"); return !(e && *e == '0'); }();
+        const uint32_t from = ctx->r[31].uw[0];
+        if (gif && ctx->r[4].uw[0] == 0x1000a000u && !(from >= 0x122040u && from < 0x122188u))
+            oni::vu1::runGifChain(ram, bozo::port::scratchpad(rt), ctx->r[5].uw[0]);
+        bozo::port::callLibrary(rt, ctx, 0x101c50);
+    }
+
     void install(bozo::port::Registry &r)
     {
+        r.registerFunction(0x101c50, dmaSend); // sceDmaSend
         r.registerFunction(0x130e40, tagTrans); // Md_tag_trans
     }
 } // namespace oni::model

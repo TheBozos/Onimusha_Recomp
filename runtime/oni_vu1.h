@@ -109,6 +109,8 @@ namespace oni::vu1
 
     // Md_tag_trans's chain (a VIF1 source chain at tag, TTE on) run natively: VIF1's commands, the programs, the draws.
     void runChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag);
+    // A chain the game sends to the GIF itself (sceDmaSend on channel 2): its packets drawn as VU1's are.
+    void runGifChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag);
     // VIF1's, VU1's and the GS's registers and memories in save states.
     void state(bozo::state::Archive &a);
     // The frame's counts (ONI_VU1_TRACE=1), reset for the next frame.

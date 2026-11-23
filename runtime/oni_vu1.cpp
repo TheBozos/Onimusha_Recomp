@@ -60,6 +60,7 @@ namespace oni::vu1
             uint64_t batchKey[9] = {};
             bool skip = false;       // the batch is not drawn (it writes nothing the PC frame keeps, or reads an unknown target)
             bool fromTarget = false; // the batch samples the shadow target: u, v from the position
+            bool fromPrevious = false; // the batch samples the previous frame (a display buffer read back)
             bool batchOpen = false;
             Material material;
             std::shared_ptr<const bozo::render::Texture> texture;
@@ -206,6 +207,25 @@ namespace oni::vu1
                 else
                     gs.skip = true;
             }
+            // A texture read from a display buffer (pages 0 and 0x46: blocks 0 and 0x8c0): the other one is the previous
+            // frame (Screen_blur_draw's motion blur lays it over the new one), u, v its field texels.
+            gs.fromPrevious = false;
+            if (tme && !m.target)
+            {
+                const uint32_t tbp = static_cast<uint32_t>(gs.tex0[c] & 0x3fffu), own = (fbp & 0x1ffu) * 32u;
+                if ((tbp == 0u || tbp == 0x8c0u) && tbp != own && fbp < 0x8cu)
+                {
+                    gs.skip = false;
+                    gs.fromPrevious = true;
+                    m.fromFrame = 1;
+                    m.source = Material::kPreviousFrame;
+                    m.nearest = false;
+                    m.useQ = false;
+                    if (!gs.texture)
+                        --gs.missingTextures;
+                    gs.texture = nullptr;
+                }
+            }
             static const bool noShadows = [] { const char *e = std::getenv("ONI_SHADOWS"); return e && *e == '0'; }();
             if (noShadows && (m.target || gs.fromTarget))
                 gs.skip = true;
@@ -246,7 +266,13 @@ namespace oni::vu1
             v.rgba = g.rgba;
             v.fog = g.fog / 255.0f;
             const int c = (gs.prim >> 9) & 1;
-            if (gs.fromTarget) // the shadow target, over the frame
+            if (gs.fromPrevious) // the previous frame: its field texels (FST UV) over the frame
+            {
+                v.u = g.u / 640.0f;
+                v.v = g.v / 224.0f;
+                v.q = 1.0f;
+            }
+            else if (gs.fromTarget) // the shadow target, over the frame
             {
                 v.u = (v.x - s.originX) / s.width;
                 v.v = (v.y - s.originY) / s.height;
@@ -827,6 +853,66 @@ namespace oni::vu1
             gs.batchOpen = false;
             gs.texture = nullptr;
         }
+    }
+
+    void runGifChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag)
+    {
+        // A source chain to the GIF (PATH3, no TTE): the tags' data as one GIF stream.
+        std::vector<uint8_t> stream;
+        auto take = [&](uint32_t address, uint32_t qwc)
+        {
+            for (uint32_t k = 0; k < qwc; ++k)
+            {
+                const uint8_t *q = (address & 0x80000000u) ? scratchpad + ((address + 16 * k) & 0x3ff0)
+                                                           : ram + ((address + 16 * k) & 0x1fffff0);
+                stream.insert(stream.end(), q, q + 16);
+            }
+        };
+        uint32_t stack[2] = {}, depth = 0, at = tag;
+        for (int guard = 0; guard < 65536; ++guard)
+        {
+            uint32_t t[4];
+            std::memcpy(t, (at & 0x80000000u) ? scratchpad + (at & 0x3ff0) : ram + (at & 0x1fffff0), 16);
+            const uint32_t qwc = t[0] & 0xffff, id = (t[0] >> 28) & 7, addr = t[1];
+            bool end = false;
+            switch (id)
+            {
+            case 0: take(addr, qwc); end = true; break;
+            case 1: take(at + 16, qwc); at += 16 + 16 * qwc; break;
+            case 2: take(at + 16, qwc); at = addr; break;
+            case 3: case 4: take(addr, qwc); at += 16; break;
+            case 5: take(at + 16, qwc); if (depth < 2) stack[depth++] = at + 16 + 16 * qwc; at = addr; break;
+            case 6: take(at + 16, qwc); if (depth) at = stack[--depth]; else end = true; break;
+            default: take(at + 16, qwc); end = true; break;
+            }
+            if (end)
+                break;
+        }
+        const uint32_t qwords = static_cast<uint32_t>(stream.size() / 16);
+        static const bool gifTrace = std::getenv("ONI_GIF_TRACE") != nullptr;
+        if (gifTrace)
+        {
+            std::printf("[oni:gifchain] tag %x: %u qwords\n", tag, qwords);
+            for (uint32_t q = 0, n = 0; q < qwords && n < 12; ++n)
+            {
+                uint64_t t[2];
+                std::memcpy(t, stream.data() + 16 * q, 16);
+                const uint32_t nloop = t[0] & 0x7fff, flg = (t[0] >> 58) & 3, nreg = ((t[0] >> 60) & 15) ? ((t[0] >> 60) & 15) : 16;
+                std::printf("[oni:gifchain]   nloop %u flg %u pre %llu prim %03llx nreg %u regs %016llx\n", nloop, flg,
+                            (unsigned long long)((t[0] >> 46) & 1), (unsigned long long)((t[0] >> 47) & 0x7ff), nreg,
+                            (unsigned long long)t[1]);
+                q += 1 + (flg == 0 ? nloop * nreg : flg == 1 ? (nloop * nreg + 1) / 2 : nloop);
+            }
+        }
+        for (uint32_t at2 = 0; at2 < qwords;)
+        {
+            const uint32_t used = gifPacket([&](uint32_t i, uint64_t q[2]) { std::memcpy(q, stream.data() + 16 * (at2 + i), 16); },
+                                            qwords - at2);
+            if (!used)
+                break;
+            at2 += used;
+        }
+        flush();
     }
 
     void runChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag)
