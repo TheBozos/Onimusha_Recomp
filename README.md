@@ -25,11 +25,12 @@ Built on [BozoEngine](https://github.com/TheBozos/BozoEngine), The Bozos' own to
 
 ## Status
 
-**Bring-up: the boot screens, the title and the main menu play natively in a window, at 60 frames a second.**
+**Bring-up: the boot screens, the title, the main menu and the movies play natively in a window, at 60 frames a second.**
 The executable and its 98 code overlays are recompiled; Capcom's sound driver and Sony's synthesizer run as statically
 compiled native code (the title music plays); the pre-rendered backgrounds are decoded from the disc's IPU streams and
 the 2D (logos' fades, "PRESS START BUTTON", the menu and its frame) is drawn from the game's own sprites and textures.
-Next: the movies (the attract sequence after 40 seconds on the title, and New Game's opening), then the 3D.
+The movies (the attract sequence, New Game's intro and letter) play with their sound through BozoEngine's native
+libmpeg, and START skips them. New Game now reaches the first room, whose 3D is next.
 
 | Milestone on BozoEngine | |
 |---|:---:|
@@ -40,10 +41,11 @@ Next: the movies (the attract sequence after 40 seconds on the title, and New Ga
 | Backgrounds: the IPU streams (`ETC/*.IPU`, the rooms' `RDT`) decoded natively (FFmpeg's IPU decoder) | ✅ |
 | The 2D: textures as the game uploads them, the ordering table and the fades drawn natively | ✅ |
 | Boot screens, title, main menu in the window; the pad moves the menu | ✅ |
-| Movies (`MOVIE/*.PSS`): Sony's sample player in the game, through BozoEngine's native libmpeg | ⏳ |
+| Movies (`MOVIE/*.PSS`): Sony's sample player in the game, through BozoEngine's native libmpeg, with sound; skipping | ✅ |
 | Animated backgrounds (`BGS/*.IPU`) | ⏳ |
 | Native 3D: characters, enemies, effects and the HUD from the game's own data; VU0 programs translated to C++ | ⏳ |
-| The game playable: New Game to the first room | ⏳ |
+| New Game: the intro and letter movies, then the first room's loading | ✅ |
+| The game playable: the first room drawn and controllable | ⏳ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, save states, cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -52,6 +54,15 @@ Next: the movies (the attract sequence after 40 seconds on the title, and New Ga
 what remains open.
 
 ## Screenshots
+
+**2026-11-23.** The movies, native: the opening (the attract sequence after 40 seconds on the title) and New Game's
+letter to Samanosuke, decoded by BozoEngine's libmpeg (FFmpeg) from the disc's PSS files, with their sound, at 60 frames
+a second; START skips them.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-attract-movie.png" width="400" alt="The opening movie: Samanosuke in red armour beside a tree in the rain">
+  <img src="docs/screenshots/2026-11-23-bozo-letter-movie.png" width="400" alt="The letter movie: Dear Samanosuke over Inabayama Castle at night">
+</p>
 
 **2026-11-23.** The main menu, native: the title's pre-rendered picture decoded from the disc's IPU stream, NEW GAME /
 LOAD GAME / OPTION and the selection frame drawn from the game's own sprites; the pad moves the frame.
@@ -129,7 +140,8 @@ calls by name (`ONI_CALL_STATS=1`): each stop is the next thing to answer. `--fr
 
 The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR --capture-frame N` saves frames).
 Diagnostics: `ONI_BG_TRACE=1` (backgrounds), `ONI_2D_TRACE=1..3` (the 2D), `ONI_TEX_TRACE=1` and
-`ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames).
+`ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames), `ONI_MOVIE_TRACE=1` (movies),
+`ONI_THREADS_AT=<frame>` (every thread's state and pc at that frame).
 
 `tools/oni_disasm.py <SLUS_200.18> <function | 0xADDR>` disassembles the resident code with the game's symbols
 (needs `capstone`); `tools/oni_dwarf.py <SLUS_200.18> build/oni_types.h` writes the game's own types, functions and

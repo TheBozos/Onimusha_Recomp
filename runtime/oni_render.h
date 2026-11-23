@@ -22,6 +22,13 @@ namespace oni::bg
     void install(bozo::port::Registry &registry);
 } // namespace oni::bg
 
+namespace oni::movie
+{
+    // The movie's picture while its display is on (nullptr otherwise).
+    std::shared_ptr<const bozo::render::Texture> shown();
+    void install(bozo::port::Registry &registry);
+} // namespace oni::movie
+
 namespace oni::sprite
 {
     // The 2D the game drew this frame, submitted to the overlay before it is published.

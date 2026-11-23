@@ -34,7 +34,12 @@ namespace oni::render
         if (!g_open)
             r.beginFrame(s);
         const auto background = oni::bg::takeShown(ram);
-        if (background)
+        if (const auto picture = oni::movie::shown()) // a movie: its picture centred in the frame
+        {
+            const float w = static_cast<float>(picture->width), h = static_cast<float>(picture->height);
+            r.setBackdrop(picture, s, s.originX + (s.width - w) * 0.5f, s.originY + (s.height - h) * 0.5f, w, h);
+        }
+        else if (background)
             r.setBackdrop(background, s, s.originX, s.originY, s.width, s.height);
         else
             r.clearBackdrop();
@@ -56,5 +61,6 @@ namespace oni::render
         r.setClearColour(0);
         oni::bg::install(registry);
         oni::sprite::install(registry);
+        oni::movie::install(registry);
     }
 } // namespace oni::render

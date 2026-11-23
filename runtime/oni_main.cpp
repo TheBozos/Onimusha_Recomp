@@ -97,6 +97,9 @@ int main(int argc, char **argv)
     bozo::host::FreeHost host(options);
     bozo::ee::Dispatcher d(host);
     oni::installAudio(host.libraries(), d.runtime().memory.ram());
+    // libmpeg for Sony's ezmpeg player (movie.c): nothing written at Twisted Metal: Black's addresses, the SDK's results;
+    // each picture held until its fields are due; the stream demuxed with the string callbacks (no Nodata input).
+    host.libraries().mpegOptions = {.referenceLayout = false, .paced = true, .sdkNodata = false};
     d.setFunctions(oni_function_table, oni_function_count, oni_resume_table, oni_resume_count);
     bozo::port::Registry registry;
     oni::install(d.runtime(), registry);
@@ -111,8 +114,15 @@ int main(int argc, char **argv)
 
     bozo::app::FramePacer pacer;
     pacer.setPaced(window);
+    // ONI_THREADS_AT=<frame>: every thread's state and pc at that frame (where a loop spins).
+    const uint64_t threadsAt = std::getenv("ONI_THREADS_AT") ? std::strtoull(std::getenv("ONI_THREADS_AT"), nullptr, 0) : 0;
     host.onFrame = [&](uint64_t f, const R5900Context *ctx)
     {
+        if (threadsAt && f == threadsAt)
+            for (const auto &[id, t] : d.kernel().threads())
+                std::printf("[oni:threads] %d state=%u wait=%u object=%u entry=%x pc=%x %s\n", id, unsigned(t->state),
+                            t->waitReason, t->waitObject, t->entry, t->frames.empty() ? 0 : t->frames.front()->ctx.pc,
+                            host.functionAt(t->frames.empty() ? 0 : t->frames.front()->ctx.pc).c_str());
         pacer.frameEnd();
         if (f % 60 == 0)
             std::printf("[oni] frame=%llu pc=%x cycles=%llu\n", (unsigned long long)f, ctx->pc,

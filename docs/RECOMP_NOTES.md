@@ -88,9 +88,12 @@ Each was a stop of the headless runner.
    `VOLXL`/`VOLXR` (`sceSdGetParam(voice | 0x600/0x700)`, `0x5aa18`) with `DelayThread(100)` until they are 0. Native
    libsd answered the volume as set, never 0. 8 and 9 are engine fixes (BozoEngine branch
    `onimusha/irx-sysclib-volx`: `sysclib` 13/32; VOLX = volume x ENVX as the SPU2 reports it).
-10. **Current stop** (idle ~2,534 frames, the attract sequence): the PSS movie player (`Movie_task` `0x1bcf60`, Sony's
-    sample player: `dispCreate` `0x1bb900` and its display chain, `videoDecMain`, `vblankHandler`, `pcmCallback`,
-    IPU DMA set directly by `setD3_CHCR` / `setD4_CHCR`) writes DMA channel 2's registers.
+10. Idle ~2,534 frames, the attract sequence: the PSS movie player writes DMA channel 2's registers (below, "Movies").
+11. Skipping a movie: `termAll` loops until `DeleteThread` returns the decoder's id (the PS2 kernel's result; BozoEngine
+    returns 0): a native site at `0x1bd7a0`. Then SNDDRVCD sweeps the movie's PCM voice down (volume `0xe010`) and
+    waits for VOLX to reach 0: BozoEngine#125 (VOLX follows the volume's sweep).
+12. **Current stop** (New Game, both movies skipped, frame ~2,470): the first room's 3D, `Md_tag_trans` `0x130e40`
+    starting VIF1's DMA (`0x10009020`): the models' VU1 path.
 
 ## Tools for reading the game
 
@@ -148,13 +151,40 @@ field buffers as the renderer's backdrop. The `IPU_CTRL` resets in `Cut_set` / `
 Result (2026-11-23): in the window, the Capcom logo and the violence notice fade in and out, the title shows "PRESS
 START BUTTON", START opens the main menu (NEW GAME, LOAD GAME, OPTION) and the pad moves its frame; 60 frames/s.
 
+## Movies (runtime/oni_movie.cpp, 2026-11-23)
+
+`movie.c` is Sony's ezmpeg sample player, as Twisted Metal: Black's (TMB_Recomp's `tmb_2d.cpp` was the model), with
+captions added. `Movie_task_exe(no)` `0x1bd9b0` starts `Movie_task` `0x1bcf60` on its own thread and puts the main
+thread to sleep until the movie ends. `readMpeg` streams the PSS (`strFileRead`), demuxes it with
+`sceMpegDemuxPssRing`, sends the PCM to the sound driver (`audioDecSendToIOP`) and starts the display. `videoDecMain`
+/ `decBs0` decode into the picture buffer `voBuf` `0x460ec0` (`sceMpegGetPicture`, `dispSetTags`). `vblankHandler`
+`0x1bca40` shows each picture for two fields through `loadImage` `0x1bca10`, a GIF DMA whose end interrupt
+(`handler_endimage`) frees the buffer.
+
+Native:
+- libmpeg is `{referenceLayout = false, paced = true, sdkNodata = false}`, and its picture hook keeps the last picture.
+- `videoCallback` `0x1bfc20` returns 1: the decoder takes the video from the demuxed stream (BozoEngine answers TMB's
+  the same way), so the IPU FIFO and its DMA (`viBuf*`, `setD3/D4_CHCR`) are never used.
+- `dispCreate` keeps the frame size; `dispClear` does nothing; `dispDelete` (the task's end) gives the frame back to
+  the game.
+- `loadImage` completes at once.
+- `vblankHandler` is native: it follows the tags (even field 2 → 1, odd field 1 → 0, the buffer freed) and publishes
+  the frame with the picture as the backdrop. While the display is off it runs the fade countdown `readMpeg` waits for
+  (`gp - 0x6ae8` type, `- 0x6afc` timer, `- 0x6b00` level), shows the last picture darkened by it, and ends the game
+  frame (the main thread sleeps through the movie).
+- `switchThread` `0x1bd4c0` (`RotateThreadReadyQueue(1)`, which the player's threads spin on while they wait for each
+  other) costs 0.1 ms of EE time per pass: tens of thousands of passes a field dropped the window to 54 frames/s,
+  steady 60 now.
+- Captions (`Movie_cap_ptr`, the `caption*` tables) are not drawn yet; the US movies carry their English text in the
+  picture.
+
+Result (2026-11-23): the attract movie (the opening) and New Game's intro and letter play in the window with their
+sound, 60 frames/s; START skips them; New Game reaches the first room's loading.
+
 ## Next
 
-- **Movies** (the attract sequence after ~40 s on the title; New Game's opening): Sony's sample player in
-  `movie.c`. BozoEngine's libmpeg decodes with FFmpeg (`setMoviePictureHook`); its display chain (`dispCreate`,
-  `dispSetTags`, `loadImage`, `dispSwitch`, `startDisplay`), the IPU FIFO it feeds by DMA (`viBuf*`, `setD3_CHCR`,
-  `setD4_CHCR`), the vblank handler and the PCM path (`pcmCallback`, `voBuf*`) need native answers.
+- **The 3D**: `Md_tag_trans` / `Md_draw_entry` and the VU1 programs (`Vu1mc_*`), the room's depth (`Bgz_disp`), the
+  VU0 programs (`_$VU0_*`) translated to C++ (TTA's tools/tta_vu0_gen.py).
 - The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
-- The 3D: `Md_draw_entry` and the VU1 programs (`Vu1mc_*`), `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`, the
-  background's depth (`Bgz_disp`); the VU0 programs (`_$VU0_*`) translated to C++ (TTA's tools/tta_vu0_gen.py).
+- `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.

@@ -6,6 +6,8 @@
 #include "bozo/ee/dispatcher.h"
 #include "oni_render.h"
 
+#include <cstring>
+
 namespace oni
 {
     namespace
@@ -32,7 +34,7 @@ namespace oni
         uint64_t display[2] = {};
 
         // main's loop reads and writes the GS CSR register (0x12001000) itself; Quake_move writes DISPLAY1/2.
-        bool nativeInstruction(uint8_t *, R5900Context *ctx, Runtime *rt, uint32_t pc)
+        bool nativeInstruction(uint8_t *ram, R5900Context *ctx, Runtime *rt, uint32_t pc)
         {
             switch (pc)
             {
@@ -51,6 +53,15 @@ namespace oni
             case 0x001235c0u: // native site: Cut_set+0x130, sw v0,0x2010(at): IPU_CTRL reset before decodeIPU
             case 0x0012366cu: // native site: Cut_set_onmemory+0x7c, the same
                 return true;
+            case 0x001bd7a0u: // native site: termAll+0x30, lw v1,-0x6ab8(gp): the decoder thread's id
+            {
+                // termAll repeats TerminateThread / DeleteThread until DeleteThread returns the thread's id, as the PS2
+                // kernel does; BozoEngine's returns 0 on success (its reference's value): 0 counts as the id.
+                uint32_t id;
+                std::memcpy(&id, ram + 0x21b170 - 0x6ab8, 4);
+                ctx->r[3].ud[0] = ctx->r[2].sw[0] == 0 ? 0 : static_cast<uint64_t>(static_cast<int64_t>(static_cast<int32_t>(id)));
+                return true;
+            }
             case 0x0012fba8u: // native site: Quake_move+0xa8, sd v1,0x80(at): DISPLAY1
                 display[0] = ctx->r[3].ud[0];
                 return true;
