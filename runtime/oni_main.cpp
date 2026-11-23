@@ -78,6 +78,10 @@ int main(int argc, char **argv)
             windowOptions.vsync = false;
         else if (a == "--fullscreen")
             windowOptions.fullscreen = true;
+        else if (a == "--capture-dir" && i + 1 < argc)
+            windowOptions.captureDir = argv[++i];
+        else if (a == "--capture-frame" && i + 1 < argc)
+            windowOptions.captureFrames.push_back(std::stoull(argv[++i]));
 #endif
         else
         {

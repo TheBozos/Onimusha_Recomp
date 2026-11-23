@@ -25,22 +25,25 @@ Built on [BozoEngine](https://github.com/TheBozos/BozoEngine), The Bozos' own to
 
 ## Status
 
-**Bring-up, headless.** The executable and its 98 code overlays are recompiled, Capcom's sound driver runs as
-statically compiled native code, and the game's main loop runs its first 16 frames. The run stops at the first
-background: Onimusha's pre-rendered rooms are IPU streams, the next thing to answer natively. Nothing is drawn yet.
+**Bring-up: the boot screens, the title and the main menu play natively in a window, at 60 frames a second.**
+The executable and its 98 code overlays are recompiled; Capcom's sound driver and Sony's synthesizer run as statically
+compiled native code (the title music plays); the pre-rendered backgrounds are decoded from the disc's IPU streams and
+the 2D (logos' fades, "PRESS START BUTTON", the menu and its frame) is drawn from the game's own sprites and textures.
+Next: the movies (the attract sequence after 40 seconds on the title, and New Game's opening), then the 3D.
 
 | Milestone on BozoEngine | |
 |---|:---:|
-| Map the main ELF and every overlay from the game's own symbol table (CodeWarrior, symbols and DWARF kept) | ✅ |
+| Map the main ELF and every overlay from the game's own symbol table and DWARF (CodeWarrior, symbols kept) | ✅ |
 | Recompile with `bozo-recomp`: the resident program and 98 `MWo3` modules (two enemy slots, rooms), each selected by its resident header | ✅ |
-| Capcom's SNDDRVCD and Sony's modular synthesizer (LIBSD, SDRDRV, MODHSYN, MODMIDI, MODMSIN) statically compiled from the disc; the driver's RPC handshake, both ways | ✅ |
+| Capcom's SNDDRVCD and Sony's modular synthesizer (LIBSD, SDRDRV, MODHSYN, MODMIDI, MODMSIN) statically compiled from the disc; the driver's RPC handshake, both ways; the title music | ✅ |
 | Native frame boundary: main's vsync and CSR polling answered, `sceGsSwapDBuffDc` ends the frame | ✅ |
-| Backgrounds: the IPU streams (`ETC/*.IPU`) and animated backgrounds (`BGS/*.IPU`) decoded natively | 🔧 |
-| Movies (`MOVIE/*.PSS`) through BozoEngine's native libmpeg | ⏳ |
-| Native rendering: characters, enemies, effects, sprites and the HUD from the game's own data | ⏳ |
-| VU0 programs translated to C++ | ⏳ |
-| Pads, memory cards, sound output | ⏳ |
-| Window, title screen, the game playable | ⏳ |
+| Backgrounds: the IPU streams (`ETC/*.IPU`, the rooms' `RDT`) decoded natively (FFmpeg's IPU decoder) | ✅ |
+| The 2D: textures as the game uploads them, the ordering table and the fades drawn natively | ✅ |
+| Boot screens, title, main menu in the window; the pad moves the menu | ✅ |
+| Movies (`MOVIE/*.PSS`): Sony's sample player in the game, through BozoEngine's native libmpeg | ⏳ |
+| Animated backgrounds (`BGS/*.IPU`) | ⏳ |
+| Native 3D: characters, enemies, effects and the HUD from the game's own data; VU0 programs translated to C++ | ⏳ |
+| The game playable: New Game to the first room | ⏳ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, save states, cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -50,7 +53,20 @@ what remains open.
 
 ## Screenshots
 
-None yet: nothing is drawn natively before the backgrounds.
+**2026-11-23.** The main menu, native: the title's pre-rendered picture decoded from the disc's IPU stream, NEW GAME /
+LOAD GAME / OPTION and the selection frame drawn from the game's own sprites; the pad moves the frame.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-main-menu.png" width="560" alt="Onimusha: Warlords' main menu on BozoEngine: the red and gold title over NEW GAME, LOAD GAME and OPTION, NEW GAME in its frame">
+</p>
+
+**2026-11-23.** The title screen and the Capcom logo, the first pictures BozoEngine drew for Onimusha: the IPU
+backgrounds decoded natively, the logo's fade drawn from the game's fade sprite.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-title.png" width="400" alt="The title screen: ONIMUSHA Warlords over PRESS START BUTTON and the credits">
+  <img src="docs/screenshots/2026-11-23-bozo-capcom-logo.png" width="400" alt="The Capcom logo on black">
+</p>
 
 ## Goal
 
@@ -68,7 +84,8 @@ disc files (game/) ──► tools/oni_prepare.py ──► resident ELF + 98 ov
                                            │
                  CMakeLists.txt ──► BozoEngine + generated code + Onimusha's own adapters
                                            │
-   oni_port.cpp: frame boundary, CSR and display sites, IPU ──► native host services ──┐
+   oni_bg.cpp: IPU backgrounds (FFmpeg) ─┐  oni_tex.cpp + oni_sprite.cpp: uploads, ordering table, fades ─┐
+   oni_port.cpp: frame boundary, CSR and display sites ──► native renderer, host services ─────────────┤
    oni_audio.cpp: compiled drivers, the EE service 0x77777779 ──► native mixer         ├─► onimusha.exe
    generated module registration: overlays by resident identity ──► native dispatch ──┘
 ```
@@ -90,7 +107,7 @@ hook choices and module layouts stay in Onimusha_Recomp; engine changes must be 
 
 - Windows 10/11 with [MSYS2](https://www.msys2.org/) (UCRT64, see below); Linux is not qualified yet
 - CMake 3.21+, Ninja, GCC with C++20 support
-- `bsdtar` (libarchive) to extract the disc, Python 3
+- `bsdtar` (libarchive) to extract the disc, Python 3, GNU make and curl for `scripts/build_ffmpeg.sh`
 - OpenGL 3.3 for the window; SDL3 and ImGui are fetched at pinned revisions by BozoEngine
 - Your own copy of `SLUS-20018` (check the hash above)
 
@@ -100,6 +117,7 @@ hook choices and module layouts stay in Onimusha_Recomp; engine changes must be 
 git clone --recursive https://github.com/TheBozos/Onimusha_Recomp.git
 cd Onimusha_Recomp
 scripts/extract_iso.sh "Onimusha - Warlords (USA).iso"   # into game/
+scripts/build_ffmpeg.sh                                   # a static FFmpeg with the IPU and MPEG-2 decoders (~1 min)
 scripts/build_runtime.sh                                  # build/bozo/onimusha.exe and oni-headless.exe
 scripts/run.sh --frames 600 --profile-io                  # the headless runner
 ```
@@ -109,15 +127,20 @@ calls by name (`ONI_CALL_STATS=1`): each stop is the next thing to answer. `--fr
 `--pad-script <file>` drives the pad, `--wav <file>` records sound, `--dump-ram <file>` writes EE memory at the end.
 `ONI_WINDOW_RUN=1 scripts/run.sh` runs the window build instead; `-DONI_WINDOW=OFF` builds the headless runner only.
 
+The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR --capture-frame N` saves frames).
+Diagnostics: `ONI_BG_TRACE=1` (backgrounds), `ONI_2D_TRACE=1..3` (the 2D), `ONI_TEX_TRACE=1` and
+`ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames).
+
 `tools/oni_disasm.py <SLUS_200.18> <function | 0xADDR>` disassembles the resident code with the game's symbols
-(needs `capstone`).
+(needs `capstone`); `tools/oni_dwarf.py <SLUS_200.18> build/oni_types.h` writes the game's own types, functions and
+globals from its DWARF as C (game-derived: it stays in `build/`).
 
 ### Windows
 
 Run the scripts in an MSYS2 **UCRT64** shell; MSVC is not supported for this port.
 
 ```bash
-pacman -S --needed mingw-w64-ucrt-x86_64-{gcc,cmake,ninja,pkgconf,libarchive,python} git
+pacman -S --needed mingw-w64-ucrt-x86_64-{gcc,cmake,ninja,pkgconf,libarchive,python} git make
 ```
 
 ## Disc facts

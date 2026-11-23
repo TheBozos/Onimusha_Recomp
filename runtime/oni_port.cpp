@@ -4,6 +4,7 @@
 // tools/oni_overrides_list.py (a "native 0xADDR" external): the instruction is replaced by this handler, inline.
 #include "oni_port.h"
 #include "bozo/ee/dispatcher.h"
+#include "oni_render.h"
 
 namespace oni
 {
@@ -18,9 +19,10 @@ namespace oni
         // sceGsSwapDBuffDc(dbuff, field): main calls it at the top of every frame, right after its vsync wait. There is
         // no GS to point at the other buffer: it is the frame boundary (the native renderer's frame is published here
         // once the game's drawing is answered natively).
-        void swapBuffers(uint8_t *, R5900Context *ctx, Runtime *rt)
+        void swapBuffers(uint8_t *ram, R5900Context *ctx, Runtime *rt)
         {
             ctx->r[2].ud[0] = 0;
+            oni::render::publish(ram);
             bozo::port::frameEnd(rt, ctx);
             ctx->pc = ctx->r[31].uw[0];
         }
@@ -46,6 +48,9 @@ namespace oni
                 // The frame waits at sceGsSwapDBuffDc's frame end instead: the vblank has come.
                 ctx->r[2].ud[0] = 8;
                 return true;
+            case 0x001235c0u: // native site: Cut_set+0x130, sw v0,0x2010(at): IPU_CTRL reset before decodeIPU
+            case 0x0012366cu: // native site: Cut_set_onmemory+0x7c, the same
+                return true;
             case 0x0012fba8u: // native site: Quake_move+0xa8, sd v1,0x80(at): DISPLAY1
                 display[0] = ctx->r[3].ud[0];
                 return true;
@@ -64,7 +69,11 @@ namespace oni
         // DecodeIPU_Movie). There is no IPU: nothing to reset. The decoders that use it (backgrounds, BG movies) are
         // to be answered natively at decodeIPU / DecodeIPU_Movie.
         r.registerFunction(0x10aeb0, returnZero);
+        // sceSifSetDChain (syscall 120): Snd_SdTransToIOP / Snd_SdTransToIOPBD arm the SIF DMA chain before their
+        // sceSifSetDma (native: the data reaches the sound driver at once). Nothing to arm.
+        r.registerFunction(0x10b980, returnZero);
         r.registerFunction(0x101868, swapBuffers); // sceGsSwapDBuffDc
+        oni::render::install(r);
         r.nativeGraphics(&nativeInstruction);
     }
 } // namespace oni

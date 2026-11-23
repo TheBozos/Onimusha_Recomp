@@ -18,7 +18,14 @@ set(BOZO_ENGINE_DIR "${CMAKE_SOURCE_DIR}/BozoEngine" CACHE PATH "Pinned native e
 option(ONI_WINDOW "Build the SDL3 native game window (onimusha) next to oni-headless" ON)
 set(BOZO_APP ${ONI_WINDOW} CACHE BOOL "" FORCE)
 set(BOZO_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
-set(BOZO_REQUIRE_FFMPEG OFF CACHE BOOL "The movies need native decoding (not wired up yet)")
+# FFmpeg: the backgrounds' IPU decoder (runtime/oni_bg.cpp) and the movies' MPEG-2 (BozoEngine's libmpeg). The minimal
+# static build of scripts/build_ffmpeg.sh, handed to BozoEngine as BOZO_FFMPEG_ROOT.
+set(ONI_FFMPEG_ROOT "${CMAKE_SOURCE_DIR}/build/ffmpeg" CACHE PATH "Minimal static FFmpeg (scripts/build_ffmpeg.sh)")
+if(NOT EXISTS "${ONI_FFMPEG_ROOT}/lib/libavcodec.a")
+  message(FATAL_ERROR "${ONI_FFMPEG_ROOT}: run scripts/build_ffmpeg.sh first (FFmpeg with the IPU decoder)")
+endif()
+set(BOZO_FFMPEG_ROOT "${ONI_FFMPEG_ROOT}" CACHE PATH "FFmpeg folder (include/, lib/) for libmpeg's decoder" FORCE)
+set(BOZO_REQUIRE_FFMPEG ON CACHE BOOL "The movies need native decoding" FORCE)
 add_subdirectory("${BOZO_ENGINE_DIR}" BozoEngine)
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
@@ -131,7 +138,7 @@ list(FILTER oni_runtime_sources EXCLUDE REGEX "oni_main\\.cpp$")
 
 add_executable(oni-headless runtime/oni_main.cpp ${oni_runtime_sources})
 target_link_libraries(oni-headless PRIVATE oni_game bozo_host)
-target_include_directories(oni-headless PRIVATE ${CMAKE_SOURCE_DIR}/runtime ${oni_audio_gen})
+target_include_directories(oni-headless PRIVATE ${CMAKE_SOURCE_DIR}/runtime ${oni_audio_gen} ${ONI_FFMPEG_ROOT}/include)
 add_dependencies(oni-headless oni_native_audio)
 target_compile_definitions(oni-headless PRIVATE ONI_DEFAULT_ELF="${oni_prep}/oni.elf" ONI_DEFAULT_ISO="${ONI_ISO}")
 if(MINGW)
@@ -141,7 +148,7 @@ endif()
 if(ONI_WINDOW)
   add_executable(onimusha runtime/oni_main.cpp ${oni_runtime_sources})
   target_link_libraries(onimusha PRIVATE oni_game bozo_host bozo_app)
-  target_include_directories(onimusha PRIVATE ${CMAKE_SOURCE_DIR}/runtime ${oni_audio_gen})
+  target_include_directories(onimusha PRIVATE ${CMAKE_SOURCE_DIR}/runtime ${oni_audio_gen} ${ONI_FFMPEG_ROOT}/include)
   add_dependencies(onimusha oni_native_audio)
   if(WIN32)
     # The window's icon (docs/branding/make_logo.py oni), the UTF-8 manifest and the version information.

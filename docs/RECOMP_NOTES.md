@@ -80,15 +80,81 @@ Each was a stop of the headless runner.
    boundary is `sceGsSwapDBuffDc` `0x101868` (overridden: `port::frameEnd`), called at the top of every frame.
 5. `Quake_move` `0x12fb00` writes DISPLAY1/DISPLAY2 (`0x12fba8`, `0x12fc20`; screen shake from the halfwords at
    `0x287350/52`): native sites keep the words for the renderer.
-6. **Current stop** (frame 16): `getFlags` `0x123790` writes `IPU_CMD` (`0x10002000`): the first background decode.
+6. Frame 16: `getFlags` `0x123790` writes `IPU_CMD`: the first background decode (below, "Backgrounds").
+7. Frame 508, in the title: syscall 120, `sceSifSetDChain` from `Snd_SdTransToIOP` / `Snd_SdTransToIOPBD` (sound
+   data to the driver in 0x5000-byte chunks before their native `sceSifSetDma`): an override returning 0.
+8. Pressing START: SNDDRVCD imports `sysclib` 13 (`memmove`) and 32 (`strrchr`), which BozoEngine's IRX host lacked.
+9. Idle on the title (~2,540 frames): an RPC handler of SNDDRVCD (`0x59a94`) releases a voice and polls its
+   `VOLXL`/`VOLXR` (`sceSdGetParam(voice | 0x600/0x700)`, `0x5aa18`) with `DelayThread(100)` until they are 0. Native
+   libsd answered the volume as set, never 0. 8 and 9 are engine fixes (BozoEngine branch
+   `onimusha/irx-sysclib-volx`: `sysclib` 13/32; VOLX = volume x ENVX as the SPU2 reports it).
+10. **Current stop** (idle ~2,534 frames, the attract sequence): the PSS movie player (`Movie_task` `0x1bcf60`, Sony's
+    sample player: `dispCreate` `0x1bb900` and its display chain, `videoDecMain`, `vblankHandler`, `pcmCallback`,
+    IPU DMA set directly by `setD3_CHCR` / `setD4_CHCR`) writes DMA channel 2's registers.
+
+## Tools for reading the game
+
+- `tools/oni_dwarf.py <SLUS_200.18> build/oni_types.h`: the ELF's DWARF 1 (CodeWarrior) as C: every structure (field
+  offsets, bit fields), enumeration, typedef, function (parameters with their registers or stack slots) and global
+  (address), compile unit by compile unit (`D:\oni\prog\title.c` ...). Anonymous types are named `@anonN` per unit:
+  read a function's types inside its own unit. Game-derived: keep it in `build/`.
+- `tools/oni_disasm.py`: the resident code with the symbols.
+
+## Backgrounds (runtime/oni_bg.cpp, 2026-11-23)
+
+The rooms, logos and menus are pre-rendered `ipum` files (`IMAGE/ETC`, `IMAGE/RDT`; 640 x 448, one frame of MPEG-2
+intra macroblocks: a flags byte, then the IPU's own bitstream). `Cut_set(work, cut)` `0x123490` reads the cut's file
+to `0x7f3440` (`Cd_req`), its size to `0x214380`, builds the to-IPU DMA tags, resets the IPU (`IPU_CTRL`) and jumps to
+`decodeIPU` `0x1221a0` (through `divFrameBuff` `0x122190`: a `j`, which runs the guest code, so both are overridden).
+`decodeIPU` reads the flags (`getFlags`: FDEC), runs IDEC with CSC to RGB32 through the from-IPU DMA one macroblock
+row at a time, and splits the picture into its fields: even lines at `0xa69c80`, odd lines at `0x9ddc80` (640 x 224
+RGBA each). `Bg_disp` `0x122040` sends the shown field to the GS every frame.
+
+Natively `decodeIPU` decodes the stream with FFmpeg's IPU decoder (`scripts/build_ffmpeg.sh` builds a static FFmpeg
+with only `mpeg2video` and `ipu`) and the IPU's CSC (BT.601 studio range, coefficients in 128ths; alpha 0x80) into the
+same two field buffers. FFmpeg's decoder wants exactly one end code after the picture: Onimusha's files end with
+`0x000001b0` then `0x000001b1`, so the packet stops after the first. `Bg_disp` still runs (its camera, lights,
+shadows, the BG movie) and marks the background shown; the frame boundary publishes the picture rebuilt from the two
+field buffers as the renderer's backdrop. The `IPU_CTRL` resets in `Cut_set` / `Cut_set_onmemory` are native sites,
+`sceIpuInit` and `sceIpuSync` return 0.
+
+## Textures and the 2D (runtime/oni_tex.cpp, runtime/oni_sprite.cpp, 2026-11-23)
+
+- **Uploads.** Every image goes through libgraph's `sceGsSetDefLoadImage(lp, dbp, dbw, psm, x, y, w, h)` and
+  `sceGsExecLoadImage(lp, src)` (`Mapping_oim2` / `Mapping_oim3` for the OIM textures and palettes of the `LINK`
+  files, which `Cd_link_read` loads). The port answers both: each upload is kept as given (destination block, format,
+  size, texels copied from EE memory), keyed by its block. An upload at (x, y) of its buffer is keyed by the block it
+  starts at (the palettes: four 8 x 2 CT32 palettes per block group, at (0,0), (8,0), (0,8), (8,8)). A draw's TEX0
+  finds its texels (TBP0) and palette (CBP, CSA; CSM1 order) and is decoded to RGBA once (`ONI_TEX_TRACE=1`,
+  `ONI_TEX_DUMP=<dir>` writes each decoded texture as PAM).
+- **The ordering table.** `Ot_draw(pOt, length)` `0x12e7f0` (main, every frame; `G` at `0x27de30` is the table,
+  0x1000 slots) walks `pOt[0 .. length)`: a slot holds 0 or the first primitive of a chain; a primitive's word 0 is
+  the next one or a pointer back into the table. Each primitive: +4 `Attribute`, bits 0-10 the GS PRIM value, 0x800
+  GS coordinates, 0x1000 point sampling, with ABE 0x2000 `(Cs - Cd)A + Cd` / 0x4000 `(0 - Cs)A + Cd` / else
+  `Cs A + Cd` (A the source's alpha with 0x8000, else FIX = the colour's A byte), bits 24-31 the layout: 0 an ALPHA
+  reset, 1 a vertex, 2 two untextured vertices, 3 a textured triangle (TEX0 pointer +0x40), 4 a textured sprite (the
+  0x28-byte sprite record of title.c's `sprite` / `item_sprite`, TEX0 pointer +0x24), 5 a textured quad (+0x50), 6 a 3D
+  model (`Md_draw_entry`), 7 another quad layout (+0x70). Coordinates: x 0..639, y 0..447 of the frame (`Ot_draw`
+  halves y: the GS draws 640 x 224 fields at XYOFFSET (1728, 1936)).
+  Natively the same walk turns each primitive into a frame draw in screen space (identity matrix, no depth, table
+  order over the background): the frame pass has the GS blend equation, the alpha test and point sampling (the
+  overlay pass reduces them to plain blends). The draw environment's `TEST_2` (alpha test: transparent texels are not
+  drawn) is not changed by `Ot_draw`: textured draws test alpha > 0, which keeps the menu's frame under its items.
+- **Pit_trans** `0x1af6f0`: the sprites `Pit_prim_entry(prim, priority)` queues (the fades: `fade.c`'s black sprite
+  whose alpha `fade_in00` and friends animate; pointers at `0x40d690`, count `0x214604`), priorities 0-7, the sprite
+  layout, offset by the origin at `0x28e420`. Its fixed-alpha blend scales by the destination's alpha (ALPHA C = Ad).
+- `ONI_2D_TRACE=1` counts the primitives per frame, `=3` prints each sprite.
+
+Result (2026-11-23): in the window, the Capcom logo and the violence notice fade in and out, the title shows "PRESS
+START BUTTON", START opens the main menu (NEW GAME, LOAD GAME, OPTION) and the pad moves its frame; 60 frames/s.
 
 ## Next
 
-- **Backgrounds**: answer the IPU decoders natively at their game functions (`decodeIPU` `0x1221ac` region,
-  `Cut_set`, `Cut_set_onmemory`, `getFlags`, `Bgz_disp`; the animated ones `DecodeIPU_Movie` `0x197bc0`), decoding
-  the `.IPU` streams (MPEG-1 intra frames; FFmpeg has a PS2 IPU decoder) into textures for the native renderer.
-- Movies: the PSS files through BozoEngine's native libmpeg (`sceMpeg*` are answered natively; FFmpeg needed:
-  `BOZO_REQUIRE_FFMPEG`, TTA's `scripts/build_ffmpeg.sh`).
-- Renderer: Ot_draw / Spr_draw / Esp_sp_draw / Pit_trans and the VU1 programs (`Vu1mc_*`) as native draw hooks; the
-  VU0 programs (`_$VU0_*`) translated to C++ (TTA's tools/tta_vu0_gen.py).
-- Pads and memory cards (native libpad/libmc; the modules are answered at the EE APIs).
+- **Movies** (the attract sequence after ~40 s on the title; New Game's opening): Sony's sample player in
+  `movie.c`. BozoEngine's libmpeg decodes with FFmpeg (`setMoviePictureHook`); its display chain (`dispCreate`,
+  `dispSetTags`, `loadImage`, `dispSwitch`, `startDisplay`), the IPU FIFO it feeds by DMA (`viBuf*`, `setD3_CHCR`,
+  `setD4_CHCR`), the vblank handler and the PCM path (`pcmCallback`, `voBuf*`) need native answers.
+- The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
+- The 3D: `Md_draw_entry` and the VU1 programs (`Vu1mc_*`), `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`, the
+  background's depth (`Bgz_disp`); the VU0 programs (`_$VU0_*`) translated to C++ (TTA's tools/tta_vu0_gen.py).
+- The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.
