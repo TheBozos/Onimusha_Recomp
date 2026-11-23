@@ -143,6 +143,13 @@ if(ONI_WINDOW)
   target_link_libraries(onimusha PRIVATE oni_game bozo_host bozo_app)
   target_include_directories(onimusha PRIVATE ${CMAKE_SOURCE_DIR}/runtime ${oni_audio_gen})
   add_dependencies(onimusha oni_native_audio)
+  if(WIN32)
+    # The window's icon (docs/branding/make_logo.py oni), the UTF-8 manifest and the version information.
+    enable_language(RC)
+    set_source_files_properties(runtime/app/onimusha.rc PROPERTIES OBJECT_DEPENDS
+      "${CMAKE_SOURCE_DIR}/runtime/app/onimusha.ico;${CMAKE_SOURCE_DIR}/runtime/app/onimusha.manifest")
+    target_sources(onimusha PRIVATE runtime/app/onimusha.rc)
+  endif()
   target_compile_definitions(onimusha PRIVATE ONI_WITH_WINDOW ONI_DEFAULT_ELF="${oni_prep}/oni.elf" ONI_DEFAULT_ISO="${ONI_ISO}")
   if(MINGW)
     get_filename_component(oni_toolchain_bin "${CMAKE_CXX_COMPILER}" DIRECTORY)
