@@ -205,7 +205,18 @@ sound, 60 frames/s; START skips them; New Game reaches the first room's loading.
 
 - **The 3D**: the models from their own data at `Md_draw_entry_vu0` / `Md_draw_entry_clip` (the VU1 programs
   `Vu1mc_*` run on what those build), the room's depth (`Bgz_disp`, the cut's Z buffer) so the models sit behind the
-  pre-rendered scenery.
+  pre-rendered scenery. What sys_sub.c's types give (build/oni_types.h):
+  - an object `_OCW` (0x7e0): `pObj` (+0x98, per part: `pObj_tag` / `pGroup_tag`, the model file's prebuilt VIF
+    chains, `Rgbf`, `Semi_alpha`), `pMod` (+0x9c: `Obj_num`, `Jnt_num`, `Tex_num`, `Obj_tbl[]` of {`Group_num`,
+    `Vu_type` (which VU1 program), `pGroup`}), `pTex_info` (+0xa8: per texture its `Tex0`), `pJnt` (+0xac, the
+    skeleton), `pLv` / `pLc` (+0xb4 / +0xb8, light vectors and colours), `pWmat` / `pWnmat` (+0xc8 / +0xcc, a world
+    and a normal matrix per part);
+  - a group {`Num`, `Tex_no`, `pVert`, `pNorm`, `pTex`, `pMat`, `pMat_w`, `pMime`}: the vertex, normal and UV arrays
+    themselves, so a part can be drawn from them with its world matrix and the camera's;
+  - `Md_draw_entry_vu0(pCw, pObj_tbl, parts_no)` links the parts' prebuilt chains (no calls); `Md_draw_vu0` drives
+    it (with `pCalcLoadGmMatrix` for the collision program and `Md_draw_semi*` for the semi-transparent parts).
+  Next: the vertex formats (the VU1 programs' unpack: `Vu1mc_std_cl` ...), the camera's matrix, then a native draw
+  per part at `Md_draw_entry_vu0`.
 - The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
 - `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.
