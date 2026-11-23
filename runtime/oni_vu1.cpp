@@ -7,6 +7,7 @@
 
 #include "oni_render.h"
 #include "oni_tex.h"
+#include "bozo/state.h"
 
 #include <algorithm>
 #include <chrono>
@@ -795,6 +796,38 @@ namespace oni::vu1
             }
         }
     } // namespace
+
+    void state(bozo::state::Archive &a)
+    {
+        using bozo::state::fields;
+        Vif &v = vif();
+        // VIF1's registers, VU1's (the vector, integer and special registers of the context holding them), its two
+        // memories and the program in micro memory (by its index in kPrograms).
+        fields(a, v.base, v.offset, v.tops, v.top, v.itops, v.itop, v.dbf, v.cl, v.wl, v.mode, v.mask, v.row, v.col, v.extent,
+               v.next);
+        a.raw(v.regs.vu0_vf, sizeof v.regs.vu0_vf);
+        a.raw(&v.regs.vu0_acc, sizeof v.regs.vu0_acc);
+        fields(a, v.regs.vi, v.regs.vu0_q_bits, v.regs.vu0_i_bits, v.regs.vu0_p_bits, v.regs.vu0_status, v.regs.vu0_mac,
+               v.regs.vu0_clip_flags);
+        a.raw(v.mem, sizeof v.mem);
+        a.raw(v.micro, sizeof v.micro);
+        int32_t program = v.program ? static_cast<int32_t>(v.program - kPrograms) : -1;
+        fields(a, program);
+        // The GS registers the packets set (a frame boundary: no primitive or transfer half done).
+        Gs &gs = g_gs;
+        fields(a, gs.prim, gs.tex0, gs.tex1, gs.clamp, gs.alpha, gs.test, gs.zbuf, gs.fogcol, gs.texa, gs.frame, gs.bitbltbuf,
+               gs.trxpos, gs.trxreg, gs.rgba, gs.s, gs.t, gs.q, gs.uv, gs.fog, g_targets);
+        if (a.loading())
+        {
+            v.program = program >= 0 && static_cast<size_t>(program) < kProgramCount ? &kPrograms[program] : nullptr;
+            gs.queued = 0;
+            gs.imaging = false;
+            gs.image.clear();
+            gs.batch.clear();
+            gs.batchOpen = false;
+            gs.texture = nullptr;
+        }
+    }
 
     void runChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag)
     {

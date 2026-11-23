@@ -2,6 +2,7 @@
 #pragma once
 #include "bozo/libs/libraries.h"
 #include "bozo/port.h"
+#include "bozo/state.h"
 #include <cstddef>
 #include <cstdint>
 
@@ -14,6 +15,9 @@ namespace oni
     size_t registerModules(Runtime &rt);
     // The IOP sound modules (runtime/oni_audio.cpp): module loads, SIF transfers and the mixer.
     void installAudio(bozo::libs::Libraries &libraries, uint8_t *eeRam);
+    // Onimusha's save-state section: the sound modules' IOP host, the texture uploads, VIF1 / VU1 / GS; the derived
+    // pictures rebuilt on a load.
+    void installState(bozo::state::Sections &sections);
     // The VU0 microprogram by entry (generated: tools/oni_vu0_gen.py).
     void installVu0(bozo::port::Registry &registry);
 } // namespace oni

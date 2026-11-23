@@ -245,8 +245,13 @@ it the GIF packets): 60 frames/s and no underrun. `ONI_AUDIO_STATS=1` prints the
 the frame rate; `ONI_VU1_TRACE=1..5` the frame's counts and times, then runs, kicks, DMA tags, VIF codes and GIF tags;
 `ONI_VU1=0` turns the models off; `ONI_VU1_FLAT` / `ONI_VU1_NOTEX` / `ONI_VU1_NODEPTH` are diagnostics.
 
-Open: a save state does not keep the port's own state (the texture uploads, the VU1 state, the EE RPC server), so a
-loaded state draws untextured models and faults in `sceSifCallRpc` a few frames later.
+Save states (runtime/oni_state.cpp): the port's section `oni` adds what the engine's own sections do not hold: the
+compiled sound modules' IOP host (`CompiledLibraries::serialize`: its memory, tasks, kernel objects, mixer), the
+texture uploads (GS memory as the game filled it), VIF1 / VU1 (registers, data and micro memory, the resident program
+by its index) and the GS registers the packets set; the room's picture and depth are rebuilt from EE memory after a
+load. Without it a loaded state drew untextured models and faulted in `sceSifCallRpc` 11 frames later (the sound
+driver's IOP side was the boot's). A movie being shown makes the state unsaveable. Checked: a state saved at frame 3600
+of the first room and loaded runs to 3900 with the same VU1 work frame for frame as the run from the boot.
 
 ## Room depth (runtime/oni_bg.cpp, 2026-11-23)
 
@@ -263,7 +268,6 @@ any other frame effect apply to it as on the GS. Checked by filling the image wi
 
 ## Next
 
-- The port's own state in save states (textures, VU1, the RPC server).
 - The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
 - `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.

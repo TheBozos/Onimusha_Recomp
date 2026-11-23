@@ -307,6 +307,13 @@ namespace oni::bg
         return g_picture;
     }
 
+    void stateLoaded()
+    {
+        g_picture.reset();
+        g_depth.reset();
+        g_depthDue = false;
+    }
+
     void drawDepth()
     {
         if (!g_depthDue || !g_depth)

@@ -8,6 +8,7 @@
 
 #include "bozo/ee/dispatcher.h"
 #include "bozo/render/texture.h"
+#include "bozo/state.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -30,6 +31,10 @@ namespace oni::tex
             std::vector<uint8_t> bytes;
             uint64_t generation = 0;
         };
+
+        // Save states (bozo/state.h): the parameters and uploads as their fields.
+        void io(bozo::state::Archive &a, Params &p) { bozo::state::pod(a, p); }
+        void io(bozo::state::Archive &a, Upload &u) { bozo::state::fields(a, u.p, u.bytes, u.generation); }
 
         std::unordered_map<uint32_t, Params> g_packets; // load packet address -> its parameters
         std::map<uint32_t, Upload> g_uploads;            // by destination block (x = y = 0 uploads; others logged)
@@ -274,6 +279,13 @@ namespace oni::tex
             return;
         }
         keep(p, texels, need);
+    }
+
+    void state(bozo::state::Archive &a)
+    {
+        bozo::state::fields(a, g_packets, g_uploads, g_generation);
+        if (a.loading())
+            g_cache.clear(); // decoded from the uploads it had
     }
 
     void install(bozo::port::Registry &r)

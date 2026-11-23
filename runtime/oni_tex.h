@@ -2,6 +2,7 @@
 #pragma once
 #include "bozo/port.h"
 #include "bozo/render/texture.h"
+#include "bozo/state.h"
 
 #include <cstdint>
 #include <cstddef>
@@ -13,5 +14,7 @@ namespace oni::tex
     std::shared_ptr<const bozo::render::Texture> fromTex0(uint64_t tex0);
     // A GIF IMAGE transfer to local memory (the registers BITBLTBUF, TRXPOS, TRXREG set before it), kept as an upload.
     void upload(uint64_t bitbltbuf, uint64_t trxpos, uint64_t trxreg, const uint8_t *texels, size_t bytes);
+    // The uploads in save states; the decoded textures are dropped on a load.
+    void state(bozo::state::Archive &a);
     void install(bozo::port::Registry &registry);
 } // namespace oni::tex

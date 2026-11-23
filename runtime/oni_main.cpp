@@ -105,6 +105,7 @@ int main(int argc, char **argv)
     d.setFunctions(oni_function_table, oni_function_count, oni_resume_table, oni_resume_count);
     bozo::port::Registry registry;
     oni::install(d.runtime(), registry);
+    oni::installState(*host.stateSections());
     std::string error;
     if (!host.setUp(d, oni_external_table, oni_external_count, &registry, error))
     {

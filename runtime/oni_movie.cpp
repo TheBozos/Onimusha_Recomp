@@ -244,6 +244,12 @@ namespace oni::movie
         return g_showing ? g_picture : nullptr;
     }
 
+    std::string unsaveable()
+    {
+        std::lock_guard<std::mutex> lock(g_mutex);
+        return g_showing ? "a movie is playing" : "";
+    }
+
     void install(bozo::port::Registry &r)
     {
         bozo::render::setMoviePictureHook(onPicture);

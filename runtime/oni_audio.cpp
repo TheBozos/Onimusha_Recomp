@@ -4,6 +4,7 @@
 #include "oni_audio_modules.h"
 #include "oni_port.h"
 #include "bozo/libs/libraries.h"
+#include "bozo/state.h"
 #include <cctype>
 #include <cstring>
 #include <span>
@@ -18,6 +19,9 @@ namespace oni
     {
         std::unique_ptr<bozo::native::irx::CompiledLibraries> sound;
     }
+
+    void audioState(bozo::state::Archive &a) { sound->serialize(a); }
+    std::string audioUnsaveable() { return sound ? sound->unsaveable() : std::string(); }
 
     void installAudio(bozo::libs::Libraries &libraries, uint8_t *eeRam)
     {

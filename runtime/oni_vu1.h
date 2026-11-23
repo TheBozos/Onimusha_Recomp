@@ -3,6 +3,7 @@
 // the GIF packets the programs kick, turned into the frame's draws.
 #pragma once
 #include "bozo/ops_vu0.h"
+#include "bozo/state.h"
 
 #include <emmintrin.h>
 
@@ -108,6 +109,8 @@ namespace oni::vu1
 
     // Md_tag_trans's chain (a VIF1 source chain at tag, TTE on) run natively: VIF1's commands, the programs, the draws.
     void runChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag);
+    // VIF1's, VU1's and the GS's registers and memories in save states.
+    void state(bozo::state::Archive &a);
     // The frame's counts (ONI_VU1_TRACE=1), reset for the next frame.
     void frameStats();
 } // namespace oni::vu1

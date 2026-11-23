@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 namespace oni::render
 {
@@ -19,6 +20,8 @@ namespace oni::bg
 {
     // The background picture, from the field buffers (Bg_disp draws it into the frame).
     std::shared_ptr<const bozo::render::Texture> picture(const uint8_t *ram);
+    // After a save state's load: the pictures rebuilt from the loaded memory.
+    void stateLoaded();
     // The room's depth Bgz_disp gave at the end of the last frame, as the new frame's first draw (none: nothing).
     void drawDepth();
     void install(bozo::port::Registry &registry);
@@ -28,6 +31,8 @@ namespace oni::movie
 {
     // The movie's picture while its display is on (nullptr otherwise).
     std::shared_ptr<const bozo::render::Texture> shown();
+    // Why the state cannot be saved now (a movie is shown), or empty.
+    std::string unsaveable();
     void install(bozo::port::Registry &registry);
 } // namespace oni::movie
 
