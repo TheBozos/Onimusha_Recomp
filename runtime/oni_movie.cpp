@@ -51,6 +51,10 @@ namespace oni::movie
         bool g_showing = false;                                   // a movie's picture is shown (playing or fading out)
         float g_brightness = 1.0f;                                // the fade after the display is off
         uint64_t g_shown = 0;
+        // The frame being published is the movie's own (vblankHandler's): only those frames get the picture and its
+        // darkening. Once termAll removes the handler the game's frames are its own again (the fade level stays where
+        // the movie's end left it, black, until the next movie).
+        bool g_inHandler = false;
 
         void onPicture(uint32_t, uint32_t width, uint32_t height, const uint8_t *rgba)
         {
@@ -160,7 +164,9 @@ namespace oni::movie
             if (trace() && (!on || g_shown % 60 == 1))
                 std::printf("[oni:movie] vblank field %u, display %d, pictures shown %llu, buffered %u, brightness %.2f\n",
                             field, on ? 1 : 0, (unsigned long long)g_shown, read32(ram, kVoBuf + 0xc), g_brightness);
+            g_inHandler = true;
             oni::render::publish(ram); // (the picture and its darkening: drawOver, from publish)
+            g_inHandler = false;
             bozo::port::frameEnd(rt, ctx); // last: it may defer a stop
         }
 
@@ -198,6 +204,19 @@ namespace oni::movie
             ctx->pc = ctx->r[31].uw[0];
         }
 
+        // startDisplay(field) 0x1bcee0: the display on once sceGsSyncV(0) answers another field than `field` (1: the
+        // display starts on an even field). The movie thread spins on it, but natively sceGsSyncV's answer is the parity
+        // of the frames sceGsSyncV itself ended, and while a movie plays the frames end in vblankHandler instead: the
+        // answer never changed, and a movie whose display started on the wrong parity never started (stage 5 room 0's
+        // LINKS01). The display goes on at once: vblankHandler already shows a picture from its even field.
+        void startDisplay(uint8_t *ram, R5900Context *ctx, Runtime *)
+        {
+            write32(ram, kDisplayOn, 1);
+            write32(ram, kNoPicture, 0);
+            write32(ram, kFrameCount, 0);
+            ctx->pc = ctx->r[31].uw[0];
+        }
+
         // videoCallback(mp, cbstr, data): the game copies the demuxed video into its IPU FIFO (viBuf) and starts its DMA;
         // natively the decoder takes the video from the stream itself (BozoEngine's answer to TMB's videoCallback): 1.
         void videoCallback(uint8_t *, R5900Context *ctx, Runtime *)
@@ -227,6 +246,8 @@ namespace oni::movie
 
     void drawOver()
     {
+        if (!g_inHandler)
+            return;
         const auto picture = shown();
         const bozo::render::Screen s = oni::render::screen();
         const float xs[6] = {0, 1, 0, 1, 1, 0}, ys[6] = {0, 0, 1, 0, 1, 1};
@@ -311,6 +332,7 @@ namespace oni::movie
         r.registerFunction(0x1bca40, vblankHandler);
         r.registerFunction(0x1bb900, dispCreate);
         r.registerFunction(0x1bc170, dispClear);
+        r.registerFunction(0x1bcee0, startDisplay);
         r.registerFunction(0x1bbbc0, dispDelete);
         r.registerFunction(0x1bfc20, videoCallback);
         r.registerFunction(0x1bd4c0, switchThread);

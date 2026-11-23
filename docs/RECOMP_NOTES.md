@@ -192,6 +192,17 @@ Native:
   the frame with the picture as the backdrop. While the display is off it runs the fade countdown `readMpeg` waits for
   (`gp - 0x6ae8` type, `- 0x6afc` timer, `- 0x6b00` level), shows the last picture darkened by it, and ends the game
   frame (the main thread sleeps through the movie).
+- The picture and its darkening are the frame's last draws (`drawOver`, from `publish`), and only on the frames
+  `vblankHandler` publishes: once `termAll` removes the handler the game's frames are its own again (the fade level
+  stays black after a movie; drawn on every frame, it had covered the room after stage 2 room 1's movie).
+- `startDisplay` `0x1bcee0` is native: the game's spins on `sceGsSyncV(0)` until another field than its argument, but
+  BozoEngine's `sceGsSyncV` answers the parity of the frames it ended itself, and during a movie the frames end in
+  `vblankHandler`: the answer never changed, so a movie that started on the wrong parity never showed (stage 5 room 0's
+  `LINKS01`, held on five buffered pictures). The display goes on at once.
+- Some rooms play a movie from their script (SCE opcode `0x72` `Movie_play`, `72 nn`: `LINKSnn.PSS`): stage 2 room 1
+  (`LINKS05`, which opens on 18 s of black in the file itself) and stage 5 room 0 (`LINKS01`, then its encounter).
+  Stage 2 room 1 has no door and no fade-in after its movie: reached by the warp, out of the story's order, it stays
+  black after it.
 - `switchThread` `0x1bd4c0` (`RotateThreadReadyQueue(1)`, which the player's threads spin on while they wait for each
   other) costs 0.1 ms of EE time per pass: tens of thousands of passes a field dropped the window to 54 frames/s,
   steady 60 now.
@@ -280,7 +291,9 @@ the field). Natively: the frame is decoded by FFmpeg's IPU decoder at the patch'
 byte, as the file's frames) and written as IDEC writes it; `loadImage` runs both chains' transfers (one GIF stream per
 chain: an IMAGE tag's texels come through the next DMA tag) into the room picture's field buffers, from which the
 picture drawn in the frame is rebuilt. Without them the game faulted on DecodeIPU_Movie's IPU_CMD write when the cut
-was reached.
+was reached. A transfer to another place than the frame (BITBLTBUF.DBP neither 0 nor 0x8c0) is a texture: stage 5
+room 19's water caustics, a 256 x 256 movie into block 0x1a40, go to the texture uploads (`oni::tex::upload`), not
+the room's picture (they had covered its top left corner).
 
 Room 0's only movie cut is 21 (the shrine, `MOV000L`); `ONI_FORCE_CUT=<frames>:<cut>` (a test) changes cut through
 `cut_chg_main` after that many frames, `ONI_BGMV_TRACE=1` traces the movies, `ONI_CUT_TRACE=1` (oni_main) the stage,
