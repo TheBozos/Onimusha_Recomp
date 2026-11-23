@@ -34,14 +34,9 @@ namespace oni::render
         const bozo::render::Screen s = screen();
         if (!g_open)
             r.beginFrame(s);
-        if (const auto picture = oni::movie::shown()) // a movie: its picture centred in the frame
-        {
-            const float w = static_cast<float>(picture->width), h = static_cast<float>(picture->height);
-            r.setBackdrop(picture, s, s.originX + (s.width - w) * 0.5f, s.originY + (s.height - h) * 0.5f, w, h);
-        }
-        else
-            r.clearBackdrop();
+        r.clearBackdrop();
         oni::sprite::submit(ram);
+        oni::movie::drawOver(); // a movie over the game's frame (a room's script may play one over its room)
         oni::vu1::drain(); // the frame's draws (picture, models, effects, 2D) to the renderer in their order
         r.publishOverlay(s);
         r.endFrame();

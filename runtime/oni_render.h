@@ -31,6 +31,8 @@ namespace oni::movie
 {
     // The movie's picture while its display is on (nullptr otherwise).
     std::shared_ptr<const bozo::render::Texture> shown();
+    // The movie's picture and its darkening as the frame's last draws (publish, before the frame is handed over).
+    void drawOver();
     // Why the state cannot be saved now (a movie is shown), or empty.
     std::string unsaveable();
     void install(bozo::port::Registry &registry);

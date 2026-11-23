@@ -160,28 +160,7 @@ namespace oni::movie
             if (trace() && (!on || g_shown % 60 == 1))
                 std::printf("[oni:movie] vblank field %u, display %d, pictures shown %llu, buffered %u, brightness %.2f\n",
                             field, on ? 1 : 0, (unsigned long long)g_shown, read32(ram, kVoBuf + 0xc), g_brightness);
-            if (g_brightness < 1.0f)
-            {
-                // The darkening over the picture: black, alpha (1 - brightness), over the whole frame.
-                const bozo::render::Screen s = oni::render::screen();
-                bozo::render::Material m;
-                m.textured = false;
-                m.depthTest = m.depthWrite = false;
-                m.blend = bozo::render::Material::Blend::Alpha;
-                const uint32_t alpha = static_cast<uint32_t>((1.0f - g_brightness) * 128.0f + 0.5f);
-                bozo::render::Vertex v[6];
-                const float xs[6] = {0, 1, 0, 1, 1, 0}, ys[6] = {0, 0, 1, 0, 1, 1};
-                for (int i = 0; i < 6; ++i)
-                {
-                    v[i].x = s.originX + xs[i] * s.width;
-                    v[i].y = s.originY + ys[i] * s.height;
-                    v[i].rgba = alpha << 24;
-                }
-                static constexpr float kScreen[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-                (void)kScreen;
-                oni::vu1::queueDraw(m, v, 6, nullptr);
-            }
-            oni::render::publish(ram);
+            oni::render::publish(ram); // (the picture and its darkening: drawOver, from publish)
             bozo::port::frameEnd(rt, ctx); // last: it may defer a stop
         }
 
@@ -244,6 +223,79 @@ namespace oni::movie
     {
         std::lock_guard<std::mutex> lock(g_mutex);
         return g_showing ? g_picture : nullptr;
+    }
+
+    void drawOver()
+    {
+        const auto picture = shown();
+        const bozo::render::Screen s = oni::render::screen();
+        const float xs[6] = {0, 1, 0, 1, 1, 0}, ys[6] = {0, 0, 1, 0, 1, 1};
+        if (trace())
+        {
+            static unsigned n = 0;
+            if (n++ % 120 == 0)
+                std::printf("[oni:movie] drawOver: picture %s %ux%u, mean %u, brightness %.2f\n", picture ? "yes" : "no",
+                            picture ? picture->width : 0, picture ? picture->height : 0,
+                            picture && !picture->rgba.empty() ? [&] {
+                                    uint64_t sum = 0;
+                                    for (uint32_t p : picture->rgba)
+                                        sum += (p & 0xff) + ((p >> 8) & 0xff) + ((p >> 16) & 0xff);
+                                    return static_cast<uint32_t>(sum / (3 * picture->rgba.size()));
+                                }() : 0u, g_brightness);
+        }
+        if (picture)
+        {
+            // The picture as the frame's last draw, over whatever the game drew (a movie started from a room's script
+            // plays over the room, as the player's pictures go into the display buffer over it): opaque, centred.
+            bozo::render::Material m;
+            m.textured = true;
+            m.depthTest = m.depthWrite = false;
+            m.blend = bozo::render::Material::Blend::Opaque;
+            m.clampU = m.clampV = true;
+            m.tex0 = 0x6f6e694d6f766965ull; // "oniMovie"
+            const float w = static_cast<float>(picture->width), h = static_cast<float>(picture->height);
+            const float x0 = s.originX + (s.width - w) * 0.5f, y0 = s.originY + (s.height - h) * 0.5f;
+            bozo::render::Vertex v[6];
+            for (int i = 0; i < 6; ++i)
+            {
+                v[i].x = x0 + xs[i] * w;
+                v[i].y = y0 + ys[i] * h;
+                v[i].u = xs[i];
+                v[i].v = ys[i];
+                v[i].rgba = 0x80808080u;
+            }
+            // Black around a picture smaller than the frame.
+            bozo::render::Material black;
+            black.textured = false;
+            black.depthTest = black.depthWrite = false;
+            black.blend = bozo::render::Material::Blend::Opaque;
+            bozo::render::Vertex b[6];
+            for (int i = 0; i < 6; ++i)
+            {
+                b[i].x = s.originX + xs[i] * s.width;
+                b[i].y = s.originY + ys[i] * s.height;
+                b[i].rgba = 0x80000000u;
+            }
+            oni::vu1::queueDraw(black, b, 6, nullptr);
+            oni::vu1::queueDraw(m, v, 6, picture);
+        }
+        if (g_brightness < 1.0f)
+        {
+            // The darkening over the picture: black, alpha (1 - brightness), over the whole frame.
+            bozo::render::Material m;
+            m.textured = false;
+            m.depthTest = m.depthWrite = false;
+            m.blend = bozo::render::Material::Blend::Alpha;
+            const uint32_t alpha = static_cast<uint32_t>((1.0f - g_brightness) * 128.0f + 0.5f);
+            bozo::render::Vertex v[6];
+            for (int i = 0; i < 6; ++i)
+            {
+                v[i].x = s.originX + xs[i] * s.width;
+                v[i].y = s.originY + ys[i] * s.height;
+                v[i].rgba = alpha << 24;
+            }
+            oni::vu1::queueDraw(m, v, 6, nullptr);
+        }
     }
 
     std::string unsaveable()
