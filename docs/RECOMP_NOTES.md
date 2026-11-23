@@ -323,6 +323,18 @@ game's order: the event's cinema bars (Pit_trans) over the characters, as on the
 SCISSOR_1 / _2 are now followed per draw (the game sets the whole field); a mis-encoded default and a case that fell
 into SCISSOR from the MIPTBP registers (both found on the way) had clipped everything or nothing.
 
+## Saves on disk, fast forward (runtime/oni_main.cpp, 2026-11-23)
+
+Without a card folder the engine keeps the memory cards in memory: a game saved in the window was lost at its end. The
+window now puts them in the user folder (`bozo::app::userDirectory()`: `%APPDATA%\Onimusha_Recomp\mc0`, `mc1`), as
+Dark Cloud and The Third Age do; headless and scripted runs keep fresh cards in memory (a test never touches the
+player's saves), `--card-dir` chooses, `ONI_MEMORY_CARDS=1` keeps them in memory. Not yet exercised by an in-game
+save (a save point is still to be reached).
+
+Fast forward needs nothing of the port: the window raises the frame pacer's speed while the FastForward binding (`) is
+held, and Onimusha's frames end in that pacer. Checked from room 6 with `PS2X_FAST_FORWARD_AT=6-26`: 3x is ~178
+frames a second through the fight, the sound kept to real time (the host skips the surplus), no underrun.
+
 ## Next
 
 - Movie captions; the effects of later scenes (magic, the souls), checked as they are reached.

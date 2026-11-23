@@ -57,6 +57,7 @@ the game, scene by scene.
 | The game playable: the first room drawn and controllable, its fight, the next room's event | ✅ |
 | The rest of the game, room by room (so far: the gauntlet's event, rooms 1, 2, 3 and 6: the gate, the storehouse, the soldiers, the forest road and its cave) | 🔧 |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
+| Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -206,6 +207,13 @@ calls by name (`ONI_CALL_STATS=1`): each stop is the next thing to answer. `--fr
 `ONI_WINDOW_RUN=1 scripts/run.sh` runs the window build instead; `-DONI_WINDOW=OFF` builds the headless runner only.
 
 The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR --capture-frame N` saves frames).
+
+| In the window | |
+|---|---|
+| F2 | Settings: controls (rebindable), video (render scale, anti-aliasing, texture upscaling, fast-forward speed), cheats |
+| ` (hold; rebindable) | Fast forward (3x by default; the sound keeps its pace) |
+| F5 / F7 | Save state / load state (ten slots) |
+| Game saves | The memory cards live in `%APPDATA%\Onimusha_Recomp\mc0` and `mc1`: an in-game save outlives the session (`--card-dir DIR` elsewhere; `ONI_MEMORY_CARDS=1` keeps them in memory) |
 Diagnostics: `ONI_BG_TRACE=1` (backgrounds), `ONI_2D_TRACE=1..3` (the 2D), `ONI_TEX_TRACE=1` and
 `ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames), `ONI_MOVIE_TRACE=1` (movies),
 `ONI_THREADS_AT=<frame>` (every thread's state and pc at that frame).
