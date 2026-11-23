@@ -29,6 +29,11 @@ namespace oni::movie
     void install(bozo::port::Registry &registry);
 } // namespace oni::movie
 
+namespace oni::model
+{
+    void install(bozo::port::Registry &registry);
+} // namespace oni::model
+
 namespace oni::sprite
 {
     // The 2D the game drew this frame, submitted to the overlay before it is published.

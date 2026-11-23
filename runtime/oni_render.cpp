@@ -62,5 +62,6 @@ namespace oni::render
         oni::bg::install(registry);
         oni::sprite::install(registry);
         oni::movie::install(registry);
+        oni::model::install(registry);
     }
 } // namespace oni::render

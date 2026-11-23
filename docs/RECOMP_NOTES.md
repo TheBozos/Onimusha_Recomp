@@ -92,8 +92,13 @@ Each was a stop of the headless runner.
 11. Skipping a movie: `termAll` loops until `DeleteThread` returns the decoder's id (the PS2 kernel's result; BozoEngine
     returns 0): a native site at `0x1bd7a0`. Then SNDDRVCD sweeps the movie's PCM voice down (volume `0xe010`) and
     waits for VOLX to reach 0: BozoEngine#125 (VOLX follows the volume's sweep).
-12. **Current stop** (New Game, both movies skipped, frame ~2,470): the first room's 3D, `Md_tag_trans` `0x130e40`
-    starting VIF1's DMA (`0x10009020`): the models' VU1 path.
+12. New Game, both movies skipped, frame ~2,470: the first room's 3D, `Md_tag_trans` `0x130e40` starting VIF1's DMA.
+    The models' packets are queued (`Md_draw_entry` appends at `G + 0x5bdc`, `Md_tag_trans_cb` the DMA end handler
+    moves `G + 0x5be0` on): runtime/oni_model.cpp completes the queue at once (nothing drawn yet).
+13. **Current stop** (frame 2,471): `pCalcLoadGmMatrix` `0x1af490` starting VIF0's DMA (`0x10008020`): matrices for the
+    VU0 micro-programs. The 3D milestone starts here: the VU0 programs (`_$VU0_*`, `VU0_POLYCALC`...) translated to C++
+    and the models drawn natively from their own data (`Md_draw_entry_vu0` / `_clip`, `_OCW`, the model and object
+    tables of sys_sub.c).
 
 ## Tools for reading the game
 
