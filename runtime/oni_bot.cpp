@@ -683,6 +683,24 @@ namespace oni::bot
             if (age > static_cast<uint64_t>(arg(s, 1, 2400)))
                 fail("take: the item is still there");
         }
+        else if (s.op == "attack")
+        {
+            // Turned toward (X, Z), then N swings (SQUARE): pots, crates, a rope.
+            const float tx = static_cast<float>(arg(s, 0, 0)), tz = static_cast<float>(arg(s, 1, 0));
+            const int swings = arg(s, 2, 4);
+            const float facing = read16(ram, kPlayer + 0xc2) * (2 * kPi / 4096.0f);
+            if (g_counter == 0 && std::fabs(wrap(std::atan2(tx - px, tz - pz) - facing)) > 0.05f && age < 240)
+            {
+                steer(ram, tx, tz, false);
+                g_buttons = 0;
+                return;
+            }
+            halt();
+            const int phase = g_counter++ % 30;
+            g_buttons = phase < 5 ? bozo::libs::kPadSquare : 0;
+            if (g_counter >= swings * 30)
+                next();
+        }
         else if (s.op == "face")
         {
             // Turned toward (X, Z) on the spot.

@@ -1,0 +1,8 @@
+# Stage 1 room 16: the blue orb on the altar (slot 3: the Thunder Orb's dark event), then the door out of the temple
+# into stage 0 room 5.
+play
+take 3
+play
+door 0 5
+play
+save build/story/s005.state
