@@ -1,0 +1,8 @@
+# Stage 0 room 5 (out of the underground temple): the door to the castle (stage 1 room 0), sealed until the Thunder
+# Orb clears it (event AOT slot 5 over the door's), then through it.
+play
+examine 5
+play
+door 1 0
+play
+save build/story/s100.state
