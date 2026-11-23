@@ -323,6 +323,25 @@ game's order: the event's cinema bars (Pit_trans) over the characters, as on the
 SCISSOR_1 / _2 are now followed per draw (the game sets the whole field); a mis-encoded default and a case that fell
 into SCISSOR from the MIPTBP registers (both found on the way) had clipped everything or nothing.
 
+## More cheats and the room warp (runtime/oni_cheats.cpp, tools/oni_warps_gen.py, 2026-11-23)
+
+The fields are the game's own, named by its DWARF in the work block G (`0x27de30`, `struct @anon28`): magic is
+`Sv_magic[3]` (+0xa03e: the lightning, fire and wind orbs, as `pl_att_sh_l` / `_f` / `_w` spend it) against
+`Sv_max_magic` (+0x988e); the souls the HUD counts and the gauntlet's upgrades spend (`kyouka_push` / `kyouka_pull`)
+are `Exp_accumulater` (+0x9e84); the inventory is `Item_work[65]` (+0x9eac: Id, Num, Type, Status; Num 0xff for an
+item not counted). Infinite items puts a count that went down back, and a counted item whose slot emptied back with one.
+
+The room warp is the game's own door. A door is an AOT the room's event script sets with opcode 0x39 (slot, then the
+`_SCE_AOT`: Id 1, the area; then the `_IN_DOOR_WORK`: next position, facing, stage, room, cut, floor, door type, key);
+opening one, `Sce_Door` points `G.pSce_aot_on` (+0x986c) at it and raises `G.Doordemo_flg` (+0x9879), and
+`game_sp_check` switches the game to `game_doordemo` (G's mode byte, +0x44b0: 3), which fades out, takes the stage,
+room, cut, spawn point and floor from the door and loads the room. `tools/oni_warps_gen.py` reads every door out of the
+disc's room files (`IMAGE/RDT/ROOMsrr.RDT`: 216 doors leading into 84 rooms; the other rooms are reached by events)
+and keeps one with a spawn point per destination (83); the warp writes that door at `0x1ffd000` (EE memory nothing
+uses) and raises the flag at the next frame in play. Checked: from room 2 to stage 1, room 0 (the castle's gate at
+night) in one frame, back in play at the door's spawn point. `ONI_WARP=<stage>:<room>` and `ONI_CHEAT_MAGIC`,
+`_SOULS`, `_ITEMS` for runs without the window.
+
 ## Saves on disk, fast forward (runtime/oni_main.cpp, 2026-11-23)
 
 Without a card folder the engine keeps the memory cards in memory: a game saved in the window was lost at its end. The

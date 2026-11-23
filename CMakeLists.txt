@@ -156,7 +156,16 @@ target_link_libraries(oni_vu1_code PRIVATE bozo_runtime_headers)
 target_include_directories(oni_vu1_code PRIVATE ${CMAKE_SOURCE_DIR}/runtime)
 target_compile_options(oni_vu1_code PRIVATE -O2 -w -ffp-contract=off)
 
-set(oni_runtime_sources ${oni_port_sources} $<TARGET_OBJECTS:oni_audio_code> $<TARGET_OBJECTS:oni_vu0_code>
+# The room warp's destinations, from the doors in the player's disc's room files (tools/oni_warps_gen.py).
+file(GLOB oni_rdt_files CONFIGURE_DEPENDS ${ONI_GAME_DIR}/IMAGE/RDT/*.RDT)
+set(oni_warps_cpp ${CMAKE_BINARY_DIR}/oni_warps_gen/oni_warps.cpp)
+add_custom_command(OUTPUT ${oni_warps_cpp}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/oni_warps_gen
+  COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_SOURCE_DIR}/tools/oni_warps_gen.py ${ONI_GAME_DIR}/IMAGE/RDT ${oni_warps_cpp}
+  DEPENDS ${oni_rdt_files} ${CMAKE_SOURCE_DIR}/tools/oni_warps_gen.py
+  COMMENT "Listing the room warp's destinations")
+
+set(oni_runtime_sources ${oni_warps_cpp} ${oni_port_sources} $<TARGET_OBJECTS:oni_audio_code> $<TARGET_OBJECTS:oni_vu0_code>
     $<TARGET_OBJECTS:oni_vu1_code>)
 list(FILTER oni_runtime_sources EXCLUDE REGEX "oni_main\\.cpp$")
 
