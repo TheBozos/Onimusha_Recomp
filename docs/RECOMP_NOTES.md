@@ -98,7 +98,10 @@ Each was a stop of the headless runner.
 13. **Current stop** (frame 2,471): `pCalcLoadGmMatrix` `0x1af490` starting VIF0's DMA (`0x10008020`): matrices for the
     VU0 micro-programs. The 3D milestone starts here: the VU0 programs (`_$VU0_*`, `VU0_POLYCALC`...) translated to C++
     and the models drawn natively from their own data (`Md_draw_entry_vu0` / `_clip`, `_OCW`, the model and object
-    tables of sys_sub.c).
+    tables of sys_sub.c). Scope: only `pCalcPolygon` (collision) and `sceVu0RotMatrixX/Y/Z` use VU0 micro mode;
+    `pCalcLoadGmMatrix` loads its matrices into VU0's registers (`lqc2`) and sends the POLYCALC program by VIF0 DMA
+    (`D0_TADR = 0x1ee990`, `.vutext` `0x1ee990-0x1eeb40`): translate those programs (TTA's tools/tta_vu0_gen.py) and
+    answer the upload with native sites.
 
 ## Tools for reading the game
 
