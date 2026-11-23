@@ -34,7 +34,8 @@ libmpeg, and START skips them. New Game reaches the first room: its opening even
 subtitles over the pre-rendered cuts, then the game hands over with the HUD. The characters are drawn: the game's own
 VU1 microprograms, translated to C++, run on the models' VIF1 chains and their GIF packets become the frame's draws,
 with the room's own depth (the cut's Z buffer) so the scenery stands in front of them, and their shadow volumes cast on
-the pre-rendered ground. Next: the animated backgrounds, the remaining screen effects, save states.
+the pre-rendered ground; the animated backgrounds (the rooms' IPU movies) play in their place. Save states work, the
+port's own state included. Next: the remaining screen effects, the rest of the game.
 
 | Milestone on BozoEngine | |
 |---|:---:|
@@ -46,7 +47,7 @@ the pre-rendered ground. Next: the animated backgrounds, the remaining screen ef
 | The 2D: textures as the game uploads them, the ordering table and the fades drawn natively | ✅ |
 | Boot screens, title, main menu in the window; the pad moves the menu | ✅ |
 | Movies (`MOVIE/*.PSS`): Sony's sample player in the game, through BozoEngine's native libmpeg, with sound; skipping | ✅ |
-| Animated backgrounds (`BGS/*.IPU`) | ⏳ |
+| Animated backgrounds (`BGS/*.IPU`): the rooms' IPU movies decoded natively into the picture | ✅ |
 | New Game: the intro and letter movies, then the first room's loading | ✅ |
 | The first room: its cuts (Z buffer + IPU picture), its opening event with voices (ADS streams, the SPU2 interrupt) and subtitles, the HUD | ✅ |
 | Collision's VU0 program (POLYCALC) translated to C++ | ✅ |
@@ -62,6 +63,14 @@ the pre-rendered ground. Next: the animated backgrounds, the remaining screen ef
 what remains open.
 
 ## Screenshots
+
+**2026-11-23.** An animated background, native: the shrine in the castle gate's courtyard (cut 21, reached here with
+the `ONI_FORCE_CUT` test switch), its orb glowing from the room's IPU movie `MOV000L`, decoded by FFmpeg's IPU decoder
+and put in place as the game's own image transfers lay it on the frame.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-shrine-movie.png" width="560" alt="The wooden shrine before the bamboo fence at dusk, a bright blue orb glowing inside it">
+</p>
 
 **2026-11-23.** Depth and shadows, native: the room's picture is drawn into the frame with the cut's Z buffer under
 it, so the scenery hides what stands behind it; the characters' shadow volumes are counted in an off-screen buffer that

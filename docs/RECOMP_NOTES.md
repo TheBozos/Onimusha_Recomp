@@ -266,8 +266,28 @@ room's picture into the frame (no depth test or write) instead of a backdrop und
 any other frame effect apply to it as on the GS. Checked by filling the image with the nearest Z: every model hides.
 `ONI_BGZ=0` leaves the depth out, `ONI_SHADOWS=0` the shadows.
 
+## Animated backgrounds (runtime/oni_bg.cpp, 2026-11-23)
+
+A cut whose table entry (`work+0x489c`, 16 bytes a cut: bits 28-30 of word 2) has the movie flag sets `work+0x4a4d`;
+`Cut_change` then calls `Movie_init`, which finds the cut's movie among those the CD manager loaded with the room
+(`Get_bgmv_adrs`, `cd_work`: four for room 0), and every frame `Bg_disp` calls `MoviePlay`: `movie_ctrl_main` says when
+a frame is due, `setToIPUtags` points the to-IPU chain (`0x7f2c00`, REF tags, a REFE last) at the frame's data, and
+`DecodeIPU_Movie(params, entry, dest)` `0x197b80` decodes it (IPU_CTRL from params, SETTH from `entry+0x3a`, IDEC to
+RGB32: `entry+0x18` x `entry+0x1a` macroblocks of 1 KB one after the other at dest). The module's own `loadImage`
+`0x197f10` then sends one of the two GIF chains `Movie_init` built (`0xaf5c80`, `+0x1a500`: the even and odd field
+lines) whose IMAGE transfers lay each macroblock on the frame (MOV000L: 192 x 256, 12 x 16 macroblocks, at (224, 47) of
+the field). Natively: the frame is decoded by FFmpeg's IPU decoder at the patch's size (the data begins with its flags
+byte, as the file's frames) and written as IDEC writes it; `loadImage` runs both chains' transfers (one GIF stream per
+chain: an IMAGE tag's texels come through the next DMA tag) into the room picture's field buffers, from which the
+picture drawn in the frame is rebuilt. Without them the game faulted on DecodeIPU_Movie's IPU_CMD write when the cut
+was reached.
+
+Room 0's only movie cut is 21 (the shrine, `MOV000L`); `ONI_FORCE_CUT=<frames>:<cut>` (a test) changes cut through
+`cut_chg_main` after that many frames, `ONI_BGMV_TRACE=1` traces the movies, `ONI_CUT_TRACE=1` (oni_main) the stage,
+room and cut. The picture and depth textures are new objects when their pixels change: BozoEngine's renderer knows a
+texture by its object (changed in place, the movie's frames never reached the screen).
+
 ## Next
 
-- The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
 - `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.

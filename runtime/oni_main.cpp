@@ -164,6 +164,22 @@ int main(int argc, char **argv)
                 std::printf("\n");
             }
         }
+        // ONI_CUT_TRACE=1: the stage, room and cut (0x2875e0 / e2 / e4) and the cut's background movies (0x28287d) as
+        // they change.
+        static const bool cutTrace = std::getenv("ONI_CUT_TRACE") != nullptr;
+        if (cutTrace)
+        {
+            const uint8_t *ram = d.runtime().memory.ram();
+            int16_t place[3];
+            std::memcpy(place, ram + 0x2875e0, sizeof place);
+            const uint32_t key = static_cast<uint32_t>(place[0] & 0xff) << 24 | static_cast<uint32_t>(place[1] & 0xff) << 16 |
+                                 static_cast<uint32_t>(place[2] & 0xff) << 8 | ram[0x28287d];
+            static uint32_t last = ~0u;
+            if (key != last)
+                std::printf("[oni:cut] frame %llu stage %d room %d cut %d, %u background movies\n", (unsigned long long)f,
+                            place[0], place[1], place[2], ram[0x28287d]);
+            last = key;
+        }
         pacer.frameEnd();
         // ONI_AUDIO_STATS: the frame rate every 120 frames, on stderr beside the sound device's lines.
         static const bool rateStats = std::getenv("ONI_AUDIO_STATS") != nullptr;
