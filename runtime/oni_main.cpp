@@ -7,6 +7,7 @@
 #include "bozo/host/free_host.h"
 #include "bozo/port.h"
 #include "oni_functions.h"
+#include "oni_cheats.h"
 #include "oni_port.h"
 #include <algorithm>
 #include <chrono>
@@ -180,6 +181,7 @@ int main(int argc, char **argv)
                             place[0], place[1], place[2], ram[0x28287d]);
             last = key;
         }
+        oni::cheats::apply(d.runtime().memory.ram()); // the frame boundary: the game thread
         pacer.frameEnd();
         // ONI_AUDIO_STATS: the frame rate every 120 frames, on stderr beside the sound device's lines.
         static const bool rateStats = std::getenv("ONI_AUDIO_STATS") != nullptr;
@@ -202,6 +204,7 @@ int main(int argc, char **argv)
         return 2;
     }
 #ifdef ONI_WITH_WINDOW
+    oni::cheats::registerMenu();
     bozo::app::DevicePad devices;
     // ONI_AUDIO_STATS=1: the sound device's queue, underruns and drops every 2 s on stderr.
     bozo::app::AudioOptions audioOptions;

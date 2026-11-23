@@ -56,7 +56,8 @@ the game, scene by scene.
 | Shadows (the shadow volumes counted in an off-screen buffer, then darkening the frame), depth against the pre-rendered rooms (the cut's Z buffer) | ✅ |
 | The game playable: the first room drawn and controllable | ⏳ |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
-| PC options: widescreen, render scale, anti-aliasing, frame interpolation, cheats | ⏳ |
+| Cheats (F2 → Cheats): infinite health | ✅ |
+| PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
 

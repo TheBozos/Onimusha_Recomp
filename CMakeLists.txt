@@ -170,7 +170,7 @@ if(MINGW)
 endif()
 
 if(ONI_WINDOW)
-  add_executable(onimusha runtime/oni_main.cpp ${oni_runtime_sources})
+  add_executable(onimusha runtime/oni_main.cpp runtime/app/oni_cheats_ui.cpp ${oni_runtime_sources})
   target_link_libraries(onimusha PRIVATE oni_game bozo_host bozo_app)
   target_include_directories(onimusha PRIVATE ${CMAKE_SOURCE_DIR}/runtime ${oni_audio_gen} ${ONI_FFMPEG_ROOT}/include)
   add_dependencies(onimusha oni_native_audio)

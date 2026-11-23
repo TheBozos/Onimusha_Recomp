@@ -301,6 +301,13 @@ the new one: the renderer's previous frame (`fromFrame`, `kPreviousFrame`), u, v
 is 0 and it changes nothing. `ONI_DMA_TRACE=1` lists the sends, `ONI_GIF_TRACE=1` the chains' GIF tags,
 `ONI_GIF_CHAINS=0` leaves them out.
 
+## Cheats (runtime/oni_cheats.cpp, runtime/app/oni_cheats_ui.cpp, 2026-11-23)
+
+The window's settings (F2) have a Cheats tab, as the other ports'. Infinite health: the player's object control block
+(`_OCW`) is Player_main's work at `0x287ed0`, `Max_life` at +0x6ce and `Life` at +0x6d0 (shorts, 128 at the start);
+at each frame's end Life goes back to Max_life. Checked in the courtyard's zombie fight: standing still to frame 6400
+Samanosuke is at 98 / 128 without it, 128 / 128 with it. `ONI_CHEAT_HEALTH=1` turns it on without the window.
+
 ## Next
 
 - Movie captions; the effects of later scenes (magic, the souls), checked as they are reached.
