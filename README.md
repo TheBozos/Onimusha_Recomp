@@ -55,7 +55,7 @@ the game, scene by scene.
 | Native 3D models: the 15 VU1 microprograms translated to C++, the models' VIF1 chains run natively, their GIF packets drawn (Samanosuke, Kaede, the soldiers) | ✅ |
 | Shadows (the shadow volumes counted in an off-screen buffer, then darkening the frame), depth against the pre-rendered rooms (the cut's Z buffer) | ✅ |
 | The game playable: the first room drawn and controllable, its fight, the next room's event | ✅ |
-| The rest of the game, room by room (the gauntlet's event, room 1's gate fight so far) | 🔧 |
+| The rest of the game, room by room (so far: the gauntlet's event, rooms 1, 2, 3 and 6: the gate, the storehouse, the soldiers, the forest road and its cave) | 🔧 |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
 | Cheats (F2 → Cheats): infinite health | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
@@ -66,6 +66,16 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-23.** Further in, native and at 60 frames a second: the storehouse's fight in the sun shafts (room 2), and
+the forest road's cave with its zombies and an ogre (room 6), after the castle gate, the storehouse and the soldiers'
+event (rooms 1 to 3). The models' work now runs on a thread of its own, so the crowded fights keep their frame rate
+and their sound.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-storehouse-fight.png" width="400" alt="Samanosuke fighting zombie samurai in a dark storehouse crossed by shafts of sunlight">
+  <img src="docs/screenshots/2026-11-23-bozo-forest-cave.png" width="400" alt="A zombie leaping at Samanosuke in a forest cave, a green trail behind it">
+</p>
 
 **2026-11-23.** Combat and the story going on, native: the zombie soldiers at the courtyard's gate (the sword's slash,
 the zombies' green trail, the hit's fire, blood on the ground, at 60 frames a second with infinite health from the new
