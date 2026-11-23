@@ -220,10 +220,12 @@ int main(int argc, char **argv)
             const uint8_t *ram = d.runtime().memory.ram();
             uint64_t key;
             std::memcpy(&key, ram + 0x27c370, 8);
-            key ^= static_cast<uint64_t>(ram[0x27de30 + 0x44b0]) << 56;
+            uint32_t stop;
+            std::memcpy(&stop, ram + 0x27de30 + 0x4a60, 4); // Stop_flg[0]
+            key ^= static_cast<uint64_t>(ram[0x27de30 + 0x44b0]) << 56 ^ static_cast<uint64_t>(stop) * 0x9e3779b97f4a7c15ull;
             static uint64_t last = ~0ull;
             if (key != last)
-                std::printf("[oni:fade] frame %llu mode %u fade %02x %02x %02x %02x %02x %02x %02x %02x\n", (unsigned long long)f,
+                std::printf("[oni:fade] frame %llu stop %08x mode %u fade %02x %02x %02x %02x %02x %02x %02x %02x\n", (unsigned long long)f, stop,
                             ram[0x27de30 + 0x44b0], ram[0x27c370], ram[0x27c371], ram[0x27c372], ram[0x27c373],
                             ram[0x27c374], ram[0x27c375], ram[0x27c376], ram[0x27c377]);
             last = key;

@@ -293,6 +293,7 @@ namespace oni::bot
         uint32_t g_targetAt = 0; // and the AOT it held
         bool g_windowSeen = false; // the item window opened
         int g_atDoor = 0;          // door: frames left standing at it
+        int g_inPlayFor = 0;       // frames in play in a row
         bool engage(const uint8_t *ram)
         {
             Enemy e{};
@@ -421,7 +422,12 @@ namespace oni::bot
         const uint64_t age = frameNumber - g_stepStart;
         const int stage = read16(ram, kPlace), room = read16(ram, kPlace + 2);
         const uint8_t mode = ram[kMode];
-        const bool inPlay = mode == 2;
+        // In play: game_move, and nothing stopped (G.Stop_flg[0] +0x4a60: set through an event, a message, the item
+        // window, a menu; for a frame or two at a cut change).
+        uint32_t stopped;
+        std::memcpy(&stopped, ram + kG + 0x4a60, 4);
+        const bool inPlay = mode == 2 && stopped == 0;
+        g_inPlayFor = inPlay ? g_inPlayFor + 1 : 0;
 
         if (s.op == "go")
         {
@@ -463,7 +469,7 @@ namespace oni::bot
                 // At the door (its AOT, or within a margin of it: a door is a wall): facing its middle, the action
                 // button every 20 frames; a door that opens by walking in takes the player at once.
                 const bool inside = px >= d->x && px <= d->x + d->w && pz >= d->z && pz <= d->z + d->d;
-                const bool near = px >= d->x - 300 && px <= d->x + d->w + 300 && pz >= d->z - 300 && pz <= d->z + d->d + 300;
+                const bool near = px >= d->x - 450 && px <= d->x + d->w + 450 && pz >= d->z - 450 && pz <= d->z + d->d + 450;
                 // Near it: stop, turn to face its middle squarely, then press (the game's action point is 600
                 // ahead of the player: it must fall in the door's AOT). Not there after a while: a few steps closer.
                 if (near && g_atDoor == 0)
@@ -594,7 +600,7 @@ namespace oni::bot
                 g_host->requestSave(s.args[0]);
             next();
         }
-        else if (s.op == "take")
+        else if (s.op == "take" || s.op == "examine")
         {
             // The nearest live item AOT (Id 2), or slot N: walked into, faced, the action button pressed and the
             // message closed; done once the slot no longer holds that AOT (the item taken).
@@ -607,7 +613,9 @@ namespace oni::bot
                     uint32_t at;
                     std::memcpy(&at, ram + kG + 0x97e8 + 4 * k, 4);
                     at &= 0x1ffffffu;
-                    if (!at || ram[at] != 2 || (s.args.size() && k != arg(s, 0, -1)))
+                    const uint8_t id = ram[at];
+                    const bool wanted = s.op == "take" ? id == 2 : (id == 4 || id == 5 || id == 12);
+                    if (!at || !wanted || (s.args.size() && k != arg(s, 0, -1)))
                         continue;
                     const float cx = read16(ram, at + 4) + static_cast<uint16_t>(read16(ram, at + 8)) * 0.5f;
                     const float cz = read16(ram, at + 6) + static_cast<uint16_t>(read16(ram, at + 10)) * 0.5f;
@@ -618,7 +626,7 @@ namespace oni::bot
                 g_counter = 1;
                 if (g_target < 0)
                 {
-                    fail("take: no item AOT in the room");
+                    fail(s.op + ": no such AOT in the room");
                     return;
                 }
                 log("%s", "item slot " + std::to_string(g_target));
@@ -626,9 +634,13 @@ namespace oni::bot
             // Taken: the item window (fade.c's Fade_w 0x27c370, type 5) opened and closed again; or the AOT gone.
             uint32_t now;
             std::memcpy(&now, ram + kG + 0x97e8 + 4 * g_target, 4);
-            if (ram[0x27c370] && ram[0x27c373] == 5)
+            // (examine: done once the event or message it starts is over: the game out of play, a fade, or the AOT
+            // changed, then in play again.)
+            if (ram[0x27c370] && (ram[0x27c373] == 5 || s.op == "examine"))
                 g_windowSeen = true;
-            if (inPlay && ((g_windowSeen && !ram[0x27c370]) || (now & 0x1ffffffu) != g_targetAt))
+            if (s.op == "examine" && g_counter > 8 && (!inPlay || ram[(now & 0x1ffffffu)] != ram[g_targetAt]))
+                g_windowSeen = true;
+            if (inPlay && g_inPlayFor > 30 && ((g_windowSeen && !ram[0x27c370]) || (now & 0x1ffffffu) != g_targetAt))
             {
                 g_windowSeen = false;
                 log("%s", "taken");
@@ -640,7 +652,7 @@ namespace oni::bot
             const float w = static_cast<uint16_t>(read16(ram, at + 8)), dd = static_cast<uint16_t>(read16(ram, at + 10));
             const float cx = x0 + w * 0.5f, cz = z0 + dd * 0.5f;
             // (The item may be solid, a box: its AOT reached within a margin.)
-            const bool inside = px >= x0 - 300 && px <= x0 + w + 300 && pz >= z0 - 300 && pz <= z0 + dd + 300;
+            const bool inside = px >= x0 - 450 && px <= x0 + w + 450 && pz >= z0 - 450 && pz <= z0 + dd + 450;
             if (!inPlay)
             {
                 halt();
@@ -650,8 +662,18 @@ namespace oni::bot
                 ;
             else if (inside || std::hypot(cx - px, cz - pz) < 450.0f)
             {
-                steer(ram, cx, cz, false); // facing it
-                g_buttons = (++g_counter % 40) < 5 ? bozo::libs::kPadCross : 0;
+                // Facing it squarely first (an action while turning is not taken), then the button.
+                const float facing = read16(ram, kPlayer + 0xc2) * (2 * kPi / 4096.0f);
+                if (std::fabs(wrap(std::atan2(cx - px, cz - pz) - facing)) > 0.05f)
+                {
+                    steer(ram, cx, cz, false);
+                    g_buttons = 0;
+                }
+                else
+                {
+                    halt();
+                    g_buttons = (++g_counter % 40) < 8 ? bozo::libs::kPadCross : 0;
+                }
             }
             else
             {

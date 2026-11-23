@@ -5,6 +5,7 @@
 //   door S R          walk into the current room's door to stage S, room R and press the action button until the
 //                     game is in that room
 //   take [K] [N]      walk into the nearest item AOT (or slot K), face it, press the action button, close the message
+//   examine [K] [N]   the same with the nearest event / message AOT (Id 4, 5, 12): done when what it starts is over
 //   fight [N]         attack the nearest live enemy until none is left (or N frames, 3600)
 //   play [N]          let an event play until the game is in play for a second (CROSS every 40 frames advances its
 //                     messages; N frames at most, 3600)

@@ -421,5 +421,11 @@ state each frame. What it reads, all named by the DWARF:
   when the item window (fade.c's `Fade_w`, type 5) has opened and closed again (its AOT's Id goes to 0).
 - Enemies within reach are fought first (turned to, SQUARE), with the one-hit-kill cheat.
 
+- In play means game_move and nothing stopped: `G.Stop_flg[0]` (+0x4a60) is set through an event, a message, the item
+  window and the menus (and for a frame or two at a cut change); while it is, the bot presses CROSS now and then, which
+  advances the messages. `examine` (an event AOT, Id 5) is done when what it started is over.
+
 Reached with it, in story order from the forest cave's state: stage 0 room 6's herb and its hole into the underground
-temple (stage 1 room 13), the temple's map box and its stairs into room 14. Every room drawn as it should be so far.
+temple (stage 1 room 13), the temple's map box and its stairs into room 14, the mummified monk's event (its messages,
+the Green Scroll) and the door it opens into room 15, the corridor and its far door into room 16 (the blue orb's
+room). Every room drawn as it should be so far.
