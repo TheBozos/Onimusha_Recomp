@@ -215,8 +215,11 @@ sound, 60 frames/s; START skips them; New Game reaches the first room's loading.
     themselves, so a part can be drawn from them with its world matrix and the camera's;
   - `Md_draw_entry_vu0(pCw, pObj_tbl, parts_no)` links the parts' prebuilt chains (no calls); `Md_draw_vu0` drives
     it (with `pCalcLoadGmMatrix` for the collision program and `Md_draw_semi*` for the semi-transparent parts).
-  Next: the vertex formats (the VU1 programs' unpack: `Vu1mc_std_cl` ...), the camera's matrix, then a native draw
-  per part at `Md_draw_entry_vu0`.
+  The arrays: `pVert` float[4] {Vx, Vy, Vz, Vw} (Vw: likely the strip's no-kick flag, to check against the VU1
+  program), `pNorm` float[3], `pTex` u16 {U, V} (fixed point: scale to find), `pMat` {Status, Mat1, Mat2, Mat3} the
+  joints a skinned vertex follows, `pMat_w` its weights (u16), `pMime` the facial morphs (`Mime_parts`).
+  Next: the topology and UV scale (the VU1 programs' unpack: `Vu1mc_std_cl`, `Vu1mc_wld_*` ...), the joints'
+  matrices (`_JNT_WK`), the camera's matrix, then a native draw per part at `Md_draw_entry_vu0`.
 - The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
 - `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.
