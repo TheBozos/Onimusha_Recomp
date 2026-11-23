@@ -57,7 +57,8 @@ namespace oni::vu1
             // The batch being built: the material it was built with and its triangles.
             std::vector<Vertex> batch;
             uint64_t batchKey[9] = {};
-            bool skip = false; // the batch is not drawn (it writes nothing the PC frame keeps, or reads the frame back)
+            bool skip = false;       // the batch is not drawn (it writes nothing the PC frame keeps, or reads an unknown target)
+            bool fromTarget = false; // the batch samples the shadow target: u, v from the position
             bool batchOpen = false;
             Material material;
             std::shared_ptr<const bozo::render::Texture> texture;
@@ -66,6 +67,8 @@ namespace oni::vu1
         } g_gs;
 
         int64_t g_programNs = 0, g_chainNs = 0, g_kickNs = 0, g_cycles = 0; // time in the programs (their kicks included), in whole chains
+        constexpr uint32_t kShadowPage = 0xd2;   // FRAME.FBP of the shadows' buffer
+        constexpr uint8_t kShadowImage = 3;      // its renderer auxiliary image
         std::set<uint32_t> g_targets; // off-screen targets' first blocks (FRAME.FBP x 32)
 
         void flush()
@@ -83,8 +86,10 @@ namespace oni::vu1
                 ++gs.batches;
             }
             else if (gs.batchOpen && !gs.batch.empty() && trace() >= 2)
-                std::printf("[oni:vu1] batch skipped: prim %03llx frame %llx tex0 %016llx\n", (unsigned long long)gs.prim,
-                            (unsigned long long)gs.frame[(gs.prim >> 9) & 1], (unsigned long long)gs.tex0[(gs.prim >> 9) & 1]);
+                std::printf("[oni:vu1] batch skipped: prim %03llx frame %llx tex0 %016llx alpha %llx test %llx zbuf %llx\n",
+                            (unsigned long long)gs.prim, (unsigned long long)gs.frame[(gs.prim >> 9) & 1],
+                            (unsigned long long)gs.tex0[(gs.prim >> 9) & 1], (unsigned long long)gs.alpha[(gs.prim >> 9) & 1],
+                            (unsigned long long)gs.test[(gs.prim >> 9) & 1], (unsigned long long)gs.zbuf[(gs.prim >> 9) & 1]);
             gs.batch.clear();
             gs.batchOpen = false;
         }
@@ -161,16 +166,47 @@ namespace oni::vu1
                     m.colourMask |= 1u << k;
             if (m.colourMask == 0 && !m.depthWrite)
                 gs.skip = true;
-            // FRAME.FBP: the display's two field buffers are pages 0 and 0x46 (640 x 224, 32 bits); a draw elsewhere goes to
-            // an off-screen target (the shadows' buffer at 0xd2, read back by the pass that darkens the frame): not drawn.
-            if ((gs.frame[c] & 0x1ffu) >= 0x8cu)
+            // The frame is CT24 (FRAME.PSM 1): its alpha is not kept, a blend changes only the colour. On the PC the frame's
+            // alpha is what covers the backdrop (the room's picture under the 3D): a blended draw leaves it as it is.
+            if (abe && ((gs.frame[c] >> 24) & 0x3fu) == 1u)
+                m.colourMask &= 0x7u;
+            // An untextured primitive's colour is what the GS writes (bytes), not a 0x80-unit modulation.
+            m.directColour = !tme;
+            // FRAME.FBP: the display's two field buffers are pages 0 and 0x46 (640 x 224, 32 bits). A draw elsewhere goes
+            // to an off-screen target: the shadows' buffer at 0xd2 (cleared to grey, the shadow volumes counted in its
+            // colour against the scene's depth, graded to 0x14 where shadowed), read back by the pass that darkens the
+            // frame with it. Natively an auxiliary image of the renderer sharing the frame's depth (Material::frameDepth).
+            const uint32_t fbp = static_cast<uint32_t>(gs.frame[c] & 0x1ffu);
+            gs.fromTarget = false;
+            if (fbp >= 0x8cu)
             {
-                gs.skip = true;
-                g_targets.insert(static_cast<uint32_t>(gs.frame[c] & 0x1ffu) * 32u);
+                if (fbp != kShadowPage)
+                    gs.skip = true; // no other target is known
+                m.target = kShadowImage;
+                m.frameDepth = true;
+                g_targets.insert(fbp * 32u);
             }
-            // A texture read from such a target (the frame's own effects) is not drawn either: there is no target to read
-            // (blocks an earlier scene uploaded to may still be kept).
+            // A texture read from such a target: the target's image (u, v over the frame), or nothing (blocks an earlier
+            // scene uploaded to may still be kept).
             if (tme && g_targets.count(static_cast<uint32_t>(gs.tex0[c] & 0x3fffu)))
+            {
+                if ((gs.tex0[c] & 0x3fffu) == kShadowPage * 32u)
+                {
+                    gs.skip = false;
+                    gs.fromTarget = true;
+                    m.fromFrame = 1;
+                    m.source = kShadowImage;
+                    m.nearest = true;
+                    m.useQ = false;
+                    if (!gs.texture)
+                        --gs.missingTextures;
+                    gs.texture = nullptr;
+                }
+                else
+                    gs.skip = true;
+            }
+            static const bool noShadows = [] { const char *e = std::getenv("ONI_SHADOWS"); return e && *e == '0'; }();
+            if (noShadows && (m.target || gs.fromTarget))
                 gs.skip = true;
             static const bool noDepth = std::getenv("ONI_VU1_NODEPTH") != nullptr;
             if (noDepth)
@@ -209,7 +245,13 @@ namespace oni::vu1
             v.rgba = g.rgba;
             v.fog = g.fog / 255.0f;
             const int c = (gs.prim >> 9) & 1;
-            if ((gs.prim >> 8) & 1) // FST: UV in texels
+            if (gs.fromTarget) // the shadow target, over the frame
+            {
+                v.u = (v.x - s.originX) / s.width;
+                v.v = (v.y - s.originY) / s.height;
+                v.q = 1.0f;
+            }
+            else if ((gs.prim >> 8) & 1) // FST: UV in texels
             {
                 const float tw = static_cast<float>(1u << ((gs.tex0[c] >> 26) & 15u));
                 const float th = static_cast<float>(1u << ((gs.tex0[c] >> 30) & 15u));

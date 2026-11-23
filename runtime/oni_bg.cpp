@@ -92,7 +92,6 @@ namespace oni::bg
         // The picture published as the frame's backdrop, rebuilt from the field buffers when the game shows it.
         std::shared_ptr<bozo::render::Texture> g_picture;
         uint64_t g_version = 0;
-        bool g_shown = false; // Bg_disp ran this frame
 
         // decodeIPU(): the stream the to-IPU DMA chain (0x90b440, setToIPUtags: REF tags over the stream after its
         // 16-byte header) points at, to the two field buffers. Cut_set / Cut_set_onmemory put an `ipum` file at
@@ -186,12 +185,80 @@ namespace oni::bg
             ctx->pc = ctx->r[31].uw[0];
         }
 
-        // Bg_disp(work): the game's own (camera, lights, shadows, the BG movie), then the background is this frame's.
+        // Bg_disp(work): the game's own (camera, lights, shadows, the BG movie), then the picture into the frame, as the
+        // GS has it: under the models drawn after it and darkened by the shadows' pass with them. The room's depth is
+        // already there (drawDepth, the frame's first draw); the picture neither tests nor writes it.
         void bgDisp(uint8_t *ram, R5900Context *ctx, Runtime *rt)
         {
             Bg_disp_0x122040(ram, ctx, rt);
-            if (!(read32(ram, 0x2828ac) & 0x80000000u)) // the same flag Bg_disp skips everything on
-                g_shown = true;
+            if (read32(ram, 0x2828ac) & 0x80000000u) // the same flag Bg_disp skips everything on
+                return;
+            const auto shown = picture(ram);
+            bozo::render::Material m;
+            m.textured = true;
+            m.blend = bozo::render::Material::Blend::Opaque;
+            m.depthTest = false;
+            m.depthWrite = false;
+            m.clampU = m.clampV = true;
+            m.tex0 = shown->key;
+            const bozo::render::Screen s = oni::render::screen();
+            bozo::render::Vertex corner[4];
+            for (int i = 0; i < 4; ++i)
+            {
+                corner[i].x = s.originX + ((i & 1) ? s.width : 0.0f);
+                corner[i].y = s.originY + ((i >> 1) ? s.height : 0.0f);
+                corner[i].u = (i & 1) ? 1.0f : 0.0f;
+                corner[i].v = (i >> 1) ? 1.0f : 0.0f;
+                corner[i].rgba = 0x80808080u;
+            }
+            const bozo::render::Vertex quad[6] = {corner[0], corner[1], corner[2], corner[1], corner[3], corner[2]};
+            static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+            bozo::render::Renderer::instance().draw(m, kIdentity, quad, 6, shown);
+        }
+
+        // The room's depth: Bgz_disp 0x123800 sends, at the end of each frame, the cut's Z buffer (one field: 640 x 224
+        // 24-bit Z, PSMZ24, to the ZBUF at block 0x1180) for the next frame's models, the GS's ZTST then hiding them
+        // behind the pre-rendered scenery. The chains are prebuilt (0x21c050: the even lines' Z, 0x21bd30: the odd
+        // lines', each a REF of the GIF registers and a REF of the IMAGE data): natively both fields make one 640 x 448
+        // depth image, written as the next frame's first draw (Material::depthFromTexture).
+        constexpr uint32_t kZEvenChain = 0x21c050, kZOddChain = 0x21bd30;
+        std::shared_ptr<bozo::render::Texture> g_depth;
+        uint64_t g_depthVersion = 0;
+        bool g_depthDue = false; // Bgz_disp ran this frame: the depth goes under the next one
+
+        void bgzDisp(uint8_t *ram, R5900Context *ctx, Runtime *)
+        {
+            const uint32_t even = read32(ram, kZEvenChain + 16 + 4) & 0x1ffffffu, odd = read32(ram, kZOddChain + 16 + 4) & 0x1ffffffu;
+            const uint32_t qwc = read32(ram, kZEvenChain + 16) & 0xffffu;
+            ctx->pc = ctx->r[31].uw[0];
+            if (qwc * 16u != kWidth * (kHeight / 2) * 3u || even + qwc * 16u > 0x2000000u || odd + qwc * 16u > 0x2000000u)
+                return; // not a 640 x 224 Z24 field
+            if (!g_depth)
+            {
+                g_depth = std::make_shared<bozo::render::Texture>();
+                g_depth->width = kWidth;
+                g_depth->height = kHeight;
+                g_depth->rgba.resize(static_cast<size_t>(kWidth) * kHeight);
+                g_depth->key = 0x6f6e695a00000000ull; // "oniZ"
+            }
+            bool changed = false;
+            for (int y = 0; y < kHeight; ++y)
+            {
+                const uint8_t *row = ram + ((y & 1) ? odd : even) + static_cast<size_t>(y / 2) * kWidth * 3;
+                uint32_t *dst = g_depth->rgba.data() + static_cast<size_t>(y) * kWidth;
+                for (int x = 0; x < kWidth; ++x)
+                {
+                    const uint32_t z = row[3 * x] | row[3 * x + 1] << 8 | row[3 * x + 2] << 16 | 0xff000000u;
+                    if (dst[x] != z)
+                    {
+                        dst[x] = z;
+                        changed = true;
+                    }
+                }
+            }
+            if (changed)
+                g_depth->version = ++g_depthVersion;
+            g_depthDue = true;
         }
 
         // sceIpuSync(mode, timeout): waits for the IPU; nothing runs.
@@ -202,11 +269,8 @@ namespace oni::bg
         }
     } // namespace
 
-    std::shared_ptr<const bozo::render::Texture> takeShown(const uint8_t *ram)
+    std::shared_ptr<const bozo::render::Texture> picture(const uint8_t *ram)
     {
-        if (!g_shown)
-            return nullptr;
-        g_shown = false;
         if (!g_picture)
         {
             auto t = std::make_shared<bozo::render::Texture>();
@@ -243,8 +307,42 @@ namespace oni::bg
         return g_picture;
     }
 
+    void drawDepth()
+    {
+        if (!g_depthDue || !g_depth)
+            return;
+        g_depthDue = false;
+        static const bool off = [] { const char *e = std::getenv("ONI_BGZ"); return e && *e == '0'; }();
+        if (off)
+            return;
+        bozo::render::Material m;
+        m.textured = true;
+        m.depthFromTexture = true;
+        m.nearest = true;
+        m.clampU = m.clampV = true;
+        m.blend = bozo::render::Material::Blend::Opaque;
+        m.colourMask = 0;
+        m.depthTest = false;
+        m.depthWrite = true;
+        m.tex0 = 0x6f6e695a00000000ull;
+        const bozo::render::Screen s = oni::render::screen();
+        bozo::render::Vertex corner[4];
+        for (int i = 0; i < 4; ++i)
+        {
+            corner[i].x = s.originX + ((i & 1) ? s.width : 0.0f);
+            corner[i].y = s.originY + ((i >> 1) ? s.height : 0.0f);
+            corner[i].u = (i & 1) ? 1.0f : 0.0f;
+            corner[i].v = (i >> 1) ? 1.0f : 0.0f;
+            corner[i].rgba = 0x80808080u;
+        }
+        const bozo::render::Vertex quad[6] = {corner[0], corner[1], corner[2], corner[1], corner[3], corner[2]};
+        static const float kIdentity[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+        bozo::render::Renderer::instance().draw(m, kIdentity, quad, 6, g_depth);
+    }
+
     void install(bozo::port::Registry &r)
     {
+        r.registerFunction(0x123800, bgzDisp); // Bgz_disp
         r.registerFunction(0x1221a0, decodeIpu); // decodeIPU
         r.registerFunction(0x122190, decodeIpu); // divFrameBuff: "j decodeIPU" (a direct jump runs the guest code)
         r.registerFunction(0x122040, bgDisp);    // Bg_disp

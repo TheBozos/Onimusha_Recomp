@@ -32,8 +32,9 @@ the 2D (logos' fades, "PRESS START BUTTON", the menu and its frame) is drawn fro
 The movies (the attract sequence, New Game's intro and letter) play with their sound through BozoEngine's native
 libmpeg, and START skips them. New Game reaches the first room: its opening event plays with its voiced dialogue and
 subtitles over the pre-rendered cuts, then the game hands over with the HUD. The characters are drawn: the game's own
-VU1 microprograms, translated to C++, run on the models' VIF1 chains and their GIF packets become the frame's draws.
-Next: the models' shadows, the room's depth (scenery in front of the characters), the animated backgrounds.
+VU1 microprograms, translated to C++, run on the models' VIF1 chains and their GIF packets become the frame's draws,
+with the room's own depth (the cut's Z buffer) so the scenery stands in front of them, and their shadow volumes cast on
+the pre-rendered ground. Next: the animated backgrounds, the remaining screen effects, save states.
 
 | Milestone on BozoEngine | |
 |---|:---:|
@@ -50,7 +51,7 @@ Next: the models' shadows, the room's depth (scenery in front of the characters)
 | The first room: its cuts (Z buffer + IPU picture), its opening event with voices (ADS streams, the SPU2 interrupt) and subtitles, the HUD | ✅ |
 | Collision's VU0 program (POLYCALC) translated to C++ | ✅ |
 | Native 3D models: the 15 VU1 microprograms translated to C++, the models' VIF1 chains run natively, their GIF packets drawn (Samanosuke, Kaede, the soldiers) | ✅ |
-| Shadows (the off-screen shadow buffer and its darkening pass), depth against the pre-rendered rooms | ⏳ |
+| Shadows (the shadow volumes counted in an off-screen buffer, then darkening the frame), depth against the pre-rendered rooms (the cut's Z buffer) | ✅ |
 | The game playable: the first room drawn and controllable | ⏳ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, save states, cheats | ⏳ |
 
@@ -60,6 +61,16 @@ Next: the models' shadows, the room's depth (scenery in front of the characters)
 what remains open.
 
 ## Screenshots
+
+**2026-11-23.** Depth and shadows, native: the room's picture is drawn into the frame with the cut's Z buffer under
+it, so the scenery hides what stands behind it; the characters' shadow volumes are counted in an off-screen buffer that
+shares the frame's depth, then darken the ground, as the game does on the GS (the spear guard's shadow falls to the
+lower left, the spear's line in it).
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-shadows.png" width="400" alt="The castle gate's courtyard in play: Samanosuke and the spear guard with their shadows on the ground">
+  <img src="docs/screenshots/2026-11-23-bozo-shadows-detail.png" width="400" alt="A closer look: the guard's shadow and his spear's on the dirt, Samanosuke's beside the gate">
+</p>
 
 **2026-11-23.** The characters, native: the game's 15 VU1 microprograms translated to C++ and run on the models'
 own VIF1 chains, their GIF packets drawn with their textures; Samanosuke and Kaede in the opening event, then

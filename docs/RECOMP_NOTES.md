@@ -228,10 +228,15 @@ Natively, nothing of VIF1, VU1 or the GS is emulated as hardware; the game's own
   packet (PACKED, REGLIST, IMAGE) into the frame's draws: triangles, strips, fans and sprites in screen space, the GS's
   Z, Q for the texture's perspective, the material from PRIM, TEX0, TEX1, CLAMP, ALPHA, TEST, ZBUF, FRAME and FOGCOL;
   the field's 224 lines doubled to the frame's 448, the scissor at the frame.
-- Draws to another target than the display's two field buffers (FRAME pages 0 and 0x46) are not drawn: the shadow
-  program clears an off-screen CT24 buffer at page 0xd2, draws the shadow volumes and grades it with two full-screen
-  sprites, then a last sprite subtracts it (read back as TEX0 block 0x1a40) from the frame; drawn literally on the
-  PC's frame those passes blackened the models. The shadows wait for render targets.
+- Shadows: the shadow program clears an off-screen CT24 buffer (FRAME page 0xd2) to grey 0x80, draws the shadow
+  volumes against the scene's depth (ZTST GREATER, no Z write) adding 0x14 for the front faces and subtracting it for
+  the back faces (a stencil count in the colour), grades it to 0x14 where shadowed and 0 elsewhere with two
+  full-screen sprites, then a last sprite subtracts it, read back as TEX0 block 0x1a40 scaled by 0x64 / 0x80, from the
+  frame. Natively the buffer is a renderer auxiliary image sharing the frame's depth (`Material::target`,
+  `frameDepth`), the last pass samples it (`fromFrame`, `source`); untextured colours are the GS's bytes
+  (`directColour`); a blend on the CT24 frame leaves its alpha (the frame's alpha covers nothing on the GS; here it
+  is what composites the 3D, and the darkening pass writing it made the models translucent). Any other off-screen
+  target is not drawn. Drawn literally on the frame, those passes had blackened the models.
 
 Cost: the first room runs ~1000 program calls a frame (1.44 million VU pairs, the PS2's VU1 busy ~9.6 ms of its
 16.7). Pair by pair through a `switch` with exact flags it took ~22 ms a frame: the room fell to 37-50 frames/s and
@@ -243,10 +248,21 @@ the frame rate; `ONI_VU1_TRACE=1..5` the frame's counts and times, then runs, ki
 Open: a save state does not keep the port's own state (the texture uploads, the VU1 state, the EE RPC server), so a
 loaded state draws untextured models and faults in `sceSifCallRpc` a few frames later.
 
+## Room depth (runtime/oni_bg.cpp, 2026-11-23)
+
+`Bgz_disp` `0x123800` runs at the end of each frame (after the 2D, before `sceGsSyncPath`) and sends a prebuilt GIF
+chain: BITBLTBUF to block 0x1180 (the ZBUF, page 0x8c), 640 wide, PSMZ24, then an IMAGE of 640 x 224 24-bit Z, one
+field (`0x21c050`: the even lines, data at `0x90bc80`; `0x21bd30`: the odd lines, `0x974c80`; chosen by bit 0 of
+`work+0x407c` as `Bg_disp` chooses the picture's field). The next frame's models then test against it.
+
+Natively `Bgz_disp` keeps both fields as one 640 x 448 image (Z in the texels' R, G, B) and the next frame starts with
+it as a depth-only draw (BozoEngine's `Material::depthFromTexture`, TheBozos/BozoEngine#128). `Bg_disp` then draws the
+room's picture into the frame (no depth test or write) instead of a backdrop under it, so the shadows' darkening and
+any other frame effect apply to it as on the GS. Checked by filling the image with the nearest Z: every model hides.
+`ONI_BGZ=0` leaves the depth out, `ONI_SHADOWS=0` the shadows.
+
 ## Next
 
-- Shadows (render targets: the shadow buffer and its read-back) and the room's depth (`Bgz_disp`, the cut's Z buffer)
-  so the scenery in front of the characters hides them.
 - The port's own state in save states (textures, VU1, the RPC server).
 - The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
 - `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.

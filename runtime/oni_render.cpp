@@ -34,14 +34,11 @@ namespace oni::render
         const bozo::render::Screen s = screen();
         if (!g_open)
             r.beginFrame(s);
-        const auto background = oni::bg::takeShown(ram);
         if (const auto picture = oni::movie::shown()) // a movie: its picture centred in the frame
         {
             const float w = static_cast<float>(picture->width), h = static_cast<float>(picture->height);
             r.setBackdrop(picture, s, s.originX + (s.width - w) * 0.5f, s.originY + (s.height - h) * 0.5f, w, h);
         }
-        else if (background)
-            r.setBackdrop(background, s, s.originX, s.originY, s.width, s.height);
         else
             r.clearBackdrop();
         oni::sprite::submit(ram);
@@ -50,8 +47,9 @@ namespace oni::render
         oni::vu1::frameStats();
         ++g_frames;
         if (trace())
-            std::printf("[oni:render] frame %llu background %d\n", (unsigned long long)g_frames, background ? 1 : 0);
+            std::printf("[oni:render] frame %llu\n", (unsigned long long)g_frames);
         r.beginFrame(s);
+        oni::bg::drawDepth(); // the room's Z, under the next frame's models
         g_open = true;
     }
 
@@ -61,6 +59,8 @@ namespace oni::render
         r.setEnabled(true);
         r.setPresentsAlone(true); // the window shows the port's frame: the background, the 2D
         r.setClearColour(0);
+        r.beginFrame(screen()); // open from the start: the game draws (Bg_disp) before its first frame ends
+        g_open = true;
         oni::bg::install(registry);
         oni::sprite::install(registry);
         oni::movie::install(registry);

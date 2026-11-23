@@ -17,8 +17,10 @@ namespace oni::render
 
 namespace oni::bg
 {
-    // The background Bg_disp showed this frame (nullptr: none), from the field buffers.
-    std::shared_ptr<const bozo::render::Texture> takeShown(const uint8_t *ram);
+    // The background picture, from the field buffers (Bg_disp draws it into the frame).
+    std::shared_ptr<const bozo::render::Texture> picture(const uint8_t *ram);
+    // The room's depth Bgz_disp gave at the end of the last frame, as the new frame's first draw (none: nothing).
+    void drawDepth();
     void install(bozo::port::Registry &registry);
 } // namespace oni::bg
 
