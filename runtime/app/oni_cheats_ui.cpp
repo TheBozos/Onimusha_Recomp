@@ -14,7 +14,7 @@ namespace oni::cheats
         std::string warpName(const Warp &w)
         {
             char text[96];
-            std::snprintf(text, sizeof text, "Stage %u, room %02X (cut %u; the door from room %u-%02X)", w.stage, w.room, w.cut,
+            std::snprintf(text, sizeof text, "Stage %u, room %u (cut %u; the door from room %u-%u)", w.stage, w.room, w.cut,
                           w.fromStage, w.fromRoom);
             return text;
         }
@@ -41,7 +41,7 @@ namespace oni::cheats
             int stage = -1, room = -1, cut = -1;
             place(stage, room, cut);
             if (stage >= 0)
-                ImGui::Text("Now: stage %d, room %02X, cut %d", stage, room, cut);
+                ImGui::Text("Now: stage %d, room %d, cut %d", stage, room, cut);
             static int selected = 0;
             if (selected >= static_cast<int>(kWarpCount))
                 selected = 0;
