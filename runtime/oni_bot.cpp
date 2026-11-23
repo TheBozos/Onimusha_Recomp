@@ -12,6 +12,7 @@
 #include "bozo/libs/pad.h"
 
 #include <algorithm>
+#include <functional>
 #include <atomic>
 #include <cmath>
 #include <cstdio>
@@ -150,7 +151,6 @@ namespace oni::bot
             std::vector<int> links;
         };
         std::vector<Node> g_nodes;
-        std::vector<int> g_path; // nodes still to pass
         float g_goalX = 1e30f, g_goalZ = 1e30f;
 
         void loadRoute(const uint8_t *ram)
@@ -190,13 +190,208 @@ namespace oni::bot
             return best;
         }
 
+        // The way as points to pass (a route graph's nodes, or the collision grid's corners), each with its reach.
+        struct Waypoint
+        {
+            float x, z, reach;
+        };
+        std::vector<Waypoint> g_wps;
+
+        // The collision grid: the room's collision mesh (G.pRdt_sca +0x4880, its size at 0x27c638: the vertices as
+        // float triples, then the triangles as index triples (u16), then an attribute byte each; the vertex and triangle
+        // counts in its last 6 bytes, as Sca_data_set_sub reads them). A tall steep triangle (a wall: higher than 600,
+        // so a staircase's risers are not) that reaches the player's height marks the cells along it, widened by the
+        // player's radius; the way is the shortest through the free cells to the free cell nearest the goal (a door is
+        // in a wall), straightened where the cells see each other.
+        struct Grid
+        {
+            float x0 = 0, z0 = 0, cell = 100;
+            int w = 0, h = 0;
+            std::vector<uint8_t> blocked;
+            bool free(int i, int j) const { return i >= 0 && j >= 0 && i < w && j < h && !blocked[static_cast<size_t>(j) * w + i]; }
+        };
+
+        bool buildGrid(const uint8_t *ram, float py, Grid &g, float px, float pz, float tx, float tz)
+        {
+            uint32_t base;
+            int32_t size;
+            std::memcpy(&base, ram + kG + 0x4880, 4);
+            std::memcpy(&size, ram + 0x27c638, 4);
+            base &= 0x1ffffffu;
+            if (!base || size < 6 || base + static_cast<uint32_t>(size) > 0x2000000u)
+                return false;
+            uint16_t nv, nt;
+            std::memcpy(&nv, ram + base + size - 6, 2);
+            std::memcpy(&nt, ram + base + size - 4, 2);
+            if (!nv || !nt || 12u * nv + 6u * nt > static_cast<uint32_t>(size))
+                return false;
+            auto vert = [&](int k, float *v) { std::memcpy(v, ram + base + 12 * k, 12); };
+            float x0 = std::min(px, tx), x1 = std::max(px, tx), z0 = std::min(pz, tz), z1 = std::max(pz, tz);
+            for (int k = 0; k < nv; ++k)
+            {
+                float v[3];
+                vert(k, v);
+                x0 = std::min(x0, v[0]), x1 = std::max(x1, v[0]), z0 = std::min(z0, v[2]), z1 = std::max(z1, v[2]);
+            }
+            g.cell = 100;
+            g.x0 = x0 - 500, g.z0 = z0 - 500;
+            g.w = static_cast<int>((x1 - x0 + 1000) / g.cell) + 1;
+            g.h = static_cast<int>((z1 - z0 + 1000) / g.cell) + 1;
+            if (g.w <= 0 || g.h <= 0 || static_cast<size_t>(g.w) * g.h > 4000000u)
+                return false;
+            std::vector<uint8_t> wall(static_cast<size_t>(g.w) * g.h, 0);
+            auto seg2 = [](float qx, float qz, const float *a, const float *b) {
+                const float vx = b[0] - a[0], vz = b[2] - a[2], wx = qx - a[0], wz = qz - a[2], l = vx * vx + vz * vz;
+                const float t = l > 0 ? std::clamp((wx * vx + wz * vz) / l, 0.0f, 1.0f) : 0.0f;
+                const float dx = wx - t * vx, dz = wz - t * vz;
+                return dx * dx + dz * dz;
+            };
+            for (int k = 0; k < nt; ++k)
+            {
+                uint16_t idx[3];
+                std::memcpy(idx, ram + base + 12 * nv + 6 * k, 6);
+                if (idx[0] >= nv || idx[1] >= nv || idx[2] >= nv)
+                    continue;
+                float a[3], b[3], c[3];
+                vert(idx[0], a), vert(idx[1], b), vert(idx[2], c);
+                const float ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2], vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+                const float nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+                const float n = std::sqrt(nx * nx + ny * ny + nz * nz);
+                const float ylo = std::min({a[1], b[1], c[1]}), yhi = std::max({a[1], b[1], c[1]});
+                if (n <= 0 || std::fabs(ny / n) > 0.5f || yhi - ylo < 600 || yhi < py + 150 || ylo > py + 1500)
+                    continue;
+                const int i0 = static_cast<int>((std::min({a[0], b[0], c[0]}) - g.x0) / g.cell) - 1;
+                const int i1 = static_cast<int>((std::max({a[0], b[0], c[0]}) - g.x0) / g.cell) + 1;
+                const int j0 = static_cast<int>((std::min({a[2], b[2], c[2]}) - g.z0) / g.cell) - 1;
+                const int j1 = static_cast<int>((std::max({a[2], b[2], c[2]}) - g.z0) / g.cell) + 1;
+                const float r2 = (g.cell * 0.75f) * (g.cell * 0.75f);
+                for (int j = std::max(0, j0); j <= std::min(g.h - 1, j1); ++j)
+                    for (int i = std::max(0, i0); i <= std::min(g.w - 1, i1); ++i)
+                    {
+                        const float qx = g.x0 + (i + 0.5f) * g.cell, qz = g.z0 + (j + 0.5f) * g.cell;
+                        if (seg2(qx, qz, a, b) < r2 || seg2(qx, qz, b, c) < r2 || seg2(qx, qz, c, a) < r2)
+                            wall[static_cast<size_t>(j) * g.w + i] = 1;
+                    }
+            }
+            // Widened by the player's radius (two cells).
+            g.blocked.assign(wall.size(), 0);
+            for (int j = 0; j < g.h; ++j)
+                for (int i = 0; i < g.w; ++i)
+                    if (wall[static_cast<size_t>(j) * g.w + i])
+                        for (int dj = -2; dj <= 2; ++dj)
+                            for (int di = -2; di <= 2; ++di)
+                                if (i + di >= 0 && j + dj >= 0 && i + di < g.w && j + dj < g.h)
+                                    g.blocked[static_cast<size_t>(j + dj) * g.w + i + di] = 1;
+            return true;
+        }
+
+        bool gridPath(const Grid &g, float px, float pz, float tx, float tz, std::vector<Waypoint> &out)
+        {
+            const int si = static_cast<int>((px - g.x0) / g.cell), sj = static_cast<int>((pz - g.z0) / g.cell);
+            const int gi = static_cast<int>((tx - g.x0) / g.cell), gj = static_cast<int>((tz - g.z0) / g.cell);
+            if (si < 0 || sj < 0 || si >= g.w || sj >= g.h)
+                return false;
+            const size_t n = static_cast<size_t>(g.w) * g.h;
+            auto id = [&](int i, int j) { return static_cast<size_t>(j) * g.w + i; };
+            // The goal: the free cell reachable from the player nearest to it.
+            std::vector<uint8_t> seen(n, 0);
+            std::vector<size_t> queue{id(si, sj)};
+            seen[id(si, sj)] = 1;
+            size_t best = id(si, sj);
+            float bd = 1e30f;
+            for (size_t q = 0; q < queue.size(); ++q)
+            {
+                const int i = static_cast<int>(queue[q] % g.w), j = static_cast<int>(queue[q] / g.w);
+                const float d = std::hypot(static_cast<float>(i - gi), static_cast<float>(j - gj));
+                if (d < bd)
+                    bd = d, best = queue[q];
+                for (int dj = -1; dj <= 1; ++dj)
+                    for (int di = -1; di <= 1; ++di)
+                        if ((di || dj) && g.free(i + di, j + dj) && !seen[id(i + di, j + dj)])
+                            seen[id(i + di, j + dj)] = 1, queue.push_back(id(i + di, j + dj));
+            }
+            // Shortest way there (8 neighbours).
+            std::vector<float> dist(n, 1e30f);
+            std::vector<int64_t> prev(n, -1);
+            using Item = std::pair<float, size_t>;
+            std::vector<Item> heap;
+            dist[id(si, sj)] = 0;
+            heap.push_back({0, id(si, sj)});
+            const int bi = static_cast<int>(best % g.w), bj = static_cast<int>(best / g.w);
+            while (!heap.empty())
+            {
+                std::pop_heap(heap.begin(), heap.end(), std::greater<Item>());
+                const size_t u = heap.back().second;
+                heap.pop_back();
+                if (u == best)
+                    break;
+                const int i = static_cast<int>(u % g.w), j = static_cast<int>(u / g.w);
+                for (int dj = -1; dj <= 1; ++dj)
+                    for (int di = -1; di <= 1; ++di)
+                    {
+                        if (!(di || dj) || !g.free(i + di, j + dj))
+                            continue;
+                        const size_t v = id(i + di, j + dj);
+                        const float nd = dist[u] + ((di && dj) ? 1.4142f : 1.0f);
+                        if (nd < dist[v])
+                        {
+                            dist[v] = nd, prev[v] = static_cast<int64_t>(u);
+                            heap.push_back({nd + std::hypot(static_cast<float>(bi - i - di), static_cast<float>(bj - j - dj)), v});
+                            std::push_heap(heap.begin(), heap.end(), std::greater<Item>());
+                        }
+                    }
+            }
+            if (best != id(si, sj) && prev[best] < 0)
+                return false;
+            std::vector<size_t> cells;
+            for (int64_t u = static_cast<int64_t>(best); u >= 0; u = prev[static_cast<size_t>(u)])
+                cells.insert(cells.begin(), static_cast<size_t>(u));
+            // Straightened: from each kept cell, on to the farthest one it sees (free cells all the way).
+            auto sees = [&](size_t a, size_t b) {
+                const float ax = static_cast<float>(a % g.w), az = static_cast<float>(a / g.w);
+                const float bx = static_cast<float>(b % g.w), bz = static_cast<float>(b / g.w);
+                const int steps = static_cast<int>(std::max(std::fabs(bx - ax), std::fabs(bz - az)) * 2) + 1;
+                for (int k = 0; k <= steps; ++k)
+                {
+                    const float t = static_cast<float>(k) / steps;
+                    if (!g.free(static_cast<int>(ax + (bx - ax) * t + 0.5f), static_cast<int>(az + (bz - az) * t + 0.5f)))
+                        return false;
+                }
+                return true;
+            };
+            out.clear();
+            size_t at = 0;
+            while (at + 1 < cells.size())
+            {
+                size_t next = at + 1;
+                for (size_t k = cells.size() - 1; k > at + 1; --k)
+                    if (sees(cells[at], cells[k]))
+                    {
+                        next = k;
+                        break;
+                    }
+                out.push_back({g.x0 + (cells[next] % g.w + 0.5f) * g.cell, g.z0 + (cells[next] / g.w + 0.5f) * g.cell, 250.0f});
+                at = next;
+            }
+            return true;
+        }
+
         void plan(const uint8_t *ram, float x, float z)
         {
             g_goalX = x;
             g_goalZ = z;
-            g_path.clear();
+            g_wps.clear();
+            const float px = readf(ram, kPlayer + 0x70), py = readf(ram, kPlayer + 0x74), pz = readf(ram, kPlayer + 0x78);
+            if (std::hypot(x - px, z - pz) < 600.0f)
+                return;
+            Grid grid;
+            if (buildGrid(ram, py, grid, px, pz, x, z) && gridPath(grid, px, pz, x, z, g_wps))
+            {
+                std::printf("[oni:bot] way: %zu points on the collision grid\n", g_wps.size());
+                return;
+            }
+            // No mesh, or no way through it: the route graph.
             loadRoute(ram);
-            const float px = readf(ram, kPlayer + 0x70), pz = readf(ram, kPlayer + 0x78);
             const int from = nearestNode(px, pz), to = nearestNode(x, z);
             if (from < 0 || from == to || std::hypot(x - px, z - pz) < 1500.0f)
                 return;
@@ -223,35 +418,34 @@ namespace oni::bot
             }
             if (prev[to] < 0)
                 return; // not connected: straight on
-            for (int v = to; v >= 0; v = prev[v])
-                g_path.insert(g_path.begin(), v);
             std::string text = "route";
-            for (int v : g_path)
-                text += " " + std::to_string(v);
+            for (int v = to; v >= 0; v = prev[v])
+            {
+                g_wps.insert(g_wps.begin(), {g_nodes[v].x, g_nodes[v].z, std::max(250.0f, g_nodes[v].r * 0.7f)});
+                text.insert(5, " " + std::to_string(v));
+            }
             std::printf("[oni:bot] %s\n", text.c_str());
         }
 
-        // Steers along the planned way to (x, z) (planned again when the goal changes); returns the distance to it.
+        // Steers along the planned way to (x, z) (planned again when the goal moves far); returns the distance to it.
         float navigate(const uint8_t *ram, float x, float z, bool walk = true)
         {
             if (std::hypot(x - g_goalX, z - g_goalZ) > 500.0f) // (a moving goal, an enemy: planned again when it has gone far)
                 plan(ram, x, z);
             const float px = readf(ram, kPlayer + 0x70), pz = readf(ram, kPlayer + 0x78);
-            while (!g_path.empty())
+            while (!g_wps.empty())
             {
-                const Node &n = g_nodes[g_path.front()];
-                const float reach = std::max(250.0f, n.r * 0.7f);
-                // Passed: within reach of it, or the next node (or the goal, last) is nearer than it is.
-                const float toNode = std::hypot(n.x - px, n.z - pz);
-                const float nx = g_path.size() > 1 ? g_nodes[g_path[1]].x : x, nz = g_path.size() > 1 ? g_nodes[g_path[1]].z : z;
-                if (toNode < reach || std::hypot(nx - px, nz - pz) + 200.0f < std::hypot(nx - n.x, nz - n.z) * 0.6f)
-                    g_path.erase(g_path.begin());
+                const Waypoint &w = g_wps.front();
+                // Passed: within reach of it, or the next point (or the goal, last) is nearer than it is.
+                const float nx = g_wps.size() > 1 ? g_wps[1].x : x, nz = g_wps.size() > 1 ? g_wps[1].z : z;
+                if (std::hypot(w.x - px, w.z - pz) < w.reach || std::hypot(nx - px, nz - pz) + 200.0f < std::hypot(nx - w.x, nz - w.z) * 0.6f)
+                    g_wps.erase(g_wps.begin());
                 else
                     break;
             }
             const float dist = std::hypot(x - px, z - pz);
-            if (!g_path.empty())
-                steer(ram, g_nodes[g_path.front()].x, g_nodes[g_path.front()].z, walk);
+            if (!g_wps.empty())
+                steer(ram, g_wps.front().x, g_wps.front().z, walk);
             else
                 steer(ram, x, z, walk);
             return dist;
@@ -310,8 +504,40 @@ namespace oni::bot
             return true;
         }
 
-        const Door *findDoor(int stage, int room, int toStage, int toRoom)
+        // A live door AOT of the room to that stage and room (G.Sce_aot, Id 1: a rectangle and the door's work after
+        // the 12 bytes, or with Type bit 7 four corners and the work after 20), first; else the room files' doors.
+        Door g_liveDoor{};
+        const Door *findDoor(const uint8_t *ram, int stage, int room, int toStage, int toRoom)
         {
+            for (int k = 0; k < 32; ++k)
+            {
+                uint32_t at;
+                std::memcpy(&at, ram + kG + 0x97e8 + 4 * k, 4);
+                at &= 0x1ffffffu;
+                if (!at || at + 0x30 > 0x2000000u || ram[at] != 1)
+                    continue;
+                const bool four = (ram[at + 1] & 0x80u) != 0;
+                const uint32_t work = at + (four ? 20u : 12u);
+                if (ram[work + 8] != toStage || ram[work + 9] != toRoom)
+                    continue;
+                Door d{static_cast<uint8_t>(stage), static_cast<uint8_t>(room), 0, 0, 0, 0, ram[work + 8], ram[work + 9], ram[work + 10], ram[work + 15]};
+                if (four)
+                {
+                    int16_t p[8];
+                    std::memcpy(p, ram + at + 4, 16);
+                    const int16_t xs[4] = {p[0], p[2], p[4], p[6]}, zs[4] = {p[1], p[3], p[5], p[7]};
+                    d.x = *std::min_element(xs, xs + 4), d.z = *std::min_element(zs, zs + 4);
+                    d.w = static_cast<uint16_t>(*std::max_element(xs, xs + 4) - d.x);
+                    d.d = static_cast<uint16_t>(*std::max_element(zs, zs + 4) - d.z);
+                }
+                else
+                {
+                    d.x = read16(ram, at + 4), d.z = read16(ram, at + 6);
+                    d.w = static_cast<uint16_t>(read16(ram, at + 8)), d.d = static_cast<uint16_t>(read16(ram, at + 10));
+                }
+                g_liveDoor = d;
+                return &g_liveDoor;
+            }
             const Door *best = nullptr;
             for (size_t i = 0; i < kDoorCount; ++i)
             {
@@ -455,7 +681,7 @@ namespace oni::bot
                 next();
                 return;
             }
-            const Door *d = findDoor(stage, room, ts, tr);
+            const Door *d = findDoor(ram, stage, room, ts, tr);
             if (!d && (stage != ts || room != tr) && inPlay)
             {
                 fail("door: room " + std::to_string(stage) + ":" + std::to_string(room) + " has no door to " + std::to_string(ts) + ":" + std::to_string(tr));

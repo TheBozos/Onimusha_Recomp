@@ -1,0 +1,5 @@
+# Stage 1 room 26: the mace-wielding ogre (boss 1), its introduction played, fought (one-hit kills), its death.
+play 4000
+fight 6000
+play 4000
+save build/story/s126b.state

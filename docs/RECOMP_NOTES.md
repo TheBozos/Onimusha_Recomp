@@ -438,3 +438,18 @@ close-up camera (set06_camera: Set_camera from the box's table) over the box's p
 (only its 39-sector picture), so Bgz_disp kept sending the room's last cut (another camera: the corridor's corner)
 and most of the tiles fell behind it. set06 raises Status_flg (0x2828ac) bit 30 (`Flg_on(.., 1)`) while the puzzle
 is up; the room's depth is not drawn then. Solved by the story bot (left, right, left): the Rope Ladder.
+
+## The story bot's way-finding (runtime/oni_bot.cpp, 2026-11-24)
+
+Some rooms have no route graph (the moat's floor, stage 1 room 25), and a straight line hits the walls. The bot now
+plans on the room's own collision mesh: `G.pRdt_sca` (+0x4880) and its size (0x27c638) hold the vertices (float
+triples), the triangles (u16 index triples) and an attribute byte each, the counts in the last 6 bytes (as
+Sca_data_set_sub reads them). Every tall steep triangle (a wall: over 600 high, so a staircase's risers are not) at
+the player's height marks the cells along it on a 100-unit grid, widened by the player's radius; the way is A* through
+the free cells to the free cell nearest the goal (a door is in a wall), straightened by line of sight. The route graph
+remains the fallback. `door S R` takes the room's live door AOT to that place first (a door the script replaced by a
+locked event is no longer live).
+
+Played with it: the Thunder Orb's dark event, the crystal-sealed door, the castle gate's fight, the dry moat (the Rope
+Ladder from the status screen) and its floor, and the first boss (the mace-wielding ogre: its introduction, the
+fight, "How could I die..."). All drawn as expected.
