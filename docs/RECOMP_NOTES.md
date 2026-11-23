@@ -429,3 +429,12 @@ Reached with it, in story order from the forest cave's state: stage 0 room 6's h
 temple (stage 1 room 13), the temple's map box and its stairs into room 14, the mummified monk's event (its messages,
 the Green Scroll) and the door it opens into room 15, the corridor and its far door into room 16 (the blue orb's
 room). Every room drawn as it should be so far.
+
+## The trick boxes' puzzle and the room's depth (runtime/oni_bg.cpp, 2026-11-24)
+
+Stage 1 room 16's trick treasure box (set06.c: two dials, six numbered tiles, three turns) showed two of its six tiles,
+cut off at odd lines. The tiles are 3D models (TEST GREATER against the Z buffer) seen through the puzzle's own
+close-up camera (set06_camera: Set_camera from the box's table) over the box's picture; the puzzle reads no Z buffer
+(only its 39-sector picture), so Bgz_disp kept sending the room's last cut (another camera: the corridor's corner)
+and most of the tiles fell behind it. set06 raises Status_flg (0x2828ac) bit 30 (`Flg_on(.., 1)`) while the puzzle
+is up; the room's depth is not drawn then. Solved by the story bot (left, right, left): the Rope Ladder.

@@ -104,16 +104,17 @@ namespace oni::vu1
                 const bozo::render::Screen s = oni::render::screen();
                 if (trace() >= 3) // each drawn batch: its registers and its vertices' extent in the frame
                 {
-                    float bx0 = 1e9f, by0 = 1e9f, bx1 = -1e9f, by1 = -1e9f;
+                    float bx0 = 1e9f, by0 = 1e9f, bx1 = -1e9f, by1 = -1e9f, bz0 = 1e30f, bz1 = -1e30f;
                     for (const auto &v : gs.batch)
                     {
                         bx0 = std::min(bx0, v.x), bx1 = std::max(bx1, v.x);
                         by0 = std::min(by0, v.y), by1 = std::max(by1, v.y);
+                        bz0 = std::min(bz0, v.z), bz1 = std::max(bz1, v.z);
                     }
                     const int c = (gs.prim >> 9) & 1;
-                    std::printf("[oni:vu1] batch prim %03llx frame %llx tex0 %016llx alpha %llx: %zu vertices, (%.0f,%.0f)-(%.0f,%.0f)\n",
+                    std::printf("[oni:vu1] batch prim %03llx frame %llx tex0 %016llx alpha %llx test %llx zbuf %llx scissor %016llx: %zu vertices, (%.0f,%.0f)-(%.0f,%.0f) z %.0f..%.0f\n",
                                 (unsigned long long)gs.prim, (unsigned long long)gs.frame[c], (unsigned long long)gs.tex0[c],
-                                (unsigned long long)gs.alpha[c], gs.batch.size(), bx0, by0, bx1, by1);
+                                (unsigned long long)gs.alpha[c], (unsigned long long)gs.test[c], (unsigned long long)gs.zbuf[c], (unsigned long long)gs.scissor[c], gs.batch.size(), bx0, by0, bx1, by1, bz0, bz1);
                 }
                 const float x0 = static_cast<float>(sc & 0x7ff), x1 = static_cast<float>((sc >> 16) & 0x7ff) + 1.0f;
                 const float y0 = static_cast<float>((sc >> 32) & 0x7ff), y1 = static_cast<float>((sc >> 48) & 0x7ff) + 1.0f;

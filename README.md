@@ -70,6 +70,13 @@ what remains open.
 
 ## Screenshots
 
+**2026-11-24.** The underground temple's trick treasure box, its six tiles all drawn now (the room's depth had hidden
+most of them behind the puzzle), solved by the story bot for the Rope Ladder.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-trick-box.png" width="480" alt="A trick box puzzle: six numbered tiles 3 5 6 / 2 1 4 around two dials on a metal plate, REST: 3">
+</p>
+
 **2026-11-23.** The story going on in its own order, played by the new headless bot (`ONI_BOT`): out of the forest
 cave's hole into the underground temple, its map box taken and its stairs climbed into the temple.
 

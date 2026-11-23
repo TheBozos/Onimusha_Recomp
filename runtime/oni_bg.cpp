@@ -242,6 +242,12 @@ namespace oni::bg
                 if (const char *e = std::getenv("ONI_FORCE_CUT"))
                     std::sscanf(e, "%d:%d", &forceAfter, &forceCut);
             }
+            if (trace())
+            {
+                static uint64_t calls = 0;
+                if (++calls % 30 == 0)
+                    std::printf("[oni:bg] Bgz_disp: %llu calls\n", (unsigned long long)calls);
+            }
             if (forceAfter >= 0 && forceAfter-- == 0)
             {
                 const R5900Context saved = *ctx;
@@ -276,7 +282,10 @@ namespace oni::bg
                 t->version = ++g_depthVersion;
                 g_depth = std::move(t);
             }
-            g_depthDue = true;
+            // Not under a trick box's puzzle (set06: Status_flg 0x2828ac bit 30, Flg_on(.., 1)): its tiles are 3D models
+            // seen through the puzzle's own close-up camera (set06_camera) over the box's picture, and the room's Z
+            // buffer (the last cut's, from another camera: the puzzle loads no Z) hid most of them (stage 1 room 16).
+            g_depthDue = (read32(ram, 0x2828ac) & 0x40000000u) == 0;
         }
 
         // The animated backgrounds (IMAGE/BGS/MOV*.IPU: `ipum` movies of a patch of the room, e.g. 192 x 256 for

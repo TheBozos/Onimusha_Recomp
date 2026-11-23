@@ -1,0 +1,22 @@
+# Stage 1 room 16: the trick treasure box (set06's dial puzzle). The tiles 3 5 6 / 2 1 4 around two dials; CROSS turns
+# the selected dial's four tiles clockwise, LEFT / RIGHT select a dial (the left one first), three turns allowed.
+# Solved left, right, left: 1 2 3 / 4 5 6, the Rope Ladder.
+play
+go -4140 3100 150 900
+face -4140 2320
+press CROSS 6     # "There is a trick treasure box."
+wait 60
+press CROSS 6     # the puzzle
+wait 240
+press CROSS 6     # left dial
+wait 90
+press RIGHT 6
+wait 40
+press CROSS 6     # right dial
+wait 90
+press LEFT 6
+wait 40
+press CROSS 6     # left dial
+wait 240
+play
+save build/story/s116b.state
