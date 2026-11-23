@@ -14,4 +14,6 @@ namespace oni
     size_t registerModules(Runtime &rt);
     // The IOP sound modules (runtime/oni_audio.cpp): module loads, SIF transfers and the mixer.
     void installAudio(bozo::libs::Libraries &libraries, uint8_t *eeRam);
+    // The VU0 microprogram by entry (generated: tools/oni_vu0_gen.py).
+    void installVu0(bozo::port::Registry &registry);
 } // namespace oni

@@ -133,7 +133,18 @@ add_library(oni_audio_code OBJECT ${oni_audio_code})
 target_link_libraries(oni_audio_code PRIVATE bozo_runtime_headers)
 target_compile_options(oni_audio_code PRIVATE -O1 -w)
 
-set(oni_runtime_sources ${oni_port_sources} $<TARGET_OBJECTS:oni_audio_code>)
+# The VU0 microprogram (POLYCALC, pCalcPolygon's), translated to C++ from the player's ELF (tools/oni_vu0_gen.py).
+set(oni_vu0_cpp ${CMAKE_BINARY_DIR}/oni_vu0_gen/oni_vu0.cpp)
+add_custom_command(OUTPUT ${oni_vu0_cpp}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/oni_vu0_gen
+  COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_SOURCE_DIR}/tools/oni_vu0_gen.py ${oni_elf} ${oni_vu0_cpp}
+  DEPENDS ${oni_elf} ${CMAKE_SOURCE_DIR}/tools/oni_vu0_gen.py
+  COMMENT "Translating the VU0 microprogram")
+add_library(oni_vu0_code OBJECT ${oni_vu0_cpp})
+target_link_libraries(oni_vu0_code PRIVATE bozo_runtime_headers)
+target_compile_options(oni_vu0_code PRIVATE -O2 -w -ffp-contract=off)
+
+set(oni_runtime_sources ${oni_port_sources} $<TARGET_OBJECTS:oni_audio_code> $<TARGET_OBJECTS:oni_vu0_code>)
 list(FILTER oni_runtime_sources EXCLUDE REGEX "oni_main\\.cpp$")
 
 add_executable(oni-headless runtime/oni_main.cpp ${oni_runtime_sources})

@@ -20,6 +20,7 @@ extern "C"
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -29,6 +30,7 @@ namespace oni::bg
     namespace
     {
         constexpr uint32_t kStream = 0x7f3440;   // the IPU file as Cut_set read it (header included)
+        constexpr uint32_t kToIpuChain = 0x90b440; // setToIPUtags' chain: its first tag's address is the stream's start
         constexpr uint32_t kStreamSize = 0x214380; // its size in bytes (gp - 0x6df0)
         constexpr uint32_t kFieldEven = 0xa69c80; // lines 0, 2, 4 ... of the picture, 640 x 224 RGBA
         constexpr uint32_t kFieldOdd = 0x9ddc80;  // lines 1, 3, 5 ...
@@ -92,18 +94,35 @@ namespace oni::bg
         uint64_t g_version = 0;
         bool g_shown = false; // Bg_disp ran this frame
 
-        // decodeIPU(): the stream at 0x7f3440 to the two field buffers.
+        // decodeIPU(): the stream the to-IPU DMA chain (0x90b440, setToIPUtags: REF tags over the stream after its
+        // 16-byte header) points at, to the two field buffers. Cut_set / Cut_set_onmemory put an `ipum` file at
+        // 0x7f3440; Cut_change (the rooms) puts a cut block there whose IPU stream lies after the block's Z buffer.
         void decodeIpu(uint8_t *ram, R5900Context *ctx, Runtime *)
         {
             static Decoder decoder;
             const uint32_t size = read32(ram, kStreamSize);
-            const uint8_t *file = ram + kStream;
-            const uint16_t width = static_cast<uint16_t>(file[8] | file[9] << 8);
-            const uint16_t height = static_cast<uint16_t>(file[10] | file[11] << 8);
-            if (std::memcmp(file, "ipum", 4) != 0 || size <= 16 || size > 0x200000 || width != kWidth || height != kHeight)
+            const uint32_t start = read32(ram, kToIpuChain + 4) & 0x1ffffffu; // the first tag's address
+            const uint8_t *file = ram + ((start >= 16 ? start : kStream + 16) - 16);
+            // ONI_BG_DUMP=<folder>: each stream decodeIPU is given, as it is in EE memory (header included).
+            if (const char *dir = std::getenv("ONI_BG_DUMP"); dir && size && size <= 0x200000)
             {
-                std::fprintf(stderr, "[oni:bg] not a 640 x 448 IPU stream at 0x%x (size %u, %ux%u)\n", kStream, size, width,
-                             height);
+                static unsigned n = 0;
+                char name[512];
+                std::snprintf(name, sizeof name, "%s/cut_%03u.bin", dir, n++);
+                if (FILE *f = std::fopen(name, "wb"))
+                {
+                    std::fwrite(file, 1, size, f);
+                    std::fclose(f);
+                }
+            }
+            // An `ipum` header names its size; a room cut's header is its own (the picture is always 640 x 448).
+            const bool ipum = std::memcmp(file, "ipum", 4) == 0;
+            const uint16_t width = ipum ? static_cast<uint16_t>(file[8] | file[9] << 8) : kWidth;
+            const uint16_t height = ipum ? static_cast<uint16_t>(file[10] | file[11] << 8) : kHeight;
+            if (size <= 16 || size > 0x200000 || width != kWidth || height != kHeight)
+            {
+                std::fprintf(stderr, "[oni:bg] not a 640 x 448 IPU stream at 0x%x (size %u, %ux%u), called from 0x%x\n",
+                             kStream, size, width, height, ctx->r[31].uw[0]);
                 ctx->pc = ctx->r[31].uw[0];
                 return;
             }
@@ -148,6 +167,19 @@ namespace oni::bg
                 }
             }
             av_frame_unref(decoder.frame);
+            if (const char *dir = std::getenv("ONI_BG_DUMP")) // the picture too, from the field buffers (PAM, RGBA)
+            {
+                static unsigned n = 0;
+                char name[512];
+                std::snprintf(name, sizeof name, "%s/picture_%03u.pam", dir, n++);
+                if (FILE *f = std::fopen(name, "wb"))
+                {
+                    std::fprintf(f, "P7\nWIDTH %d\nHEIGHT %d\nDEPTH 4\nMAXVAL 255\nTUPLTYPE RGB_ALPHA\nENDHDR\n", kWidth, kHeight);
+                    for (int y = 0; y < kHeight; ++y)
+                        std::fwrite(ram + ((y & 1) ? kFieldOdd : kFieldEven) + (y / 2) * kWidth * 4, 4, kWidth, f);
+                    std::fclose(f);
+                }
+            }
             if (trace())
                 std::printf("[oni:bg] decoded %u bytes, flags %02x\n", size, file[16]);
             g_picture.reset(); // rebuilt from the fields when shown

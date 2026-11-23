@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <exception>
 #include <string>
 #include <vector>
@@ -123,6 +124,44 @@ int main(int argc, char **argv)
                 std::printf("[oni:threads] %d state=%u wait=%u object=%u entry=%x pc=%x %s\n", id, unsigned(t->state),
                             t->waitReason, t->waitObject, t->entry, t->frames.empty() ? 0 : t->frames.front()->ctx.pc,
                             host.functionAt(t->frames.empty() ? 0 : t->frames.front()->ctx.pc).c_str());
+        // ONI_SCE_TRACE=<n>: every n frames, the event scripts' tasks (10 at 0x28e860, 0x160 apart: +1 active, +4 the
+        // bytecode pc; the opcode's handler from the table at 0x1f4060).
+        static const uint64_t sceEvery = std::getenv("ONI_SCE_TRACE") ? std::strtoull(std::getenv("ONI_SCE_TRACE"), nullptr, 0) : 0;
+        if (sceEvery && f % sceEvery == 0)
+        {
+            const uint8_t *ram = d.runtime().memory.ram();
+            // cd_work 0x3dc5c0 (struct _CD_W): what Wsleeping waits on.
+            constexpr uint32_t cd = 0x3dc5c0;
+            std::printf("[oni:sce] frame %llu cd: read_flag %d r_no %u,%u,%u voice queue %u..%u bg_req %u bg_stck %u "
+                        "stream flag %u read %u\n",
+                        (unsigned long long)f, static_cast<int8_t>(ram[cd + 0x27]), ram[cd + 0x24], ram[cd + 0x25],
+                        ram[cd + 0x26], ram[cd + 0x176], ram[cd + 0x177], ram[cd + 0xbd], ram[cd + 0xbe], ram[cd + 0xba],
+                        ram[cd + 0xbb]);
+            // gTransADS 0x3dbbc0: the sound driver's ADS (voice stream) status, its RPC reply (bit 0: busy).
+            std::printf("[oni:sce] frame %llu ads:", (unsigned long long)f);
+            for (int k = 0; k < 8; ++k)
+            {
+                uint32_t v;
+                std::memcpy(&v, ram + 0x3dbbc0 + 4 * k, 4);
+                std::printf(" %08x", v);
+            }
+            std::printf("\n");
+            for (uint32_t i = 0; i < 10; ++i)
+            {
+                const uint32_t task = 0x28e860 + i * 0x160;
+                if (!ram[task + 1])
+                    continue;
+                uint32_t pc, handler;
+                std::memcpy(&pc, ram + task + 4, 4);
+                const uint8_t op = ram[pc & 0x1ffffff];
+                std::memcpy(&handler, ram + 0x1f4060 + op * 4, 4);
+                std::printf("[oni:sce] frame %llu task %u pc %x op %02x %s bytes", (unsigned long long)f, i, pc, op,
+                            host.functionAt(handler).c_str());
+                for (int k = 0; k < 8; ++k)
+                    std::printf(" %02x", ram[(pc + k) & 0x1ffffff]);
+                std::printf("\n");
+            }
+        }
         pacer.frameEnd();
         if (f % 60 == 0)
             std::printf("[oni] frame=%llu pc=%x cycles=%llu\n", (unsigned long long)f, ctx->pc,

@@ -62,6 +62,32 @@ namespace oni
                 ctx->r[3].ud[0] = ctx->r[2].sw[0] == 0 ? 0 : static_cast<uint64_t>(static_cast<int64_t>(static_cast<int32_t>(id)));
                 return true;
             }
+            // pCalcLoadGmMatrix: VIF0's DMA sends the POLYCALC microprogram (the chain at 0x1ee990: an MPG to VU0
+            // address 0). The program is native (tools/oni_vu0_gen.py, VCALLMS 0): nothing to send, the transfer done.
+            case 0x001af520u: // native site: sw zero,(a2): D0_QWC
+            case 0x001af528u: // native site: sw a0,(v1): D0_TADR
+            case 0x001af534u: // native site: sw v1,(a0): D0_CHCR, start
+                return true;
+            // Md_draw_semi / Md_draw_semi_l: the semi-transparent models' GS packets sent by GIF DMA (channel 2:
+            // TADR, MADR, ASR0, ASR1, QWC, CHCR twice). Not sent: the models are to be drawn natively from their data.
+            case 0x0018deecu: // native site: Md_draw_semi, D2_QWC
+            case 0x0018def4u: // native site: Md_draw_semi, D2_MADR
+            case 0x0018defcu: // native site: Md_draw_semi, D2_ASR0
+            case 0x0018df04u: // native site: Md_draw_semi, D2_ASR1
+            case 0x0018df18u: // native site: Md_draw_semi, D2_TADR
+            case 0x0018df24u: // native site: Md_draw_semi, D2_CHCR
+            case 0x0018df34u: // native site: Md_draw_semi, D2_CHCR start
+            case 0x0018e4acu: // native site: Md_draw_semi_l, D2_QWC
+            case 0x0018e4b4u: // native site: Md_draw_semi_l, D2_MADR
+            case 0x0018e4bcu: // native site: Md_draw_semi_l, D2_ASR0
+            case 0x0018e4c4u: // native site: Md_draw_semi_l, D2_ASR1
+            case 0x0018e4d8u: // native site: Md_draw_semi_l, D2_TADR
+            case 0x0018e4e4u: // native site: Md_draw_semi_l, D2_CHCR
+            case 0x0018e4f4u: // native site: Md_draw_semi_l, D2_CHCR start
+                return true;
+            case 0x001af538u: // native site: lw v1,(a0): D0_CHCR polled until STR clears
+                ctx->r[3].ud[0] = 0;
+                return true;
             case 0x0012fba8u: // native site: Quake_move+0xa8, sd v1,0x80(at): DISPLAY1
                 display[0] = ctx->r[3].ud[0];
                 return true;
@@ -85,6 +111,7 @@ namespace oni
         r.registerFunction(0x10b980, returnZero);
         r.registerFunction(0x101868, swapBuffers); // sceGsSwapDBuffDc
         oni::render::install(r);
+        installVu0(r);
         r.nativeGraphics(&nativeInstruction);
     }
 } // namespace oni

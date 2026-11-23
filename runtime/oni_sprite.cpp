@@ -195,6 +195,9 @@ namespace oni::sprite
             const uint32_t layout = attr >> 24;
             const bool gs = (attr & 0x800u) != 0;
             ++g_prims;
+            if (trace() >= 4)
+                std::printf("[oni:2d] prim %#x layout %u attr %08x words %08x %08x %08x %08x\n", at, layout, attr,
+                            read32(ram, at + 8), read32(ram, at + 0xc), read32(ram, at + 0x10), read32(ram, at + 0x14));
             Point p[4] = {};
             auto uv = [&](Point &q, uint32_t word) {
                 q.u = static_cast<float>(word & 0xffffu);
@@ -307,9 +310,19 @@ namespace oni::sprite
                         position(read32(ram, prim + 0x1c), false, p[1].x, p[1].y);
                         const uint32_t texp = read32(ram, prim + 0x24);
                         ++g_prims;
+                        if (trace() >= 4)
+                            std::printf("[oni:2d] pit %#x priority %u attr %08x rgba %08x xy %g,%g-%g,%g\n", prim, priority,
+                                        attr, p[0].rgba, p[0].x, p[0].y, p[1].x, p[1].y);
                         emit(attr, p, 2, (attr & 0x10u) && texp ? read64(ram, texp) : 0);
                     }
                 }
+            if (trace() >= 5)
+            {
+                std::printf("[oni:2d] fade work");
+                for (int i = 0; i < 16; ++i)
+                    std::printf(" %02x", ram[0x27c370 + i]);
+                std::printf("\n");
+            }
             g_pit = false;
             g_offsetX = g_offsetY = 0;
             std::memset(ram + 0x214604, 0, 4);

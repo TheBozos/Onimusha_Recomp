@@ -95,13 +95,23 @@ Each was a stop of the headless runner.
 12. New Game, both movies skipped, frame ~2,470: the first room's 3D, `Md_tag_trans` `0x130e40` starting VIF1's DMA.
     The models' packets are queued (`Md_draw_entry` appends at `G + 0x5bdc`, `Md_tag_trans_cb` the DMA end handler
     moves `G + 0x5be0` on): runtime/oni_model.cpp completes the queue at once (nothing drawn yet).
-13. **Current stop** (frame 2,471): `pCalcLoadGmMatrix` `0x1af490` starting VIF0's DMA (`0x10008020`): matrices for the
-    VU0 micro-programs. The 3D milestone starts here: the VU0 programs (`_$VU0_*`, `VU0_POLYCALC`...) translated to C++
-    and the models drawn natively from their own data (`Md_draw_entry_vu0` / `_clip`, `_OCW`, the model and object
-    tables of sys_sub.c). Scope: only `pCalcPolygon` (collision) and `sceVu0RotMatrixX/Y/Z` use VU0 micro mode;
-    `pCalcLoadGmMatrix` loads its matrices into VU0's registers (`lqc2`) and sends the POLYCALC program by VIF0 DMA
-    (`D0_TADR = 0x1ee990`, `.vutext` `0x1ee990-0x1eeb40`): translate those programs (TTA's tools/tta_vu0_gen.py) and
-    answer the upload with native sites.
+13. Frame 2,471: `pCalcLoadGmMatrix` `0x1af490` sends the POLYCALC VU0 program by VIF0 DMA (`D0_TADR = 0x1ee990`, an
+    MPG of 57 pairs at VU0 address 0). The only VU0 micro-program: `pCalcPolygon` (collision) starts it with VCALLMS 0.
+    tools/oni_vu0_gen.py (TLOTR_TTA_Recomp's translator, with CLIP and FCAND) makes it C++ (`Registry::vu0Program`);
+    the four DMA accesses are native sites.
+14. `Md_draw_semi` / `Md_draw_semi_l` send the semi-transparent models' packets by GIF DMA: 14 native sites (not
+    sent; the models are to be drawn natively).
+15. The room's cuts: `Cut_change` `0x122720` puts a cut block at `0x7f3440` (the room's `IMAGE/BGS/ROOMnnn.BGS`): a
+    run-length Z buffer (`Zbuff_extend_448`), then the IPU stream with its own 16-byte header. `decodeIPU` now takes
+    the stream where the to-IPU chain (`0x90b440`) points.
+16. Black room: the opening event's script (`Sce_scheduler_main` `0x134830`: 10 tasks at `0x28e860`, bytecode,
+    handlers at `0x1f4060`) waits in `Wsleeping` until the CD manager (`cd_work` `0x3dc5c0`, `Cd_task` `0x196510`)
+    is idle; `Cd_task` waits for the sound driver's voice stream (ADS) to end (`Snd_ads_ck`: `gEEStat.stat_1`
+    `0x3dbb20`, written by SNDDRVCD by SIF DMA). SNDDRVCD streams through the SPU2 interrupt
+    (`sceSdSetSpu2IntrHandler`, IRQA), which BozoEngine did not have: BozoEngine#126 (the SPU2 interrupt; IOP
+    `sceSifCheckStatRpc`, `sceSifSetDChain`).
+17. **Current stop** (frame ~3,900, the first room in play): nothing faults; the characters and enemies are not drawn
+    (their VU1 models), the room's animated backgrounds (`DecodeIPU_Movie`) not yet answered.
 
 ## Tools for reading the game
 
@@ -110,6 +120,8 @@ Each was a stop of the headless runner.
   (address), compile unit by compile unit (`D:\oni\prog\title.c` ...). Anonymous types are named `@anonN` per unit:
   read a function's types inside its own unit. Game-derived: keep it in `build/`.
 - `tools/oni_disasm.py`: the resident code with the symbols.
+- `ONI_SCE_TRACE=<n>`: every n frames, the event scripts' tasks (pc, opcode, handler), `cd_work` and the ADS state;
+  `ONI_THREADS_AT=<frame>`: the threads; `ONI_BG_DUMP=<dir>`: every cut stream and decoded picture.
 
 ## Backgrounds (runtime/oni_bg.cpp, 2026-11-23)
 
@@ -191,8 +203,9 @@ sound, 60 frames/s; START skips them; New Game reaches the first room's loading.
 
 ## Next
 
-- **The 3D**: `Md_tag_trans` / `Md_draw_entry` and the VU1 programs (`Vu1mc_*`), the room's depth (`Bgz_disp`), the
-  VU0 programs (`_$VU0_*`) translated to C++ (TTA's tools/tta_vu0_gen.py).
+- **The 3D**: the models from their own data at `Md_draw_entry_vu0` / `Md_draw_entry_clip` (the VU1 programs
+  `Vu1mc_*` run on what those build), the room's depth (`Bgz_disp`, the cut's Z buffer) so the models sit behind the
+  pre-rendered scenery.
 - The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
 - `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.
