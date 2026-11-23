@@ -1,0 +1,7 @@
+# The temple's shrine (stage 1 room 14): the mummified monk examined (its messages advanced; the Green Scroll), then
+# the door that opens behind him, into room 15.
+play
+examine
+door 1 15
+play
+save build/story/s115.state

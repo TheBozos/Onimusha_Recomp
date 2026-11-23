@@ -1,0 +1,5 @@
+# The temple's corridor (stage 1 room 15): its zombie, then the far door into room 16 (the blue orb's room).
+play
+door 1 16
+play
+save build/story/s116.state
