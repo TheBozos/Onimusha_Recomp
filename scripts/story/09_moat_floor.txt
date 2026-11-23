@@ -1,0 +1,6 @@
+# Stage 1 room 25 (the moat's floor, no route graph: the bot's collision grid finds the way along it): the door into
+# room 26.
+play
+door 1 26
+play 6000
+save build/story/s126.state
