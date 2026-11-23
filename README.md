@@ -54,7 +54,8 @@ the game, scene by scene.
 | Collision's VU0 program (POLYCALC) translated to C++ | ✅ |
 | Native 3D models: the 15 VU1 microprograms translated to C++, the models' VIF1 chains run natively, their GIF packets drawn (Samanosuke, Kaede, the soldiers) | ✅ |
 | Shadows (the shadow volumes counted in an off-screen buffer, then darkening the frame), depth against the pre-rendered rooms (the cut's Z buffer) | ✅ |
-| The game playable: the first room drawn and controllable | ⏳ |
+| The game playable: the first room drawn and controllable, its fight, the next room's event | ✅ |
+| The rest of the game, room by room | 🔧 |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
 | Cheats (F2 → Cheats): infinite health | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
@@ -65,6 +66,15 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-23.** Combat and the story going on, native: the zombie soldiers at the courtyard's gate (the sword's slash,
+the zombies' green trail, the hit's fire, blood on the ground, at 60 frames a second with infinite health from the new
+Cheats tab), then the event that follows in the next room with its voiced lines and subtitles.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-combat.png" width="400" alt="Samanosuke slashing at a zombie soldier before the courtyard gate, a white sword arc and a green trail">
+  <img src="docs/screenshots/2026-11-23-bozo-yuki-event.png" width="400" alt="Samanosuke holding a young woman at the gate, subtitle: It's really you! Oh, I knew that you would come to save me!">
+</p>
 
 **2026-11-23.** An animated background, native: the shrine in the castle gate's courtyard (cut 21, reached here with
 the `ONI_FORCE_CUT` test switch), its orb glowing from the room's IPU movie `MOV000L`, decoded by FFmpeg's IPU decoder
