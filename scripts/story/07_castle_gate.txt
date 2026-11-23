@@ -1,0 +1,8 @@
+# Stage 1 room 0 (the castle gate inside the walls): the box by the stand (the South Area Map), then the gate into
+# stage 2 room 0.
+play
+take 3
+play
+door 2 0
+play
+save build/story/s200.state
