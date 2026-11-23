@@ -376,6 +376,11 @@ fixed:
   hair). The chain now goes through the GIF interpreter at the CHCR write.
 All 82 rooms then ran clean headless. Left: rooms 2:1 and 5:0 show black, room 5:19 a misplaced icy texture.
 
+The room files are named in decimal (`ROOM513.RDT` is stage 5 room 13; stage 2 runs to `ROOM244`), and the generator
+read them as hex: rooms 10 to 15 of every stage were dropped (a door to one asked for `ROOMs0A`..`ROOMs0F`, which do not
+exist), and a door to room 16 and up was checked against the wrong room's cut table. Decimal now: 116 destinations
+(stage 0 room 6's hole into stage 1 room 13 among them), all 116 clean headless (BozoEngine e15775a).
+
 One-hit kills (the Cheats tab): an active enemy's life (the enemies are G's list pEm_top..pEm_end, linked by pNext
 +0x30) is kept at 1, the game's own damage code killing it at the next hit: room 1's gate zombies all dead by frame
 26200 with it, all four standing without. Not in stage 0 room 0, whose scripted first fight refills its zombies' life
@@ -397,3 +402,24 @@ frames a second through the fight, the sound kept to real time (the host skips t
 
 - Movie captions; the effects of later scenes (magic, the souls), checked as they are reached.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.
+
+## The story bot (runtime/oni_bot.cpp, 2026-11-23)
+
+To go through the story in its own order headless, `ONI_BOT=<script>` makes a bot player 1's controller: a script of
+goals (`go`, `door S R`, `take`, `fight`, `play`, `face`, `save`, ...; oni_bot.h) carried out against the game's own
+state each frame. What it reads, all named by the DWARF:
+- The controls are tank controls on the D-pad (the pad stays digital: the stick is not read): LEFT / RIGHT turn the
+  player's Dir_y (`_OCW +0xc2`, 4096 a turn, ~45 a frame), UP walks where it faces (x by its sine, z by its cosine).
+- The way: the room's route graph (`G.pRdt_route` +0x488c, the enemies' own: 0x30-byte nodes, position and radius as
+  floats, then the node's index, its links' count and the linked indices), shortest path from the node nearest the
+  player to the one nearest the goal.
+- The doors and items: the live AOTs (`G.Sce_aot[32]` +0x97e8: `_SCE_AOT` Id 1 door, 2 item, 5 event, 8 stairs, 9
+  ladder, 10 save...; Type bit 7: a four-point AOT) and, for `door S R`, every door of the room files
+  (`tools/oni_warps_gen.py`, Door_aot_set and Door_aot_set_4p: `kDoors`). The game checks an action against the point
+  600 ahead of the player (`Sce_at_check`: `(0, 0, 600)` turned by Dir_y), so the bot stops near a door, turns to face
+  its middle squarely and presses CROSS; a door that is a wall (a staircase) is entered that way. An item is taken
+  when the item window (fade.c's `Fade_w`, type 5) has opened and closed again (its AOT's Id goes to 0).
+- Enemies within reach are fought first (turned to, SQUARE), with the one-hit-kill cheat.
+
+Reached with it, in story order from the forest cave's state: stage 0 room 6's herb and its hole into the underground
+temple (stage 1 room 13), the temple's map box and its stairs into room 14. Every room drawn as it should be so far.

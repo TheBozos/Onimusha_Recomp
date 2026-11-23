@@ -7,6 +7,7 @@
 #include "bozo/host/free_host.h"
 #include "bozo/port.h"
 #include "oni_functions.h"
+#include "oni_bot.h"
 #include "oni_cheats.h"
 #include "oni_vu1.h"
 #include "oni_port.h"
@@ -197,6 +198,21 @@ int main(int argc, char **argv)
                             place[0], place[1], place[2], ram[0x28287d]);
             last = key;
         }
+        // ONI_PLAYER_TRACE=<n>: every n frames, the player's position (_OCW 0x287ed0: Pos +0x70, Dir_y +0xc2), life,
+        // the game mode and the place.
+        static const uint64_t playerEvery = std::getenv("ONI_PLAYER_TRACE") ? std::strtoull(std::getenv("ONI_PLAYER_TRACE"), nullptr, 0) : 0;
+        if (playerEvery && f % playerEvery == 0)
+        {
+            const uint8_t *ram = d.runtime().memory.ram();
+            float pos[3];
+            int16_t dir, life, place[3];
+            std::memcpy(pos, ram + 0x287ed0 + 0x70, sizeof pos);
+            std::memcpy(&dir, ram + 0x287ed0 + 0xc2, 2);
+            std::memcpy(&life, ram + 0x287ed0 + 0x6d0, 2);
+            std::memcpy(place, ram + 0x2875e0, sizeof place);
+            std::printf("[oni:player] frame %llu place %d:%d:%d mode %u pos %.0f %.0f %.0f dir %d life %d\n", (unsigned long long)f,
+                        place[0], place[1], place[2], ram[0x27de30 + 0x44b0], pos[0], pos[1], pos[2], dir, life);
+        }
         // ONI_FADE_TRACE=1: fade.c's Fade_w (0x27c370: active, out, status, type, ...) and the game mode as they change.
         static const bool fadeTrace = std::getenv("ONI_FADE_TRACE") != nullptr;
         if (fadeTrace)
@@ -212,6 +228,7 @@ int main(int argc, char **argv)
                             ram[0x27c374], ram[0x27c375], ram[0x27c376], ram[0x27c377]);
             last = key;
         }
+        oni::bot::frame(d.runtime().memory.ram(), f); // the story bot's next input (ONI_BOT)
         oni::cheats::apply(d.runtime().memory.ram()); // the frame boundary: the game thread
         pacer.frameEnd();
         // ONI_AUDIO_STATS: the frame rate every 120 frames, on stderr beside the sound device's lines.
@@ -244,6 +261,7 @@ int main(int argc, char **argv)
     if (window && options.padScript.empty())
         host.libraries().pad.input = &devices;
 #endif
+    oni::bot::start(host); // ONI_BOT=<script>: the story bot as player 1's controller
     host.onAudio = [&](uint64_t, const int16_t *pcm, size_t count)
     {
         if (recording.isOpen())

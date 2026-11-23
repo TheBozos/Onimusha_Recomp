@@ -1,0 +1,10 @@
+# From the forest cave (stage 0 room 6, the r6 state): the ninjas, the herb, the hole into the underground temple.
+play
+go -1700 6900 250
+go -2300 1500 300    # up the path: the ninjas come
+fight
+take
+teleport 2870 1350   # the hole's AOT, past the path's end (the bot finds no way to it on foot yet)
+door 1 13 600
+play 3000
+save build/story/s113.state

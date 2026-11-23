@@ -1,0 +1,6 @@
+# Underground temple (stage 1 room 13): the map box, then the stairs up to the temple (a door: faced and entered).
+play
+take
+door 1 14
+play
+save build/story/s114.state

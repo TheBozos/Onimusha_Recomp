@@ -58,8 +58,9 @@ the game, scene by scene.
 | The rest of the game, room by room (so far: the gauntlet's event, rooms 1, 2, 3 and 6: the gate, the storehouse, the soldiers, the forest road and its cave) | 🔧 |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
-| Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 82 rooms a door leads into | ✅ |
-| Every door-reachable room loaded and played (82): no crash; two rooms dark, one with a misplaced texture | 🔧 |
+| Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
+| Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): through the forest cave into the underground temple | 🔧 |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -68,6 +69,13 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-23.** The story going on in its own order, played by the new headless bot (`ONI_BOT`): out of the forest
+cave's hole into the underground temple, its map box taken and its stairs climbed into the temple.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-underground-temple.png" width="560" alt="Samanosuke running up stone stairs between two lanterns toward a red temple gate inside a cave">
+</p>
 
 **2026-11-23.** Movies played from a room's own script, native: the army under the moon (`LINKS05`, stage 2) and, in
 stage 5, the hall's movie (`LINKS01`) handing over to the encounter that follows it. A movie that started on the wrong
@@ -226,8 +234,13 @@ The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR -
 | Game saves | The memory cards live in `%APPDATA%\Onimusha_Recomp\mc0` and `mc1`: an in-game save outlives the session (`--card-dir DIR` elsewhere; `ONI_MEMORY_CARDS=1` keeps them in memory) |
 Diagnostics: `ONI_BG_TRACE=1` (backgrounds), `ONI_2D_TRACE=1..3` (the 2D), `ONI_TEX_TRACE=1` and
 `ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames), `ONI_MOVIE_TRACE=1` (movies),
-`ONI_BGMV_TRACE=1` (animated backgrounds), `ONI_FADE_TRACE=1` (the game's fade and mode), `ONI_VU1_TRACE=1..3`
+`ONI_BGMV_TRACE=1` (animated backgrounds), `ONI_FADE_TRACE=1` (the game's fade and mode), `ONI_PLAYER_TRACE=<n>`
+(the player's place, position, facing and life every n frames), `ONI_VU1_TRACE=1..3`
 (models; 3 lists every drawn batch), `ONI_THREADS_AT=<frame>` (every thread's state and pc at that frame).
+
+Story bot: `ONI_BOT=<script>` plays from a save state by a script of goals (doors, items, fights; the steps in
+`runtime/oni_bot.h`); `scripts/story/leg.sh <state> <script> <frames>` runs one leg headless with the cheats on,
+`scripts/story/*.txt` are the legs played so far.
 
 `tools/oni_disasm.py <SLUS_200.18> <function | 0xADDR>` disassembles the resident code with the game's symbols
 (needs `capstone`); `tools/oni_dwarf.py <SLUS_200.18> build/oni_types.h` writes the game's own types, functions and
