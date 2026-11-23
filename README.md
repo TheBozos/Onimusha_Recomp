@@ -25,14 +25,15 @@ Built on [BozoEngine](https://github.com/TheBozos/BozoEngine), The Bozos' own to
 
 ## Status
 
-**Bring-up: from the boot to the first room's opening event and its first moments of play, natively in a window, at 60 frames a second.**
+**Bring-up: from the boot to the first room in play, characters included, natively in a window, at 60 frames a second.**
 The executable and its 98 code overlays are recompiled; Capcom's sound driver and Sony's synthesizer run as statically
 compiled native code (the title music plays); the pre-rendered backgrounds are decoded from the disc's IPU streams and
 the 2D (logos' fades, "PRESS START BUTTON", the menu and its frame) is drawn from the game's own sprites and textures.
 The movies (the attract sequence, New Game's intro and letter) play with their sound through BozoEngine's native
 libmpeg, and START skips them. New Game reaches the first room: its opening event plays with its voiced dialogue and
-subtitles over the pre-rendered cuts, then the game hands over with the HUD. The characters are not drawn yet: the
-models (VU1) are next.
+subtitles over the pre-rendered cuts, then the game hands over with the HUD. The characters are drawn: the game's own
+VU1 microprograms, translated to C++, run on the models' VIF1 chains and their GIF packets become the frame's draws.
+Next: the models' shadows, the room's depth (scenery in front of the characters), the animated backgrounds.
 
 | Milestone on BozoEngine | |
 |---|:---:|
@@ -48,7 +49,8 @@ models (VU1) are next.
 | New Game: the intro and letter movies, then the first room's loading | ✅ |
 | The first room: its cuts (Z buffer + IPU picture), its opening event with voices (ADS streams, the SPU2 interrupt) and subtitles, the HUD | ✅ |
 | Collision's VU0 program (POLYCALC) translated to C++ | ✅ |
-| Native 3D models: Samanosuke, Kaede, the enemies (VU1 programs, model data) | ⏳ |
+| Native 3D models: the 15 VU1 microprograms translated to C++, the models' VIF1 chains run natively, their GIF packets drawn (Samanosuke, Kaede, the soldiers) | ✅ |
+| Shadows (the off-screen shadow buffer and its darkening pass), depth against the pre-rendered rooms | ⏳ |
 | The game playable: the first room drawn and controllable | ⏳ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, save states, cheats | ⏳ |
 
@@ -59,9 +61,18 @@ what remains open.
 
 ## Screenshots
 
+**2026-11-23.** The characters, native: the game's 15 VU1 microprograms translated to C++ and run on the models'
+own VIF1 chains, their GIF packets drawn with their textures; Samanosuke and Kaede in the opening event, then
+Samanosuke and a spear guard in the castle gate's courtyard, at 60 frames a second.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-kaede-samanosuke.png" width="400" alt="Samanosuke in red armour and Kaede in front of the bamboo fence, subtitle: Kaede, I'll go north.">
+  <img src="docs/screenshots/2026-11-23-bozo-first-room-3d.png" width="400" alt="The castle gate's courtyard in play: Samanosuke and a spear guard, the health bar at the top left">
+</p>
+
 **2026-11-23.** The first room, native: its opening event over the castle gate (the pre-rendered cuts decoded from
 the room's BGS stream, Kaede and Samanosuke's voiced lines with their subtitles), then the first moments of play with
-the HUD. The characters are not drawn yet (the VU1 models are next).
+the HUD (before the characters were drawn).
 
 <p align="center">
   <img src="docs/screenshots/2026-11-23-bozo-room-event.png" width="400" alt="The castle gate's courtyard at dusk with the subtitle: If our princess is at the keep, there are two ways to get there.">

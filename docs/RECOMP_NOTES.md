@@ -201,25 +201,53 @@ Native:
 Result (2026-11-23): the attract movie (the opening) and New Game's intro and letter play in the window with their
 sound, 60 frames/s; START skips them; New Game reaches the first room's loading.
 
+## Models (tools/oni_vu1_gen.py, runtime/oni_vu1.cpp, 2026-11-23)
+
+The game draws every model through VU1. `Md_draw_vu0` / `Md_draw_entry_*` build a VIF1 source chain per object (the
+model file's prebuilt chains linked, matrices and lights from `Md_first_trans_set`'s REF of 17 qwords at `0x27dc00`)
+and queue it; `Md_tag_trans` `0x130e40` starts VIF1's DMA on it (chain mode, TTE: the tags' upper halves are VIF
+codes). Each object's chain sends its program with a REF to one of the `Vu1mc_*` images (`Md_obj_vu1_type_set`, the
+table at `0x1f3c80`): a VIF NOP, an MPG of the program to micro address 0, MSCAL 0 (the set-up: constants and the
+matrices at VU address 0xb0..0xbf), then per batch of vertices an UNPACK and MSCNT (the main loop after the set-up's
+E bit). The programs build GIF packets (PACKED: ST, RGBAQ, XYZF2 per vertex, ADC in XYZF2 for strips) and XGKICK them.
+A vertex is 5 qwords: position, normal, UV (12.4, ITOF4), the joint matrices' addresses and the skinning weights
+(x 1/248).
+
+Natively, nothing of VIF1, VU1 or the GS is emulated as hardware; the game's own programs run as C++:
+- `tools/oni_vu1_gen.py` translates the 15 images (14 `Vu1mc_*` and the shadows' program at `0x20e878`, two MPGs of
+  256 + 201 pairs) with the VU0 translator's pair model (lower reads before the upper writes, Q's latency, the MAC
+  pipeline), adding VU1's memory instructions (LQ / LQI / LQD / SQ / SQI / SQD / ILW / ILWR / ISW / ISWR), XTOP,
+  XGKICK, the clip-flag tests, the signed branches, BAL / JR / JALR. Each program is straight-line C++ (a label per
+  pair, jumps only at branches after their delay slot, Q checked where it is read); the programs that never read the
+  MAC flags (all but one) use flag-free SSE arithmetic held to the PS2's range. A program is known at run time by the
+  hash of the words its MPGs uploaded.
+- `runtime/oni_vu1.cpp` walks the chain as the DMA does (refe / cnt / next / ref / refs / call / ret / end, the
+  scratchpad bit), keeps each word's place on the qword grid (DIRECT's data starts on a qword), runs VIF1's commands
+  (STCYCL, BASE / OFFSET and the double buffer swapped at each MSCAL / MSCNT, ITOP, STMOD, STMASK, STROW / STCOL,
+  UNPACK in every format with masks and modes, MPG, DIRECT) on a VU1 state kept between chains, and turns each GIF
+  packet (PACKED, REGLIST, IMAGE) into the frame's draws: triangles, strips, fans and sprites in screen space, the GS's
+  Z, Q for the texture's perspective, the material from PRIM, TEX0, TEX1, CLAMP, ALPHA, TEST, ZBUF, FRAME and FOGCOL;
+  the field's 224 lines doubled to the frame's 448, the scissor at the frame.
+- Draws to another target than the display's two field buffers (FRAME pages 0 and 0x46) are not drawn: the shadow
+  program clears an off-screen CT24 buffer at page 0xd2, draws the shadow volumes and grades it with two full-screen
+  sprites, then a last sprite subtracts it (read back as TEX0 block 0x1a40) from the frame; drawn literally on the
+  PC's frame those passes blackened the models. The shadows wait for render targets.
+
+Cost: the first room runs ~1000 program calls a frame (1.44 million VU pairs, the PS2's VU1 busy ~9.6 ms of its
+16.7). Pair by pair through a `switch` with exact flags it took ~22 ms a frame: the room fell to 37-50 frames/s and
+the sound underran (heard as crackling). Straight-line code and the flag-free arithmetic bring it to ~5 ms (~1 ms of
+it the GIF packets): 60 frames/s and no underrun. `ONI_AUDIO_STATS=1` prints the sound device's queue, underruns and
+the frame rate; `ONI_VU1_TRACE=1..5` the frame's counts and times, then runs, kicks, DMA tags, VIF codes and GIF tags;
+`ONI_VU1=0` turns the models off; `ONI_VU1_FLAT` / `ONI_VU1_NOTEX` / `ONI_VU1_NODEPTH` are diagnostics.
+
+Open: a save state does not keep the port's own state (the texture uploads, the VU1 state, the EE RPC server), so a
+loaded state draws untextured models and faults in `sceSifCallRpc` a few frames later.
+
 ## Next
 
-- **The 3D**: the models from their own data at `Md_draw_entry_vu0` / `Md_draw_entry_clip` (the VU1 programs
-  `Vu1mc_*` run on what those build), the room's depth (`Bgz_disp`, the cut's Z buffer) so the models sit behind the
-  pre-rendered scenery. What sys_sub.c's types give (build/oni_types.h):
-  - an object `_OCW` (0x7e0): `pObj` (+0x98, per part: `pObj_tag` / `pGroup_tag`, the model file's prebuilt VIF
-    chains, `Rgbf`, `Semi_alpha`), `pMod` (+0x9c: `Obj_num`, `Jnt_num`, `Tex_num`, `Obj_tbl[]` of {`Group_num`,
-    `Vu_type` (which VU1 program), `pGroup`}), `pTex_info` (+0xa8: per texture its `Tex0`), `pJnt` (+0xac, the
-    skeleton), `pLv` / `pLc` (+0xb4 / +0xb8, light vectors and colours), `pWmat` / `pWnmat` (+0xc8 / +0xcc, a world
-    and a normal matrix per part);
-  - a group {`Num`, `Tex_no`, `pVert`, `pNorm`, `pTex`, `pMat`, `pMat_w`, `pMime`}: the vertex, normal and UV arrays
-    themselves, so a part can be drawn from them with its world matrix and the camera's;
-  - `Md_draw_entry_vu0(pCw, pObj_tbl, parts_no)` links the parts' prebuilt chains (no calls); `Md_draw_vu0` drives
-    it (with `pCalcLoadGmMatrix` for the collision program and `Md_draw_semi*` for the semi-transparent parts).
-  The arrays: `pVert` float[4] {Vx, Vy, Vz, Vw} (Vw: likely the strip's no-kick flag, to check against the VU1
-  program), `pNorm` float[3], `pTex` u16 {U, V} (fixed point: scale to find), `pMat` {Status, Mat1, Mat2, Mat3} the
-  joints a skinned vertex follows, `pMat_w` its weights (u16), `pMime` the facial morphs (`Mime_parts`).
-  Next: the topology and UV scale (the VU1 programs' unpack: `Vu1mc_std_cl`, `Vu1mc_wld_*` ...), the joints'
-  matrices (`_JNT_WK`), the camera's matrix, then a native draw per part at `Md_draw_entry_vu0`.
+- Shadows (render targets: the shadow buffer and its read-back) and the room's depth (`Bgz_disp`, the cut's Z buffer)
+  so the scenery in front of the characters hides them.
+- The port's own state in save states (textures, VU1, the RPC server).
 - The animated backgrounds (`IMAGE/BGS/MOV*.IPU`, `DecodeIPU_Movie` `0x197bc0`, `MoviePlay` from `Bg_disp`).
 - `Spr_draw`, `Esp_sp_draw`, `Screen_blur_draw`; movie captions.
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.

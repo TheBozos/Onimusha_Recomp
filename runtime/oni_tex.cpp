@@ -94,6 +94,27 @@ namespace oni::tex
             ctx->pc = ctx->r[31].uw[0];
         }
 
+        // An upload kept by its destination block (Params: the transfer's BITBLTBUF / TRXPOS / TRXREG).
+        void keep(const Params &p, const uint8_t *texels, uint64_t bytes)
+        {
+            // An upload at (x, y) of its buffer starts at another block: the palettes are packed four to a block group
+            // (8 x 2 each at (0,0), (8,0), (0,8), (8,8)), and a TEX0's CBP names that block.
+            uint32_t block = p.dbp;
+            const bool placed = (p.x || p.y) && blockAt(p.psm, p.dbw, p.x, p.y, block);
+            if ((p.x || p.y) && !placed)
+            {
+                if (trace())
+                    std::printf("[oni:tex] upload at (%u,%u) of block %#x not kept\n", p.x, p.y, p.dbp);
+                return;
+            }
+            Upload &u = g_uploads[block];
+            u.p = p;
+            u.bytes.assign(texels, texels + bytes);
+            u.generation = ++g_generation;
+            if (trace())
+                std::printf("[oni:tex] upload block %#x bw %u psm %#x %ux%u\n", p.dbp, p.dbw, p.psm, p.w, p.h);
+        }
+
         // sceGsExecLoadImage(lp, src): the upload's texels, copied as they are.
         void execLoadImage(uint8_t *ram, R5900Context *ctx, Runtime *)
         {
@@ -105,27 +126,7 @@ namespace oni::tex
                 const uint32_t bpp = bitsPerPixel(p.psm);
                 const uint64_t bytes = (static_cast<uint64_t>(p.w) * p.h * bpp + 7) / 8;
                 if (bpp && bytes && src + bytes <= 0x2000000u)
-                {
-                    // An upload at (x, y) of its buffer starts at another block: the palettes are packed four to a
-                    // block group (8 x 2 each at (0,0), (8,0), (0,8), (8,8)), and a TEX0's CBP names that block.
-                    uint32_t block = p.dbp;
-                    const bool placed = (p.x || p.y) && blockAt(p.psm, p.dbw, p.x, p.y, block);
-                    if ((p.x || p.y) && !placed)
-                    {
-                        if (trace())
-                            std::printf("[oni:tex] upload at (%u,%u) of block %#x not kept\n", p.x, p.y, p.dbp);
-                    }
-                    else
-                    {
-                        Upload &u = g_uploads[block];
-                        u.p = p;
-                        u.bytes.assign(ram + src, ram + src + bytes);
-                        u.generation = ++g_generation;
-                        if (trace())
-                            std::printf("[oni:tex] upload block %#x bw %u psm %#x %ux%u from %#x\n", p.dbp, p.dbw, p.psm, p.w,
-                                        p.h, src);
-                    }
-                }
+                    keep(p, ram + src, bytes);
                 else if (trace())
                     std::printf("[oni:tex] upload psm %#x %ux%u from %#x skipped\n", p.psm, p.w, p.h, src);
             }
@@ -252,6 +253,27 @@ namespace oni::tex
             }
         }
         return t;
+    }
+
+    void upload(uint64_t bitbltbuf, uint64_t trxpos, uint64_t trxreg, const uint8_t *texels, size_t bytes)
+    {
+        Params p;
+        p.dbp = static_cast<uint32_t>(bitbltbuf >> 32) & 0x3fffu;
+        p.dbw = static_cast<uint32_t>(bitbltbuf >> 48) & 0x3fu;
+        p.psm = static_cast<uint32_t>(bitbltbuf >> 56) & 0x3fu;
+        p.x = static_cast<uint32_t>(trxpos >> 32) & 0x7ffu;
+        p.y = static_cast<uint32_t>(trxpos >> 48) & 0x7ffu;
+        p.w = static_cast<uint32_t>(trxreg) & 0xfffu;
+        p.h = static_cast<uint32_t>(trxreg >> 32) & 0xfffu;
+        const uint32_t bpp = bitsPerPixel(p.psm);
+        const uint64_t need = (static_cast<uint64_t>(p.w) * p.h * bpp + 7) / 8;
+        if (!bpp || !need || bytes < need)
+        {
+            if (trace())
+                std::printf("[oni:tex] GIF upload psm %#x %ux%u (%zu bytes) skipped\n", p.psm, p.w, p.h, bytes);
+            return;
+        }
+        keep(p, texels, need);
     }
 
     void install(bozo::port::Registry &r)

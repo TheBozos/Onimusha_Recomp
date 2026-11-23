@@ -1,5 +1,6 @@
 // Onimusha's native frame: the background, then the 2D, published to BozoEngine's renderer at each frame boundary.
 #include "oni_render.h"
+#include "oni_vu1.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -46,6 +47,7 @@ namespace oni::render
         oni::sprite::submit(ram);
         r.publishOverlay(s);
         r.endFrame();
+        oni::vu1::frameStats();
         ++g_frames;
         if (trace())
             std::printf("[oni:render] frame %llu background %d\n", (unsigned long long)g_frames, background ? 1 : 0);

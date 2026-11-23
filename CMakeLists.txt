@@ -144,7 +144,20 @@ add_library(oni_vu0_code OBJECT ${oni_vu0_cpp})
 target_link_libraries(oni_vu0_code PRIVATE bozo_runtime_headers)
 target_compile_options(oni_vu0_code PRIVATE -O2 -w -ffp-contract=off)
 
-set(oni_runtime_sources ${oni_port_sources} $<TARGET_OBJECTS:oni_audio_code> $<TARGET_OBJECTS:oni_vu0_code>)
+# The models' VU1 microprograms (the Vu1mc_* images), translated the same way (tools/oni_vu1_gen.py).
+set(oni_vu1_cpp ${CMAKE_BINARY_DIR}/oni_vu1_gen/oni_vu1_programs.cpp)
+add_custom_command(OUTPUT ${oni_vu1_cpp}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/oni_vu1_gen
+  COMMAND ${Python3_EXECUTABLE} -I ${CMAKE_SOURCE_DIR}/tools/oni_vu1_gen.py ${oni_elf} ${oni_vu1_cpp}
+  DEPENDS ${oni_elf} ${CMAKE_SOURCE_DIR}/tools/oni_vu1_gen.py ${CMAKE_SOURCE_DIR}/tools/oni_vu0_gen.py
+  COMMENT "Translating the VU1 microprograms")
+add_library(oni_vu1_code OBJECT ${oni_vu1_cpp})
+target_link_libraries(oni_vu1_code PRIVATE bozo_runtime_headers)
+target_include_directories(oni_vu1_code PRIVATE ${CMAKE_SOURCE_DIR}/runtime)
+target_compile_options(oni_vu1_code PRIVATE -O2 -w -ffp-contract=off)
+
+set(oni_runtime_sources ${oni_port_sources} $<TARGET_OBJECTS:oni_audio_code> $<TARGET_OBJECTS:oni_vu0_code>
+    $<TARGET_OBJECTS:oni_vu1_code>)
 list(FILTER oni_runtime_sources EXCLUDE REGEX "oni_main\\.cpp$")
 
 add_executable(oni-headless runtime/oni_main.cpp ${oni_runtime_sources})

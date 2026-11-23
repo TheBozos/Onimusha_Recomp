@@ -9,6 +9,7 @@
 #include "oni_functions.h"
 #include "oni_port.h"
 #include <algorithm>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -163,6 +164,16 @@ int main(int argc, char **argv)
             }
         }
         pacer.frameEnd();
+        // ONI_AUDIO_STATS: the frame rate every 120 frames, on stderr beside the sound device's lines.
+        static const bool rateStats = std::getenv("ONI_AUDIO_STATS") != nullptr;
+        if (rateStats && f % 120 == 0)
+        {
+            static auto last = std::chrono::steady_clock::now();
+            const auto now = std::chrono::steady_clock::now();
+            std::fprintf(stderr, "[oni:rate] frame %llu: %.1f fps\n", (unsigned long long)f,
+                         120.0 / std::chrono::duration<double>(now - last).count());
+            last = now;
+        }
         if (f % 60 == 0)
             std::printf("[oni] frame=%llu pc=%x cycles=%llu\n", (unsigned long long)f, ctx->pc,
                         (unsigned long long)d.now());
@@ -175,7 +186,10 @@ int main(int argc, char **argv)
     }
 #ifdef ONI_WITH_WINDOW
     bozo::app::DevicePad devices;
-    bozo::app::AudioDevice audio;
+    // ONI_AUDIO_STATS=1: the sound device's queue, underruns and drops every 2 s on stderr.
+    bozo::app::AudioOptions audioOptions;
+    audioOptions.stats = std::getenv("ONI_AUDIO_STATS") != nullptr;
+    bozo::app::AudioDevice audio(audioOptions);
     if (window && options.padScript.empty())
         host.libraries().pad.input = &devices;
 #endif
