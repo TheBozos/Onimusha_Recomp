@@ -58,7 +58,8 @@ the game, scene by scene.
 | The rest of the game, room by room (so far: the gauntlet's event, rooms 1, 2, 3 and 6: the gate, the storehouse, the soldiers, the forest road and its cave) | 🔧 |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
-| Cheats (F2 → Cheats): infinite health, magic, souls and items; a room warp to the 83 rooms a door leads into | ✅ |
+| Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 82 rooms a door leads into | ✅ |
+| Every door-reachable room loaded and played (82): no crash; two rooms dark, one with a misplaced texture | 🔧 |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet

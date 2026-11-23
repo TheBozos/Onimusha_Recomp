@@ -8,6 +8,9 @@
 //   (kyouka_push / kyouka_pull) spend.
 // - Infinite items: G.Item_work[65] (+0x9eac: Id, Num, Type, Status, 4 bytes each; Num 0xff for an item that is not
 //   counted): a count that went down is put back, and a counted item whose slot emptied comes back with one.
+// - One-hit kills: the enemies are G's list from pEm_top (+0x45bc) to pEm_end (+0x45cc), linked by pNext (+0x30),
+//   each a _ENEMY_WORK whose Max_life / Life are where the player's are; an active one's (Be_flg bit 0) life is kept at
+//   1, so the next hit takes it to 0 and the game's own damage code makes the death (its souls, its animation).
 // - The room warp: the game's own door transition. A door's _IN_DOOR_WORK (18 bytes) is written at 0x1ffd000 (EE
 //   memory nothing uses), G.pSce_aot_on (+0x986c) set to it and G.Doordemo_flg (+0x9879) raised, as Sce_Door does when
 //   the player opens a door; game_sp_check then switches the game to game_doordemo (G.mode, +0x44b0, to 3), which
@@ -44,8 +47,10 @@ namespace oni::cheats
             return e && *e && *e != '0';
         }
 
-        std::atomic<bool> g_on[4] = {fromEnvironment("ONI_CHEAT_HEALTH"), fromEnvironment("ONI_CHEAT_MAGIC"),
-                                     fromEnvironment("ONI_CHEAT_SOULS"), fromEnvironment("ONI_CHEAT_ITEMS")};
+        std::atomic<bool> g_on[5] = {fromEnvironment("ONI_CHEAT_HEALTH"), fromEnvironment("ONI_CHEAT_MAGIC"),
+                                     fromEnvironment("ONI_CHEAT_SOULS"), fromEnvironment("ONI_CHEAT_ITEMS"),
+                                     fromEnvironment("ONI_CHEAT_KILLS")};
+        constexpr uint32_t kEnemyTop = kG + 0x45bc, kEnemyEnd = kG + 0x45cc;
         std::atomic<int> g_warp{-1};
         std::atomic<int> g_place[3] = {-1, -1, -1};
         std::mutex g_statusLock;
@@ -142,6 +147,25 @@ namespace oni::cheats
             std::memcpy(&souls, ram + kSoulsAt, 4);
             if (souls < kSouls)
                 std::memcpy(ram + kSoulsAt, &kSouls, 4);
+        }
+        // (Not in stage 0, room 0: its zombie fight is scripted, the zombies' dmg_ck refilling their life at each hit until
+        // the event that ends it; a life kept at 1 kept that event from coming.)
+        if (enabled(Cheat::OneHitKills) && inPlay && !(read16(ram, kPlace) == 0 && read16(ram, kPlace + 2) == 0))
+        {
+            uint32_t at, end;
+            std::memcpy(&at, ram + kEnemyTop, 4);
+            std::memcpy(&end, ram + kEnemyEnd, 4);
+            at &= 0x1ffffffu;
+            end &= 0x1ffffffu;
+            for (int guard = 0; at && at + 0x7e0 <= 0x2000000u && guard < 64; ++guard)
+            {
+                if ((ram[at] & 1u) && read16(ram, at + 0x6d0) > 1)
+                    write16(ram, at + 0x6d0, 1);
+                if (at == end)
+                    break;
+                std::memcpy(&at, ram + at + 0x30, 4);
+                at &= 0x1ffffffu;
+            }
         }
         // Infinite items: against the last frame's inventory.
         if (enabled(Cheat::InfiniteItems) && inPlay)

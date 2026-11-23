@@ -79,6 +79,7 @@ namespace oni::vu1
         int64_t g_programNs = 0, g_chainNs = 0, g_kickNs = 0, g_cycles = 0; // time in the programs (their kicks included), in whole chains
         constexpr uint32_t kShadowPage = 0xd2;   // FRAME.FBP of the shadows' buffer
         constexpr uint8_t kShadowImage = 3;      // its renderer auxiliary image
+        uint32_t g_display = 0; // the display buffer (FRAME page 0 or 0x46) the frame is drawn into
         std::set<uint32_t> g_targets; // off-screen targets' first blocks (FRAME.FBP x 32)
 
         // The draws made from the packets, in their order, until the frame's end hands them to the renderer (drain: on the
@@ -230,19 +231,23 @@ namespace oni::vu1
                 else
                     gs.skip = true;
             }
-            // A texture read from a display buffer (pages 0 and 0x46: blocks 0 and 0x8c0): the other one is the previous
-            // frame (Screen_blur_draw's motion blur lays it over the new one), u, v its field texels.
+            // A texture read from a display buffer (pages 0 and 0x46: blocks 0 and 0x8c0): the one the frame is drawn into
+            // is the frame so far (an effect copying the scene, into the shadows' target or over itself), the other the
+            // previous frame (Screen_blur_draw's motion blur); u, v the field's texels over the frame.
             gs.fromPrevious = false;
-            if (tme && !m.target)
+            if (fbp < 0x8cu)
+                g_display = fbp;
+            if (tme)
             {
-                const uint32_t tbp = static_cast<uint32_t>(gs.tex0[c] & 0x3fffu), own = (fbp & 0x1ffu) * 32u;
-                if ((tbp == 0u || tbp == 0x8c0u) && tbp != own && fbp < 0x8cu)
+                const uint32_t tbp = static_cast<uint32_t>(gs.tex0[c] & 0x3fffu);
+                if (tbp == 0u || tbp == 0x8c0u)
                 {
-                    gs.skip = false;
+                    const bool current = tbp == g_display * 32u;
+                    gs.skip = gs.skip && m.target && fbp != kShadowPage; // (an unknown target stays undrawn)
                     gs.fromPrevious = true;
                     m.fromFrame = 1;
-                    m.source = Material::kPreviousFrame;
-                    m.nearest = false;
+                    m.source = current ? 0 : Material::kPreviousFrame;
+                    m.nearest = current; // (source 0 and filtering: mip levels from the copy)
                     m.useQ = false;
                     if (!gs.texture)
                         --gs.missingTextures;
@@ -289,7 +294,7 @@ namespace oni::vu1
             v.rgba = g.rgba;
             v.fog = g.fog / 255.0f;
             const int c = (gs.prim >> 9) & 1;
-            if (gs.fromPrevious) // the previous frame: its field texels (FST UV) over the frame
+            if (gs.fromPrevious) // a display buffer (the frame so far or the previous one): its field texels over the frame
             {
                 v.u = g.u / 640.0f;
                 v.v = g.v / 224.0f;

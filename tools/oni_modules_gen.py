@@ -9,7 +9,7 @@ import pathlib
 import sys
 
 # The slots the game loads modules into: (start, end) of the address range each module shares with its siblings.
-SLOTS = [(0x4BA780, 0x4C9500), (0x4C9500, 0x4D8280), (0x4D8280, 0x4DCA80), (0x2BF200, 0x2C3740)]
+SLOTS = [(0x4BA780, 0x4C9500), (0x4C9500, 0x4D8280), (0x4D8280, 0x4DCA80), (0x2BF200, 0x2C3780)]
 
 
 def main() -> int:

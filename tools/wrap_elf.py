@@ -21,11 +21,15 @@ PHDR = struct.Struct("<8I")
 SHDR = struct.Struct("<10I")
 R5900_EABI64_FLAGS = 0x20924000  # e_flags of SLES_546.45 (5900, eabi64, mips3)
 JR_RA = 0x03E00008
+# Onimusha's MWo3 header counts its text size from offset 0x40 (its end address, +0x18, is load + 0x40 + text + data
+# for every module on the disc); VP2S's counts it from the module's start. The sizes below are made image offsets.
+TEXT_BASE = 0x40
 
 
 def ctor_code_range(module: bytes) -> tuple[int, int, int] | None:
     """Image offsets (code start, table start, table end) of the static initializers, if any."""
     load, text, dsize, _ = struct.unpack_from("<4I", module, 8)
+    text += TEXT_BASE
     table_lo, table_hi = struct.unpack_from("<2I", module, 0x18)
     if not table_lo or table_hi <= table_lo or table_hi - load > len(module):
         return None
@@ -70,6 +74,7 @@ def header_text_end(module: bytes, text: int, word) -> int:
 
 def wrap(module: bytes, flags: int) -> bytes:
     load, text, dsize, bss = struct.unpack_from("<4I", module, 8)
+    text += TEXT_BASE
     text_lo, text_hi = 0x80, text_end(module, text)
     data_lo, data_hi = text_hi, min(text + dsize, len(module))
     image_off = 0x1000  # page-aligned file offset of the module image

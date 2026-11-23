@@ -342,6 +342,32 @@ uses) and raises the flag at the next frame in play. Checked: from room 2 to sta
 night) in one frame, back in play at the door's spawn point. `ONI_WARP=<stage>:<room>` and `ONI_CHEAT_MAGIC`,
 `_SOULS`, `_ITEMS` for runs without the window.
 
+## A sweep of every room, and what it found (2026-11-23)
+
+With the room warp every room a door leads into can be tested: from a stage-0 save state, `ONI_WARP=<stage>:<room>`,
+~1800 frames of walking and attacking headless (`ONI_CUT_TRACE`, `ONI_VU1_TRACE=1`), then two captures each in a
+hidden window (`--hidden`: no window on the desktop, no sound; the captures from the offscreen picture). Found and
+fixed:
+- Every MWo3 module (rooms and enemies) was cut 0x40 bytes short: its header counts the text from offset 0x40 (the
+  end address at +0x18 is load + 0x40 + text + data for all 176 modules on the disc), and `oni_prepare.py` took
+  text + data from the module's start; a function ending in those bytes jumped to no generated code (rooms 0:5, 2:8,
+  5:5, 5:18 faulted at once). `tools/wrap_elf.py` (VP2S's convention) counts from 0x40 too now.
+- A door whose cut the destination has only in another story state (room 3:3's from 3:2 asks cut 5 of a 3-cut room:
+  `cut_replace` maps it in the right state; otherwise the CD manager read a garbage LSN past the disc into past the
+  RAM): the warp generator reads each room's cut table (the LINK section whose 16-byte entries chain the Z buffer and
+  IPU picture through the room's BGS file) and keeps only doors with a cut the room has (82 destinations).
+- Effects reading a display buffer while drawing into another target (room 4:1: the scene copied into the shadows'
+  buffer): the one being drawn is the frame so far (`fromFrame`, source 0), the other the previous frame.
+- `Md_draw_semi` / `Md_draw_semi_l` (the semi-transparent parts: hair, ...) start their GIF DMA themselves (D2_TADR,
+  then CHCR 0x105); the native sites ignored it and those parts were never drawn (Samanosuke's and the princess's
+  hair). The chain now goes through the GIF interpreter at the CHCR write.
+All 82 rooms then ran clean headless. Left: rooms 2:1 and 5:0 show black, room 5:19 a misplaced icy texture.
+
+One-hit kills (the Cheats tab): an active enemy's life (the enemies are G's list pEm_top..pEm_end, linked by pNext
++0x30) is kept at 1, the game's own damage code killing it at the next hit: room 1's gate zombies all dead by frame
+26200 with it, all four standing without. Not in stage 0 room 0, whose scripted first fight refills its zombies' life
+(dmg_ck checks the place) until its event.
+
 ## Saves on disk, fast forward (runtime/oni_main.cpp, 2026-11-23)
 
 Without a card folder the engine keeps the memory cards in memory: a game saved in the window was lost at its end. The

@@ -77,9 +77,14 @@ def find_modules(game):
         blob = path.read_bytes()
         at = blob.find(b'MWo3')
         while at != -1:
-            load, text, data, _bss = struct.unpack_from('<4I', blob, at + 8)
+            load, text, data, _bss, end = struct.unpack_from('<5I', blob, at + 8)
             name = blob[at + 0x20:at + 0x40].split(b'\0')[0].decode('latin-1')
-            raw = blob[at:at + text + data]
+            # The module is loaded with its 0x40-byte header: text and data follow it (the header's end address,
+            # +0x18, is load + 0x40 + text + data for every module on the disc). Without the header's bytes counted,
+            # the code's last 0x40 bytes were missing: a function ending there jumped to no generated code.
+            if end != load + 0x40 + text + data:
+                raise ValueError(f'{path.name}: MWo3 module {name} with an unexpected end address')
+            raw = blob[at:at + 0x40 + text + data]
             digest = hashlib.sha1(raw).hexdigest()
             entry = found.setdefault(digest, [name, raw, []])
             entry[2].append(path.name)

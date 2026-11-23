@@ -75,8 +75,18 @@ namespace oni::model
         bozo::port::callLibrary(rt, ctx, 0x101c50);
     }
 
+    // ONI_CD_TRACE=1: every sceCdRead (sector, count, buffer, caller).
+    void cdRead(uint8_t *ram, R5900Context *ctx, Runtime *rt)
+    {
+        std::fprintf(stderr, "[oni:cd] sceCdRead lsn %u sectors %u buffer %x from %x\n", ctx->r[4].uw[0], ctx->r[5].uw[0],
+                    ctx->r[6].uw[0], ctx->r[31].uw[0]);
+        bozo::port::callLibrary(rt, ctx, 0x1121c0);
+    }
+
     void install(bozo::port::Registry &r)
     {
+        if (std::getenv("ONI_CD_TRACE"))
+            r.registerFunction(0x1121c0, cdRead); // sceCdRead
         r.registerFunction(0x101c50, dmaSend); // sceDmaSend
         r.registerFunction(0x130e40, tagTrans); // Md_tag_trans
     }

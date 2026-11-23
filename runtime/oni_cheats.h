@@ -1,6 +1,6 @@
 // Onimusha's cheats: toggles the player sets in the window's Cheats tab (F2, runtime/app/oni_cheats_ui.cpp) or, for
 // runs without a window, from the environment (ONI_CHEAT_HEALTH=1, ONI_CHEAT_MAGIC=1, ONI_CHEAT_SOULS=1,
-// ONI_CHEAT_ITEMS=1, ONI_WARP=<stage>:<room>). Applied on the game's thread at each frame's end.
+// ONI_CHEAT_ITEMS=1, ONI_CHEAT_KILLS=1, ONI_WARP=<stage>:<room>). Applied on the game's thread at each frame's end.
 #pragma once
 
 #include <cstddef>
@@ -15,6 +15,7 @@ namespace oni::cheats
         InfiniteMagic,  // the three orbs' magic kept at its maximum
         InfiniteSouls,  // the souls to spend on upgrades kept at kSouls
         InfiniteItems,  // counted items (herbs, arrows, bullets...) never go down
+        OneHitKills,    // every enemy's life kept at 1: the next hit kills it (the game's own death)
     };
     bool enabled(Cheat cheat);
     void setEnabled(Cheat cheat, bool on);

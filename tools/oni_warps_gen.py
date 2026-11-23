@@ -14,9 +14,32 @@ import struct
 import sys
 
 
+def cut_count(d):
+    """The room's cuts: the LINK section holding the cut table (16 bytes a cut: the Z buffer's and the IPU picture's
+    offsets and sizes in the room's BGS file, each starting where the previous ended, rounded up to 0x800)."""
+    if d[:4] != b"LINK":
+        return 0
+    best = 0
+    for k in range(struct.unpack_from("<I", d, 4)[0]):
+        _flag, off, size = struct.unpack_from("<3I", d, 8 + 12 * k)
+        if size < 16 or size % 16 or off + size > len(d):
+            continue
+        expect, cuts = 0, 0
+        for c in range(size // 16):
+            zoff, zsize, ioff, isize = struct.unpack_from("<4I", d, off + 16 * c)
+            ioff &= 0x0FFFFFFF  # bits 28-30: the cut's background movie (Cut_change)
+            if zoff != expect or zsize == 0 or isize == 0 or ioff != (zoff + zsize + 0x7FF) & ~0x7FF:
+                break
+            expect = (ioff + isize + 0x7FF) & ~0x7FF
+            cuts += 1
+        best = max(best, cuts)  # (a table may be padded past its last cut)
+    return best
+
+
 def doors(rdt_dir):
     files = {os.path.basename(f).upper(): f for f in glob.glob(os.path.join(rdt_dir, "*.RDT"))}
     by_dest = {}
+    cuts = {name: cut_count(open(files[name], "rb").read()) for name in files}
     for name in sorted(files):
         d = open(files[name], "rb").read()
         source = (int(name[4]), int(name[5:7], 16))
@@ -36,6 +59,8 @@ def doors(rdt_dir):
                 continue
             if nx == 0 and ny == 0 and nz == 0:
                 continue  # a scripted transition: no spawn point
+            if cuts[dest] and cut >= cuts[dest]:
+                continue  # a cut the room has only in another story state (cut_replace): not a warp
             by_dest.setdefault((stage, room), (stage, room, cut, nx, ny, nz, nd, floor, dtex, dtype, source))
     return [by_dest[k] for k in sorted(by_dest)]
 

@@ -35,6 +35,7 @@ namespace oni::cheats
             toggle("Infinite souls", Cheat::InfiniteSouls, "Keeps 99,999 souls to spend on the gauntlet's upgrades.");
             toggle("Infinite items", Cheat::InfiniteItems,
                    "Herbs, medicine, arrows and bullets never run out (a used item comes back).");
+            toggle("One-hit kills", Cheat::OneHitKills, "Every enemy dies at the first hit (bosses included; not the castle gate's scripted first fight).");
 
             ImGui::SeparatorText("Room warp");
             int stage = -1, room = -1, cut = -1;

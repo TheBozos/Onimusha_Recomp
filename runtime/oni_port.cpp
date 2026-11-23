@@ -5,6 +5,7 @@
 #include "oni_port.h"
 #include "bozo/ee/dispatcher.h"
 #include "oni_render.h"
+#include "oni_vu1.h"
 
 #include <cstring>
 
@@ -34,6 +35,8 @@ namespace oni
         uint64_t display[2] = {};
 
         // main's loop reads and writes the GS CSR register (0x12001000) itself; Quake_move writes DISPLAY1/2.
+        uint32_t g_semiTag = 0; // Md_draw_semi's chain (its D2_TADR)
+
         bool nativeInstruction(uint8_t *ram, R5900Context *ctx, Runtime *rt, uint32_t pc)
         {
             switch (pc)
@@ -68,22 +71,28 @@ namespace oni
             case 0x001af528u: // native site: sw a0,(v1): D0_TADR
             case 0x001af534u: // native site: sw v1,(a0): D0_CHCR, start
                 return true;
-            // Md_draw_semi / Md_draw_semi_l: the semi-transparent models' GS packets sent by GIF DMA (channel 2:
-            // TADR, MADR, ASR0, ASR1, QWC, CHCR twice). Not sent: the models are to be drawn natively from their data.
+            // Md_draw_semi / Md_draw_semi_l: the semi-transparent models' parts (Samanosuke's hair, ...) as GS packets
+            // the game builds and sends by GIF DMA itself (channel 2: QWC, MADR, ASR0, ASR1, TADR, then CHCR 0x105:
+            // chain mode). The chain is read at the start and drawn through the GIF interpreter, as the chains
+            // sceDmaSend sends (runtime/oni_vu1.cpp).
+            case 0x0018df18u: // native site: Md_draw_semi, D2_TADR
+            case 0x0018e4d8u: // native site: Md_draw_semi_l, D2_TADR
+                g_semiTag = ctx->r[2].uw[0];
+                return true;
+            case 0x0018df34u: // native site: Md_draw_semi, D2_CHCR start
+            case 0x0018e4f4u: // native site: Md_draw_semi_l, D2_CHCR start
+                oni::vu1::runGifChain(ram, bozo::port::scratchpad(rt), g_semiTag);
+                return true;
             case 0x0018deecu: // native site: Md_draw_semi, D2_QWC
             case 0x0018def4u: // native site: Md_draw_semi, D2_MADR
             case 0x0018defcu: // native site: Md_draw_semi, D2_ASR0
             case 0x0018df04u: // native site: Md_draw_semi, D2_ASR1
-            case 0x0018df18u: // native site: Md_draw_semi, D2_TADR
             case 0x0018df24u: // native site: Md_draw_semi, D2_CHCR
-            case 0x0018df34u: // native site: Md_draw_semi, D2_CHCR start
             case 0x0018e4acu: // native site: Md_draw_semi_l, D2_QWC
             case 0x0018e4b4u: // native site: Md_draw_semi_l, D2_MADR
             case 0x0018e4bcu: // native site: Md_draw_semi_l, D2_ASR0
             case 0x0018e4c4u: // native site: Md_draw_semi_l, D2_ASR1
-            case 0x0018e4d8u: // native site: Md_draw_semi_l, D2_TADR
             case 0x0018e4e4u: // native site: Md_draw_semi_l, D2_CHCR
-            case 0x0018e4f4u: // native site: Md_draw_semi_l, D2_CHCR start
                 return true;
             case 0x001af538u: // native site: lw v1,(a0): D0_CHCR polled until STR clears
                 ctx->r[3].ud[0] = 0;

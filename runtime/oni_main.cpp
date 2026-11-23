@@ -80,6 +80,8 @@ int main(int argc, char **argv)
 #ifdef ONI_WITH_WINDOW
         else if (a == "--no-vsync")
             windowOptions.vsync = false;
+        else if (a == "--hidden") // no window on the desktop and no sound: captures from the offscreen picture
+            windowOptions.hidden = true;
         else if (a == "--fullscreen")
             windowOptions.fullscreen = true;
         else if (a == "--capture-dir" && i + 1 < argc)
@@ -92,7 +94,7 @@ int main(int argc, char **argv)
             std::fprintf(stderr, "Usage: onimusha [--frames N] [--headless] [--elf FILE] [--iso FILE] [--card-dir DIR]\n"
                                  "                [--pad-script FILE] [--wav FILE] [--out FILE] [--profile-io] [--quiet]\n"
                                  "                [--dump-ram FILE] [--load-state FILE] [--save-state FILE --save-state-at N]\n"
-                                 "                [--fullscreen] [--no-vsync]\n");
+                                 "                [--fullscreen] [--no-vsync] [--hidden]\n");
             return a == "--help" ? 0 : 2;
         }
     }
@@ -240,7 +242,8 @@ int main(int argc, char **argv)
     {
 #ifdef ONI_WITH_WINDOW
         if (window)
-            audio.open();
+            if (!windowOptions.hidden)
+                audio.open();
 #endif
         uint64_t frames = 0;
         try
