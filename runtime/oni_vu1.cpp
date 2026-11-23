@@ -102,6 +102,19 @@ namespace oni::vu1
                 // SCISSOR: x as it is, the field's lines doubled to the frame's (an event's cinema bars are outside it).
                 const uint64_t sc = gs.scissor[(gs.prim >> 9) & 1];
                 const bozo::render::Screen s = oni::render::screen();
+                if (trace() >= 3) // each drawn batch: its registers and its vertices' extent in the frame
+                {
+                    float bx0 = 1e9f, by0 = 1e9f, bx1 = -1e9f, by1 = -1e9f;
+                    for (const auto &v : gs.batch)
+                    {
+                        bx0 = std::min(bx0, v.x), bx1 = std::max(bx1, v.x);
+                        by0 = std::min(by0, v.y), by1 = std::max(by1, v.y);
+                    }
+                    const int c = (gs.prim >> 9) & 1;
+                    std::printf("[oni:vu1] batch prim %03llx frame %llx tex0 %016llx alpha %llx: %zu vertices, (%.0f,%.0f)-(%.0f,%.0f)\n",
+                                (unsigned long long)gs.prim, (unsigned long long)gs.frame[c], (unsigned long long)gs.tex0[c],
+                                (unsigned long long)gs.alpha[c], gs.batch.size(), bx0, by0, bx1, by1);
+                }
                 const float x0 = static_cast<float>(sc & 0x7ff), x1 = static_cast<float>((sc >> 16) & 0x7ff) + 1.0f;
                 const float y0 = static_cast<float>((sc >> 32) & 0x7ff), y1 = static_cast<float>((sc >> 48) & 0x7ff) + 1.0f;
                 PendingDraw d{{s.originX + std::max(0.0f, x0), s.originY + std::max(0.0f, y0 * 2.0f),

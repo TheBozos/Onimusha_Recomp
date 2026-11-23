@@ -8,6 +8,7 @@
 // same two field buffers (the game's own code may read or patch them: cut_replace). Bg_disp still runs (its camera,
 // lights, shadows, BG movies); the frame publishes the picture rebuilt from the field buffers as its backdrop.
 #include "oni_render.h"
+#include "oni_tex.h"
 #include "oni_vu1.h"
 
 #include "bozo/ee/dispatcher.h"
@@ -418,13 +419,19 @@ namespace oni::bg
                     const uint32_t x0 = (trxpos >> 32) & 0x7ff, y0 = (trxpos >> 48) & 0x7ff;
                     const uint32_t w = trxreg & 0xfff, h = (trxreg >> 32) & 0xfff;
                     const uint32_t psm = (bitbltbuf >> 56) & 0x3f;
+                    const uint32_t dbp = static_cast<uint32_t>((bitbltbuf >> 32) & 0x3fff);
                     if (trace && logged < 4)
                     {
                         ++logged;
-                        std::printf("[oni:bgmv] image psm %x at (%u,%u) %ux%u, %u qwords (field %u)\n", psm, x0, y0, w, h, nloop, field);
+                        std::printf("[oni:bgmv] image dbp %x dbw %u psm %x at (%u,%u) %ux%u, %u qwords (field %u)\n", dbp,
+                                    static_cast<uint32_t>((bitbltbuf >> 48) & 0x3f), psm, x0, y0, w, h, nloop, field);
                     }
                     const uint8_t *texels = stream.data() + 16 * q;
-                    if (psm == 0 && x0 + w <= static_cast<uint32_t>(kWidth) && y0 + h <= static_cast<uint32_t>(kHeight / 2) &&
+                    // A movie into a texture rather than the frame (stage 5 room 19's 256 x 256 water caustics: block
+                    // 0x1a40): a texture upload, not the room's picture.
+                    if (dbp != 0u && dbp != 0x8c0u)
+                        oni::tex::upload(bitbltbuf, trxpos, trxreg, texels, static_cast<size_t>(nloop) * 16u);
+                    else if (psm == 0 && x0 + w <= static_cast<uint32_t>(kWidth) && y0 + h <= static_cast<uint32_t>(kHeight / 2) &&
                         static_cast<uint64_t>(w) * h * 4 <= static_cast<uint64_t>(nloop) * 16)
                         for (uint32_t y = 0; y < h; ++y)
                             std::memcpy(ram + (field ? kFieldOdd : kFieldEven) + ((y0 + y) * kWidth + x0) * 4, texels + y * w * 4, w * 4);

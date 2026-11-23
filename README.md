@@ -69,6 +69,15 @@ what remains open.
 
 ## Screenshots
 
+**2026-11-23.** Movies played from a room's own script, native: the army under the moon (`LINKS05`, stage 2) and, in
+stage 5, the hall's movie (`LINKS01`) handing over to the encounter that follows it. A movie that started on the wrong
+field used to hold on its first pictures forever, and a finished movie's fade used to stay over the room.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-23-bozo-army-movie.png" width="400" alt="A movie: ranks of armoured samurai with spears marching in the mist under a full moon">
+  <img src="docs/screenshots/2026-11-23-bozo-hall-encounter.png" width="400" alt="A ruined hall full of fallen soldiers, a samurai in red armour facing a warrior across it">
+</p>
+
 **2026-11-23.** Further in, native and at 60 frames a second: the storehouse's fight in the sun shafts (room 2), and
 the forest road's cave with its zombies and an ogre (room 6), after the castle gate, the storehouse and the soldiers'
 event (rooms 1 to 3). The models' work now runs on a thread of its own, so the crowded fights keep their frame rate
@@ -217,7 +226,8 @@ The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR -
 | Game saves | The memory cards live in `%APPDATA%\Onimusha_Recomp\mc0` and `mc1`: an in-game save outlives the session (`--card-dir DIR` elsewhere; `ONI_MEMORY_CARDS=1` keeps them in memory) |
 Diagnostics: `ONI_BG_TRACE=1` (backgrounds), `ONI_2D_TRACE=1..3` (the 2D), `ONI_TEX_TRACE=1` and
 `ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames), `ONI_MOVIE_TRACE=1` (movies),
-`ONI_THREADS_AT=<frame>` (every thread's state and pc at that frame).
+`ONI_BGMV_TRACE=1` (animated backgrounds), `ONI_FADE_TRACE=1` (the game's fade and mode), `ONI_VU1_TRACE=1..3`
+(models; 3 lists every drawn batch), `ONI_THREADS_AT=<frame>` (every thread's state and pc at that frame).
 
 `tools/oni_disasm.py <SLUS_200.18> <function | 0xADDR>` disassembles the resident code with the game's symbols
 (needs `capstone`); `tools/oni_dwarf.py <SLUS_200.18> build/oni_types.h` writes the game's own types, functions and

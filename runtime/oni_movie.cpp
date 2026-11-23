@@ -51,6 +51,10 @@ namespace oni::movie
         bool g_showing = false;                                   // a movie's picture is shown (playing or fading out)
         float g_brightness = 1.0f;                                // the fade after the display is off
         uint64_t g_shown = 0;
+        // The frame being published is the movie's own (vblankHandler's): only those frames get the picture and its
+        // darkening. Once termAll removes the handler the game's frames are its own again (the fade level stays where
+        // the movie's end left it, black, until the next movie).
+        bool g_inHandler = false;
 
         void onPicture(uint32_t, uint32_t width, uint32_t height, const uint8_t *rgba)
         {
@@ -160,28 +164,9 @@ namespace oni::movie
             if (trace() && (!on || g_shown % 60 == 1))
                 std::printf("[oni:movie] vblank field %u, display %d, pictures shown %llu, buffered %u, brightness %.2f\n",
                             field, on ? 1 : 0, (unsigned long long)g_shown, read32(ram, kVoBuf + 0xc), g_brightness);
-            if (g_brightness < 1.0f)
-            {
-                // The darkening over the picture: black, alpha (1 - brightness), over the whole frame.
-                const bozo::render::Screen s = oni::render::screen();
-                bozo::render::Material m;
-                m.textured = false;
-                m.depthTest = m.depthWrite = false;
-                m.blend = bozo::render::Material::Blend::Alpha;
-                const uint32_t alpha = static_cast<uint32_t>((1.0f - g_brightness) * 128.0f + 0.5f);
-                bozo::render::Vertex v[6];
-                const float xs[6] = {0, 1, 0, 1, 1, 0}, ys[6] = {0, 0, 1, 0, 1, 1};
-                for (int i = 0; i < 6; ++i)
-                {
-                    v[i].x = s.originX + xs[i] * s.width;
-                    v[i].y = s.originY + ys[i] * s.height;
-                    v[i].rgba = alpha << 24;
-                }
-                static constexpr float kScreen[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
-                (void)kScreen;
-                oni::vu1::queueDraw(m, v, 6, nullptr);
-            }
-            oni::render::publish(ram);
+            g_inHandler = true;
+            oni::render::publish(ram); // (the picture and its darkening: drawOver, from publish)
+            g_inHandler = false;
             bozo::port::frameEnd(rt, ctx); // last: it may defer a stop
         }
 
@@ -219,6 +204,19 @@ namespace oni::movie
             ctx->pc = ctx->r[31].uw[0];
         }
 
+        // startDisplay(field) 0x1bcee0: the display on once sceGsSyncV(0) answers another field than `field` (1: the
+        // display starts on an even field). The movie thread spins on it, but natively sceGsSyncV's answer is the parity
+        // of the frames sceGsSyncV itself ended, and while a movie plays the frames end in vblankHandler instead: the
+        // answer never changed, and a movie whose display started on the wrong parity never started (stage 5 room 0's
+        // LINKS01). The display goes on at once: vblankHandler already shows a picture from its even field.
+        void startDisplay(uint8_t *ram, R5900Context *ctx, Runtime *)
+        {
+            write32(ram, kDisplayOn, 1);
+            write32(ram, kNoPicture, 0);
+            write32(ram, kFrameCount, 0);
+            ctx->pc = ctx->r[31].uw[0];
+        }
+
         // videoCallback(mp, cbstr, data): the game copies the demuxed video into its IPU FIFO (viBuf) and starts its DMA;
         // natively the decoder takes the video from the stream itself (BozoEngine's answer to TMB's videoCallback): 1.
         void videoCallback(uint8_t *, R5900Context *ctx, Runtime *)
@@ -246,6 +244,81 @@ namespace oni::movie
         return g_showing ? g_picture : nullptr;
     }
 
+    void drawOver()
+    {
+        if (!g_inHandler)
+            return;
+        const auto picture = shown();
+        const bozo::render::Screen s = oni::render::screen();
+        const float xs[6] = {0, 1, 0, 1, 1, 0}, ys[6] = {0, 0, 1, 0, 1, 1};
+        if (trace())
+        {
+            static unsigned n = 0;
+            if (n++ % 120 == 0)
+                std::printf("[oni:movie] drawOver: picture %s %ux%u, mean %u, brightness %.2f\n", picture ? "yes" : "no",
+                            picture ? picture->width : 0, picture ? picture->height : 0,
+                            picture && !picture->rgba.empty() ? [&] {
+                                    uint64_t sum = 0;
+                                    for (uint32_t p : picture->rgba)
+                                        sum += (p & 0xff) + ((p >> 8) & 0xff) + ((p >> 16) & 0xff);
+                                    return static_cast<uint32_t>(sum / (3 * picture->rgba.size()));
+                                }() : 0u, g_brightness);
+        }
+        if (picture)
+        {
+            // The picture as the frame's last draw, over whatever the game drew (a movie started from a room's script
+            // plays over the room, as the player's pictures go into the display buffer over it): opaque, centred.
+            bozo::render::Material m;
+            m.textured = true;
+            m.depthTest = m.depthWrite = false;
+            m.blend = bozo::render::Material::Blend::Opaque;
+            m.clampU = m.clampV = true;
+            m.tex0 = 0x6f6e694d6f766965ull; // "oniMovie"
+            const float w = static_cast<float>(picture->width), h = static_cast<float>(picture->height);
+            const float x0 = s.originX + (s.width - w) * 0.5f, y0 = s.originY + (s.height - h) * 0.5f;
+            bozo::render::Vertex v[6];
+            for (int i = 0; i < 6; ++i)
+            {
+                v[i].x = x0 + xs[i] * w;
+                v[i].y = y0 + ys[i] * h;
+                v[i].u = xs[i];
+                v[i].v = ys[i];
+                v[i].rgba = 0x80808080u;
+            }
+            // Black around a picture smaller than the frame.
+            bozo::render::Material black;
+            black.textured = false;
+            black.depthTest = black.depthWrite = false;
+            black.blend = bozo::render::Material::Blend::Opaque;
+            bozo::render::Vertex b[6];
+            for (int i = 0; i < 6; ++i)
+            {
+                b[i].x = s.originX + xs[i] * s.width;
+                b[i].y = s.originY + ys[i] * s.height;
+                b[i].rgba = 0x80000000u;
+            }
+            oni::vu1::queueDraw(black, b, 6, nullptr);
+            oni::vu1::queueDraw(m, v, 6, picture);
+        }
+        if (g_brightness < 1.0f)
+        {
+            // The darkening over the picture: black, alpha (1 - brightness), over the whole frame.
+            bozo::render::Material m;
+            m.textured = false;
+            m.depthTest = m.depthWrite = false;
+            m.blend = bozo::render::Material::Blend::Alpha;
+            const uint32_t alpha = static_cast<uint32_t>((1.0f - g_brightness) * 128.0f + 0.5f);
+            bozo::render::Vertex v[6];
+            for (int i = 0; i < 6; ++i)
+            {
+                v[i].x = s.originX + xs[i] * s.width;
+                v[i].y = s.originY + ys[i] * s.height;
+                v[i].rgba = alpha << 24;
+            }
+            oni::vu1::queueDraw(m, v, 6, nullptr);
+        }
+    }
+
     std::string unsaveable()
     {
         std::lock_guard<std::mutex> lock(g_mutex);
@@ -259,6 +332,7 @@ namespace oni::movie
         r.registerFunction(0x1bca40, vblankHandler);
         r.registerFunction(0x1bb900, dispCreate);
         r.registerFunction(0x1bc170, dispClear);
+        r.registerFunction(0x1bcee0, startDisplay);
         r.registerFunction(0x1bbbc0, dispDelete);
         r.registerFunction(0x1bfc20, videoCallback);
         r.registerFunction(0x1bd4c0, switchThread);

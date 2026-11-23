@@ -197,6 +197,21 @@ int main(int argc, char **argv)
                             place[0], place[1], place[2], ram[0x28287d]);
             last = key;
         }
+        // ONI_FADE_TRACE=1: fade.c's Fade_w (0x27c370: active, out, status, type, ...) and the game mode as they change.
+        static const bool fadeTrace = std::getenv("ONI_FADE_TRACE") != nullptr;
+        if (fadeTrace)
+        {
+            const uint8_t *ram = d.runtime().memory.ram();
+            uint64_t key;
+            std::memcpy(&key, ram + 0x27c370, 8);
+            key ^= static_cast<uint64_t>(ram[0x27de30 + 0x44b0]) << 56;
+            static uint64_t last = ~0ull;
+            if (key != last)
+                std::printf("[oni:fade] frame %llu mode %u fade %02x %02x %02x %02x %02x %02x %02x %02x\n", (unsigned long long)f,
+                            ram[0x27de30 + 0x44b0], ram[0x27c370], ram[0x27c371], ram[0x27c372], ram[0x27c373],
+                            ram[0x27c374], ram[0x27c375], ram[0x27c376], ram[0x27c377]);
+            last = key;
+        }
         oni::cheats::apply(d.runtime().memory.ram()); // the frame boundary: the game thread
         pacer.frameEnd();
         // ONI_AUDIO_STATS: the frame rate every 120 frames, on stderr beside the sound device's lines.
