@@ -1,0 +1,40 @@
+# Stage 4 room 2 to room 3: a ramp spiralling down a ring (S, E, N, W points: about 9000 lower a turn, two turns and a
+# half; the door step plans on one level of it, and its enemies are passed by), the corridor at its foot and the king's
+# door (walked up to and pressed: its AOT is short of where the bot stops): Fortinbras, Princess Yuki, Yumemaru,
+# Nobunaga's return.
+play
+door 4 3
+play
+engage off
+go 6200 -15700 600 -900
+go 8800 -9500 600 -900
+go 6200 -3300 600 -900
+go 0 -700 600 -900
+go -6200 -3300 600 -900
+go -8800 -9500 600 -900
+go -6200 -15700 600 -900
+go 0 -18300 600 -900
+go 6200 -15700 600 -900
+go 8800 -9500 600 -900
+go 6200 -3300 600 -900
+go 0 -700 600 -900
+go -6200 -3300 600 -900
+go -8800 -9500 600 -900
+go -6200 -15700 600 -900
+go 0 -18300 600 -900
+go 6200 -15700 600 -900
+go 8800 -9500 600 -900
+go 6200 -3300 600 -900
+go 0 -700 600 -900
+go 0 3000 600 -900
+go 0 6000 400 -900
+go 0 8900 300 -900
+press UP 25
+engage on
+face 0 11000
+wait 5
+press CROSS 8
+wait 30
+place 4 4
+play 12000
+save build/story/s404k.state

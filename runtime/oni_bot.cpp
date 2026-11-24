@@ -849,6 +849,14 @@ namespace oni::bot
         else if (s.op == "fight")
         {
             Enemy e{};
+            // `fight N M`: also done once the game is in mode M (the boss's death runs the story on while it is still in
+            // the enemies' list: Fortinbras, then the ending movie in mode 10).
+            if (s.args.size() > 1 && static_cast<int>(mode) == arg(s, 1, -1))
+            {
+                log("%s", "mode " + std::to_string(mode));
+                next();
+                return;
+            }
             if (!inPlay)
             {
                 halt();
