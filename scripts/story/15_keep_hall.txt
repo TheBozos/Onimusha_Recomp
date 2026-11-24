@@ -1,0 +1,14 @@
+# Stage 5 room 0 (the keep's hall): its zombies, the save room (room 1: the box, the Keep Map), then the main door
+# (room 5: the Yunemaru event).
+play
+fight 6000
+play
+door 5 1
+play
+take
+play
+door 5 0
+play
+door 5 5
+play 6000
+save build/story/s505.state

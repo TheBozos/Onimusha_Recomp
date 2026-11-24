@@ -668,7 +668,11 @@ namespace oni::bot
         // window, a menu; for a frame or two at a cut change).
         uint32_t stopped;
         std::memcpy(&stopped, ram + kG + 0x4a60, 4);
-        const bool inPlay = mode == 2 && stopped == 0;
+        // (System_flg +0x4a78 bit 18 too: an event holds it through all its lines and cuts, the stop flags only now
+        // and then: stage 5 room 5's long talk with Tokichiro.)
+        uint32_t system;
+        std::memcpy(&system, ram + kG + 0x4a78, 4);
+        const bool inPlay = mode == 2 && stopped == 0 && (system & 0x40000u) == 0;
         g_inPlayFor = inPlay ? g_inPlayFor + 1 : 0;
 
         if (s.op == "go")
@@ -811,7 +815,7 @@ namespace oni::bot
                 next();
                 return;
             }
-            if (age > static_cast<uint64_t>(arg(s, 0, 3600)))
+            if (age > static_cast<uint64_t>(arg(s, 0, 12000)))
                 fail("play: the game is still not in play (mode " + std::to_string(mode) + ")");
         }
         else if (s.op == "press")

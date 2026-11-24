@@ -1,0 +1,8 @@
+# Stage 5 room 5 (after Yunemaru's event): the box (Normal Arrows), then the red-orb door (event AOT slot 4, the Fire
+# Sword equipped) into room 6.
+play
+take 5
+play
+examine 4
+play 6000
+save build/story/s506.state
