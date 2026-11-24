@@ -1,0 +1,11 @@
+# Stage 5 room 6: its ninja, then room 7 (Kaede and Yunemaru's event), on to room 9 and its herb box by the stairs.
+play
+fight 6000
+play
+door 5 7
+play
+door 5 9
+play
+take 4
+play
+save build/story/s509b.state
