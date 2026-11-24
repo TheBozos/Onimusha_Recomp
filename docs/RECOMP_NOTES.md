@@ -453,3 +453,19 @@ locked event is no longer live).
 Played with it: the Thunder Orb's dark event, the crystal-sealed door, the castle gate's fight, the dry moat (the Rope
 Ladder from the status screen) and its floor, and the first boss (the mace-wielding ogre: its introduction, the
 fight, "How could I die..."). All drawn as expected.
+
+## Cinema bars and the 24-bit frame (runtime/oni_sprite.cpp, runtime/oni_vu1.cpp, 2026-11-24)
+
+Stage 2 room 30's event (the tentacled thing over a corpse) showed its top cinema bar only on the left. The bars are
+Pit_trans sprites blended (Cs - Cd) Ad + Cd: by the destination's alpha. The display frame is 24-bit (FRAME.PSM 1):
+it keeps no alpha and the GS reads Ad as 0x80 (as PCSX2's GS does: ALPHA.C = Ad on a 24-bit frame becomes FIX 128),
+while the port blended with whatever alpha its own draws had left there (0 under the room's lit patch). Ad on a 24-bit
+frame is FIX 0x80 now, for the GIF / VU1 draws and Pit_trans alike (the title's PRESS START fade and the menus
+otherwise unchanged).
+
+Found on the way: Screen_blur_draw's pass draws with context 2, whose FRAME the game never sets (0); taken as page 0,
+it made the blur's read of the other display buffer (the previous frame) a read of the frame so far. An unset FRAME
+no longer says which buffer the frame is drawn into. `ONI_DRAW_ORDER=1` lists each draw of a frame in the order the
+renderer gets them (material, blend, bounds); `ONI_NO_BLUR=1` leaves out the draws that read a display buffer.
+
+Played on: the ogre's room's box and the passage behind it, into stage 2 room 30's event.

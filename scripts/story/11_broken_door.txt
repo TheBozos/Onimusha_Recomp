@@ -1,0 +1,7 @@
+# Stage 1 room 26 after the ogre: the box past the door it broke (Journal #2), then on into room 24.
+play
+take 3
+play
+door 1 24
+play 6000
+save build/story/s124.state

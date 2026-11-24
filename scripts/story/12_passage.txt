@@ -1,0 +1,5 @@
+# Stage 1 room 24 (the passage behind the ogre's room): on into stage 2 room 30.
+play
+door 2 30
+play 6000
+save build/story/s230.state
