@@ -1,0 +1,68 @@
+# Stage 2 room 8 back out through room 7 and room 10's yard (the archers: the shortcut to the ladder's foot), its
+# balcony into room 14 and down its ladder: the Fire Sword equipped (EQUIP: DOWN twice to Kouen / Enryuu), the triple
+# red-orb door (event AOT slot 5 over the door to room 19) wants Kouen at level 3 ("This will not open at your current
+# level"): room 14's Magic Mirror (north round the room's wall, then west), ENHANCE Kouen (DOWN three times from
+# Raizan, CROSS held), and the door opens into room 19.
+play
+door 2 7
+play
+door 2 10
+play
+teleport -14100 1600
+wait 20
+examine 0
+play
+go -8000 2300 150
+face -8000 0
+wait 5
+press UP 60
+wait 10
+door 2 14
+play
+examine 3
+play
+press START 6
+wait 120
+press DOWN 6
+wait 40
+press DOWN 6
+wait 60
+press CROSS 6
+wait 90
+press CROSS 6
+wait 90
+press TRIANGLE 6
+wait 90
+press TRIANGLE 6
+wait 60
+play
+examine 5
+play 6000
+go -10400 13600 200
+go -11950 13300 500
+face -11950 14400
+wait 10
+press CROSS 8
+wait 100
+press CROSS 8
+wait 80
+press RIGHT 8
+wait 40
+press CROSS 8
+wait 150
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press CROSS 1200
+wait 100
+press TRIANGLE 8
+wait 100
+press TRIANGLE 8
+wait 100
+play
+examine 5
+play 6000
+save build/story/s219k.state

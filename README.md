@@ -60,7 +60,7 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3 (51 legs so far) | 🔧 |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3, the Statue of the West and the Matchlock (55 legs so far) | 🔧 |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +70,15 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** The triple orb doors: the Thunder orb and then the Fire orb raised to level 3 at the Magic Mirrors,
+the triple blue-orb seal into the Statue of the West's room, the triple red-orb door to the ogres (the Statue Head),
+and the headless statue's gate opened for the Matchlock.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-triple-blue-seal.png" width="400" alt="A purple demon seal with three glowing blue orbs across a wooden door">
+  <img src="docs/screenshots/2026-11-24-bozo-ogres.png" width="400" alt="Samanosuke surrounded by horned ogres in a night courtyard">
+</p>
 
 **2026-11-24.** Kaede's part played through by the bot: the Red Key, the archers' yard, the furnace's Gold Plate,
 the Gear and the Silver Plate for the iron door, a second knob box (the Sacred Knife), the flesh bars and Princess
