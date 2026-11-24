@@ -1,0 +1,18 @@
+# From the save room up the keep to stage 5 room 11 (upstairs): the double red-orb door (event AOT slot 5 over the door
+# to room 15; Enryuu at level 2), then inside: what the room holds (the Red Book, the right crest piece).
+play
+door 5 0
+play
+door 5 5
+play
+door 5 6
+play
+door 5 7
+play
+door 5 9
+play
+door 5 11
+play
+examine 5
+play 6000
+save build/story/s515.state

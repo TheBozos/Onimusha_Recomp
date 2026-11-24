@@ -211,6 +211,18 @@ namespace oni::bot
             bool free(int i, int j) const { return i >= 0 && j >= 0 && i < w && j < h && !blocked[static_cast<size_t>(j) * w + i]; }
         };
 
+        // Obstacles the mesh does not hold (furniture, a script's collision boxes): where the bot was held while it
+        // followed a way, for the room it was in.
+        struct Obstacle
+        {
+            float x, z, r;
+        };
+        std::vector<Obstacle> g_obstacles;
+        size_t g_wpsLeft = 0;
+        float g_bestToPoint = 1e30f;
+        int g_noProgress = 0;
+        int g_obstacleRoom = -1;
+
         bool buildGrid(const uint8_t *ram, float py, Grid &g, float px, float pz, float tx, float tz)
         {
             uint32_t base;
@@ -273,6 +285,11 @@ namespace oni::bot
                             wall[static_cast<size_t>(j) * g.w + i] = 1;
                     }
             }
+            for (const Obstacle &o : g_obstacles)
+                for (int j = 0; j < g.h; ++j)
+                    for (int i = 0; i < g.w; ++i)
+                        if (std::hypot(g.x0 + (i + 0.5f) * g.cell - o.x, g.z0 + (j + 0.5f) * g.cell - o.z) < o.r)
+                            wall[static_cast<size_t>(j) * g.w + i] = 1;
             // Widened by the player's radius (two cells).
             g.blocked.assign(wall.size(), 0);
             for (int j = 0; j < g.h; ++j)
@@ -444,6 +461,27 @@ namespace oni::bot
                     break;
             }
             const float dist = std::hypot(x - px, z - pz);
+            // Held on the way for a second: what holds it is an obstacle (just ahead of the player), and the way is
+            // planned again around it.
+            const int roomKey = read16(ram, kPlace) * 100 + read16(ram, kPlace + 2);
+            if (roomKey != g_obstacleRoom)
+                g_obstacles.clear(), g_obstacleRoom = roomKey;
+            // (Held: no nearer to the point it heads for in 90 frames; sliding along a wall still moves the player.)
+            const float toPoint = g_wps.empty() ? dist : std::hypot(g_wps.front().x - px, g_wps.front().z - pz);
+            if (g_wps.size() != g_wpsLeft || toPoint < g_bestToPoint - 100.0f)
+                g_wpsLeft = g_wps.size(), g_bestToPoint = toPoint, g_noProgress = 0;
+            else if (g_stickOn)
+                ++g_noProgress;
+            if (g_noProgress > 90 && !g_wps.empty() && g_obstacles.size() < 64)
+            {
+                g_noProgress = 0;
+                g_bestToPoint = 1e30f;
+                const float facing = read16(ram, kPlayer + 0xc2) * (2 * kPi / 4096.0f);
+                g_obstacles.push_back({px + std::sin(facing) * 300.0f, pz + std::cos(facing) * 300.0f, 250.0f});
+                std::printf("[oni:bot] held at (%.0f, %.0f): an obstacle ahead, the way planned again\n", px, pz);
+                g_stuck = 0;
+                plan(ram, x, z);
+            }
             if (!g_wps.empty())
                 steer(ram, g_wps.front().x, g_wps.front().z, walk);
             else
@@ -488,6 +526,7 @@ namespace oni::bot
         bool g_windowSeen = false; // the item window opened
         int g_atDoor = 0;          // door: frames left standing at it
         int g_inPlayFor = 0;       // frames in play in a row
+        int g_reachStuck = 0;      // take / examine: frames left pressing from where the way ended
         uint64_t g_playAge = 0;    // the step's frames in play (its timeouts: an event on the way does not count)
         bool engage(const uint8_t *ram)
         {
@@ -580,6 +619,7 @@ namespace oni::bot
             g_stepBegun = false;
             g_goalX = g_goalZ = 1e30f; // the next step plans its own way
             g_playAge = 0;
+            g_reachStuck = 0;
             g_atDoor = 0;
             g_counter = 0;
             g_buttons = 0;
@@ -864,7 +904,7 @@ namespace oni::bot
                     std::memcpy(&at, ram + kG + 0x97e8 + 4 * k, 4);
                     at &= 0x1ffffffu;
                     const uint8_t id = ram[at];
-                    const bool wanted = s.op == "take" ? id == 2 : (id == 4 || id == 5 || id == 12 || (s.op == "open" && id == 2));
+                    const bool wanted = s.op == "take" ? id == 2 : (id == 4 || id == 5 || id == 12 || (s.op == "open" && (id == 2 || id == 10)));
                     if (!at || !wanted || (s.args.size() && k != arg(s, 0, -1)))
                         continue;
                     float rx, rz, rw, rd;
@@ -920,8 +960,13 @@ namespace oni::bot
             }
             else if (engage(ram))
                 ;
-            else if (inside || std::hypot(cx - px, cz - pz) < 450.0f)
+            else if (inside || std::hypot(cx - px, cz - pz) < 450.0f || (g_reachStuck > 0) ||
+                     (g_stuck > 30 && std::hypot(cx - px, cz - pz) < 1300.0f))
             {
+                if (g_stuck > 30 && g_reachStuck == 0)
+                    g_reachStuck = 300; // pressed against something near it: faced and pressed from here a while
+                if (g_reachStuck > 0)
+                    --g_reachStuck;
                 // Facing it squarely first (an action while turning is not taken), then the button.
                 const float facing = read16(ram, kPlayer + 0xc2) * (2 * kPi / 4096.0f);
                 if (std::fabs(wrap(std::atan2(cx - px, cz - pz) - facing)) > 0.05f)
