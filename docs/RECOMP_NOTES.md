@@ -489,3 +489,10 @@ door asks for Kouen's, "This will not open at your current level" below it) and 
   ahead for an obstacle the mesh does not hold and plans again; an item or event it cannot get closer to is faced and
   pressed from where it is held. Stage 5 room 15's U is held by something the mesh does not have: that leg takes
   shortcuts within the room.
+
+Leg 22 goes on through the storeroom's pail, the hall's upper floor and its single red-orb door, rooms 13, 14 and 17
+and the double red-orb door there into room 18: Kaede's event, the two of them trapped behind bars ("Samanosuke, we
+must find a way out!"). Next: the lever puzzle (seven lever AOTs, Id 5: one by the start, a pair, a set of three, one
+by the door; Message2 AOTs 15 and 16 are the bars between the sections). The characters swap there (Player_change:
+Pl_swap_info, the HUD turns to Kaede's single bar), and the levers on the north wall were out of reach from where the
+active one stood in the first tries: the bot needs this room's map (its collision mesh reads as garbage here).
