@@ -1,0 +1,35 @@
+# Stage 5 room 18: the lever trap, the two characters taking turns (each pull hands control to the other). The levers
+# are behind bars from where each one stands: in-room shortcuts to each lever. Samanosuke the lever by the start
+# (slot 3); Kaede the right one of the pair (5); Samanosuke the left one (4); Kaede the left one of the three (6), not
+# the middle (a trap); Samanosuke the right one (8); Kaede the lever by the door (9); Samanosuke the door-side one (24);
+# then the door (slot 10) into room 19.
+play
+examine 3
+play 6000
+teleport -11750 13200
+wait 20
+examine 5
+play 6000
+teleport -12655 13200
+wait 20
+examine 4
+play 6000
+teleport -10405 13200
+wait 20
+examine 6
+play 6000
+teleport -8605 13200
+wait 20
+examine 8
+play 6000
+teleport -7405 13200
+wait 20
+examine 9
+play 6000
+teleport -7405 13200
+wait 20
+examine 24
+play 6000
+examine 10
+play 9000
+save build/story/s519.state
