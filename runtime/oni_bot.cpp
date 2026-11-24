@@ -488,6 +488,7 @@ namespace oni::bot
         bool g_windowSeen = false; // the item window opened
         int g_atDoor = 0;          // door: frames left standing at it
         int g_inPlayFor = 0;       // frames in play in a row
+        uint64_t g_playAge = 0;    // the step's frames in play (its timeouts: an event on the way does not count)
         bool engage(const uint8_t *ram)
         {
             Enemy e{};
@@ -578,6 +579,7 @@ namespace oni::bot
             ++g_step;
             g_stepBegun = false;
             g_goalX = g_goalZ = 1e30f; // the next step plans its own way
+            g_playAge = 0;
             g_atDoor = 0;
             g_counter = 0;
             g_buttons = 0;
@@ -674,6 +676,8 @@ namespace oni::bot
         std::memcpy(&system, ram + kG + 0x4a78, 4);
         const bool inPlay = mode == 2 && stopped == 0 && (system & 0x40000u) == 0;
         g_inPlayFor = inPlay ? g_inPlayFor + 1 : 0;
+        if (inPlay)
+            ++g_playAge;
 
         if (s.op == "go")
         {
@@ -689,7 +693,7 @@ namespace oni::bot
                 next();
                 return;
             }
-            if (age > static_cast<uint64_t>(arg(s, 3, 1800)))
+            if (g_playAge > static_cast<uint64_t>(arg(s, 3, 1800)))
                 fail("go: not reached from (" + std::to_string(static_cast<int>(px)) + ", " + std::to_string(static_cast<int>(pz)) + ")");
         }
         else if (s.op == "door")
@@ -760,7 +764,7 @@ namespace oni::bot
                 halt();
                 g_buttons = 0;
             }
-            if (age > static_cast<uint64_t>(arg(s, 2, 2400)))
+            if (g_playAge > static_cast<uint64_t>(arg(s, 2, 2400)))
                 fail("door: still in " + std::to_string(stage) + ":" + std::to_string(room) + " at (" + std::to_string(static_cast<int>(px)) + ", " + std::to_string(static_cast<int>(pz)) + ")");
         }
         else if (s.op == "fight")
@@ -798,7 +802,7 @@ namespace oni::bot
                 else
                     g_buttons = 0;
             }
-            if (age > static_cast<uint64_t>(arg(s, 0, 3600)))
+            if (g_playAge > static_cast<uint64_t>(arg(s, 0, 3600)))
                 fail("fight: enemies still alive");
         }
         else if (s.op == "play")
@@ -846,7 +850,7 @@ namespace oni::bot
                 g_host->requestSave(s.args[0]);
             next();
         }
-        else if (s.op == "take" || s.op == "examine")
+        else if (s.op == "take" || s.op == "examine" || s.op == "open")
         {
             // The nearest live item AOT (Id 2), or slot N: walked into, faced, the action button pressed and the
             // message closed; done once the slot no longer holds that AOT (the item taken).
@@ -860,7 +864,7 @@ namespace oni::bot
                     std::memcpy(&at, ram + kG + 0x97e8 + 4 * k, 4);
                     at &= 0x1ffffffu;
                     const uint8_t id = ram[at];
-                    const bool wanted = s.op == "take" ? id == 2 : (id == 4 || id == 5 || id == 12);
+                    const bool wanted = s.op == "take" ? id == 2 : (id == 4 || id == 5 || id == 12 || (s.op == "open" && id == 2));
                     if (!at || !wanted || (s.args.size() && k != arg(s, 0, -1)))
                         continue;
                     float rx, rz, rw, rd;
@@ -900,6 +904,15 @@ namespace oni::bot
             const float cx = x0 + w * 0.5f, cz = z0 + dd * 0.5f;
             // (The item may be solid, a box: its AOT reached within a margin.)
             const bool inside = px >= x0 - 450 && px <= x0 + w + 450 && pz >= z0 - 450 && pz <= z0 + dd + 450;
+            if (s.op == "open" && !inPlay && g_counter > 8)
+            {
+                // open: what it starts (a puzzle, a menu) is left to the next steps.
+                halt();
+                g_buttons = 0;
+                log("%s", "opened");
+                next();
+                return;
+            }
             if (!inPlay)
             {
                 halt();
@@ -927,7 +940,7 @@ namespace oni::bot
                 navigate(ram, cx, cz);
                 g_buttons = 0;
             }
-            if (age > static_cast<uint64_t>(arg(s, 1, 2400)))
+            if (g_playAge > static_cast<uint64_t>(arg(s, 1, 2400)))
                 fail("take: the item is still there");
         }
         else if (s.op == "attack")
