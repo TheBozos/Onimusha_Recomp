@@ -1,0 +1,35 @@
+# Stage 2 room 24 (the stairs down from the orb stand) to the save room (room 26: the herb, the Green Book, the Orange
+# Book and Byakko from the shelves), room 27's corridor and its demons, room 25: the Keep Und. Map's box, the rope by
+# the wheel slashed (the bridge comes down), the crossing (an event AOT, slot 3) for the Rosary.
+play
+door 2 26
+play
+take 2
+play
+take 3
+play
+take 4
+play
+take 5
+play
+door 2 27
+play
+fight 6000
+play
+door 2 25
+play
+take 1
+play
+go 9100 -10800
+face 8000 -10800
+wait 10
+press SQUARE 6
+wait 30
+press SQUARE 6
+wait 30
+press SQUARE 6
+wait 60
+play
+examine 3
+play
+save build/story/s225d.state

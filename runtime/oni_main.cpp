@@ -213,6 +213,28 @@ int main(int argc, char **argv)
             std::printf("[oni:player] frame %llu place %d:%d:%d mode %u pos %.0f %.0f %.0f dir %d life %d\n", (unsigned long long)f,
                         place[0], place[1], place[2], ram[0x27de30 + 0x44b0], pos[0], pos[1], pos[2], dir, life);
         }
+        // ONI_WATCH=<addr>[,<addr>...]: a 32-bit word of the game's RAM each, logged when it changes (at frame ends).
+        static const std::vector<uint32_t> watch = []
+        {
+            std::vector<uint32_t> out;
+            if (const char *s = std::getenv("ONI_WATCH"))
+                for (char *end = nullptr; *s; s = *end ? end + 1 : end)
+                    out.push_back(static_cast<uint32_t>(std::strtoul(s, &end, 16)) & 0x1fffffcu);
+            return out;
+        }();
+        if (!watch.empty())
+        {
+            static std::vector<uint32_t> last(watch.size(), 0xdeadbeefu);
+            const uint8_t *ram = d.runtime().memory.ram();
+            for (size_t k = 0; k < watch.size(); ++k)
+            {
+                uint32_t v;
+                std::memcpy(&v, ram + watch[k], 4);
+                if (v != last[k])
+                    std::printf("[oni:watch] frame %llu %06x = %08x\n", (unsigned long long)f, watch[k], v);
+                last[k] = v;
+            }
+        }
         // ONI_FADE_TRACE=1: fade.c's Fade_w (0x27c370: active, out, status, type, ...) and the game mode as they change.
         static const bool fadeTrace = std::getenv("ONI_FADE_TRACE") != nullptr;
         if (fadeTrace)

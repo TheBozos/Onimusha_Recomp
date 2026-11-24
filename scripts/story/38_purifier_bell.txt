@@ -1,0 +1,31 @@
+# Room 25 back to room 27 and its far door (room 28: its AOT lies ~500 past the wall, the bot's door margin is 560 for
+# it), the Purifier Bell's box down the bladed hall (event AOT slot 1); back up to room 24 and the door the ghosts
+# block (event AOT slot 4: "These ghosts are blocking this door..."), the bell used from the item menu (START, RIGHT to
+# ITEM, UP from the Herb to the Purifier Bell, CROSS, CROSS for YES): the souls are cured, the door to room 29 is live.
+play
+door 2 27
+play
+door 2 28
+play
+examine 1
+play
+door 2 27
+play
+door 2 26
+play
+door 2 24
+play
+examine 4
+play
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 6000
+save build/story/s224d.state
