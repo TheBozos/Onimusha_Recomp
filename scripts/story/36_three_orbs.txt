@@ -1,0 +1,47 @@
+# Stage 5 room 3 into room 4: the Blue Book, then the stand with three orbs (event AOT slot 3): examined with the Thunder
+# Sword, the Fire Sword and the Wind Spear equipped in turn (each lights its orb; the equip screen keeps its cursor:
+# DOWN, DOWN from Shiden to Kouen, then DOWN, DOWN, DOWN from Sword to Arashi), the fence opens: down to stage 2 room 24.
+play
+door 5 4
+play
+take 2
+play
+examine 3
+play
+press START 6
+wait 120
+press DOWN 6
+wait 40
+press DOWN 6
+wait 60
+press CROSS 6
+wait 90
+press CROSS 6
+wait 90
+press TRIANGLE 6
+wait 90
+press TRIANGLE 6
+wait 60
+play
+examine 3
+play
+press START 6
+wait 120
+press DOWN 6
+wait 40
+press DOWN 6
+wait 40
+press DOWN 6
+wait 60
+press CROSS 6
+wait 90
+press CROSS 6
+wait 90
+press TRIANGLE 6
+wait 90
+press TRIANGLE 6
+wait 60
+play
+examine 3
+play 6000
+save build/story/s224.state

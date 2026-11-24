@@ -60,7 +60,7 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb (34 legs so far) | 🔧 |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), into Kaede's part (41 legs so far) | 🔧 |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +70,17 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** On through the keep: the green-orb door (Nui's scene), ENHANCE and the double blue-orb door, the stand
+of three orbs (each lit by its own sword), the rope and the Rosary, the Purifier Bell clearing the ghosts from a door,
+the double green-orb door and its trick box (a 2 x 4 board of knobs, solved by search from the game's own answer
+table): the Blue Key, then the demon's trap and Kaede's part of the story.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-three-orbs.png" width="270" alt="A stand of three orbs, orange, green and blue, lit over a barred pit">
+  <img src="docs/screenshots/2026-11-24-bozo-knob-box.png" width="270" alt="The trick box solved: tiles 1 to 4 over 5 to 8 around three knobs, REST: 0">
+  <img src="docs/screenshots/2026-11-24-bozo-kaede-wakes.png" width="270" alt="Kaede leaning over Samanosuke: Sa... Samanosuke!?">
+</p>
 
 **2026-11-24.** The keep's puzzles solved by the story bot (the lever trap with Kaede, the fall-trap floor of shogi
 pieces, the water prison's sliding crest puzzle, the crest door), then boss 2 on the keep's roof and the Wind Orb.

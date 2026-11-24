@@ -1,0 +1,13 @@
+# From the rooftop down to the save room (room 29: a shortcut to its far door, the mesh reads as garbage) and room 27;
+# the green-orb door (event AOT slot 4, the Wind Orb) opens into room 28, then room 8: Yumemaru, Kaede and Nui's scene
+# ("Princess Yuki is underground...").
+play
+door 5 29
+play
+teleport -12000 13800
+wait 20
+door 5 27
+play
+examine 4
+play 9000
+save build/story/s508c.state

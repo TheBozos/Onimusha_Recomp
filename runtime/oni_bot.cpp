@@ -777,7 +777,9 @@ namespace oni::bot
                 // At the door (its AOT, or within a margin of it: a door is a wall): facing its middle, the action
                 // button every 20 frames; a door that opens by walking in takes the player at once.
                 const bool inside = px >= d->x && px <= d->x + d->w && pz >= d->z && pz <= d->z + d->d;
-                const bool near = px >= d->x - 450 && px <= d->x + d->w + 450 && pz >= d->z - 450 && pz <= d->z + d->d + 450;
+                // (560: a door's AOT can lie up to ~500 past the wall, stage 2 room 27's to room 28; the action point
+                // reaches 600.)
+                const bool near = px >= d->x - 560 && px <= d->x + d->w + 560 && pz >= d->z - 560 && pz <= d->z + d->d + 560;
                 // Near it: stop, turn to face its middle squarely, then press (the game's action point is 600
                 // ahead of the player: it must fall in the door's AOT). Not there after a while: a few steps closer.
                 if (near && g_atDoor == 0)
@@ -819,8 +821,10 @@ namespace oni::bot
             }
             else
             {
+                // Not in play before the door is taken: a message it raised ("You have used the Blue Key."), closed as
+                // `play` closes one (not while a door is being gone through: mode 3).
                 halt();
-                g_buttons = 0;
+                g_buttons = (d && mode == 2 && age % 40 < 4) ? bozo::libs::kPadCross : 0;
             }
             if (g_playAge > static_cast<uint64_t>(arg(s, 2, 2400)))
                 fail("door: still in " + std::to_string(stage) + ":" + std::to_string(room) + " at (" + std::to_string(static_cast<int>(px)) + ", " + std::to_string(static_cast<int>(pz)) + ")");

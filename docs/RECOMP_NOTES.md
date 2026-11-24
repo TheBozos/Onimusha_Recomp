@@ -536,3 +536,31 @@ in room 25 ("Princess Yuki's skull will be filled with her own blood...").
 Legs 32-33: the arrows, rooms 26, 27 and the save room (29), its ladder to the rooftop (room 30); boss 2 (the
 warrior with the wheel shield) beaten and the Wind Orb taken ("You got the Wind Orb.", the Wind Spear's ceremony),
 every scene drawn as it should be.
+
+## The orb doors and the keep's underground (story legs 34-40, 2026-11-24)
+
+Legs 34-40, in the story's order: down from the roof to room 27's green-orb door (an event AOT over a disabled door: the
+Wind Orb) and Nui's scene in room 8; the Magic Mirror's ENHANCE (Shiden, the thunder orb, to level 2: the double
+blue-orb door in room 2 asks for it, "there seems to be a thunder inside the crystal..."; the wind pair too); the
+Thunder Sword equipped from the status screen's EQUIP page (START, DOWN to the orb's row, CROSS, CROSS for YES,
+TRIANGLE twice; the page keeps its cursor between visits); room 4's stand of three orbs, examined with each sword in
+turn, opens the way down to stage 2 room 24; the save room's shelves; room 25's rope by the wheel slashed (the bridge
+comes down) and its crossing for the Rosary; room 28's Purifier Bell down the bladed hall; the bell used from the item
+menu at room 24's door the ghosts block; room 32's double green-orb door (the Wind Spear) and room 33's trick box; the
+Blue Key on room 29's blue-ink door; room 43's event (a type 0x41 AOT, entered by walking: the demon's trap), and
+Kaede wakes in stage 5 room 8.
+
+- The trick box in room 33 is set06 again, its third board: 2 x 4 tiles, three knobs between the columns (dial24_tbl),
+  CROSS turns the four tiles around the selected knob clockwise, LEFT / RIGHT select, three turns (REST). The boards and
+  their answers are tables in the main ELF (set06_puz_Q 0x20bec0, set06_puz_A 0x20be40; read with the -1 cells skipped):
+  2 4 3 8 / 1 6 5 7 to 1 2 3 4 / 5 6 7 8, found by BFS: middle, left, right.
+- How the game takes a door: `Sce_at` calls `Sce_at_check(player, 1, 0x10)` only on the frame Status_flg (0x2828ac)
+  bit 21 is up (the action button pressed in play), and an AOT whose Type has bit 4 (0x31: doors, items, events) is
+  only looked at then; bit 5 tests the action point (600 ahead), bit 6 the player's own position (0x41: walked into).
+  The hit slot goes to 0x2875b0, a door then raises 0x2876a9 with its data at 0x28769c. Room 27's door to room 28 lies
+  ~500 units past the wall in front of it: the bot stopped to press only within 450 of a door, so it never pressed
+  there. 560 now. The bot also closes a message a door raises ("You have used the Blue Key.").
+- `ONI_WATCH=<addr>[,<addr>...]`: 32-bit words of the game's RAM logged when they change (frame ends).
+- Some rooms' collision meshes hold no walls the bot can read (stage 5 rooms 2 and 29, as 18 and 21 before): waypoints
+  or in-room shortcuts there.
+
