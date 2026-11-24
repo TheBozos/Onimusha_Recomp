@@ -1,0 +1,456 @@
+# The optional Dark Realm, from stage 5 room 10 after Boss 3: down to the save room (room 1) and the hanging head's
+# offer taken ("Shall we go?" YES): stage 4 room 5, twenty floors of demons. A floor is done when its waves are; then two
+# pillars of light stand (event AOTs, type 0x51: stood in and pressed): slot 0 down to the next floor, slot 3 back up.
+# Forty rounds of: fight (an enemy that will not come out of hiding is left after a while: the round is played again),
+# the down pillar (a shortcut into it; after floor 20 it is gone and the rounds do nothing). Then the Bishamon Ocarina
+# (item 0x50, AOT slot 6) and the pillar back up. The Magic Mirror as in leg 50 (Shiden to level 3).
+play
+door 5 9
+play
+door 5 7
+play
+door 5 6
+play
+door 5 5
+play
+door 5 0
+play
+door 5 1 enter
+wait 1350
+press CROSS 6     # YES
+wait 60
+play 9000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+teleport -7600 11700
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8     # the Bishamon Ocarina
+wait 60
+play
+teleport -9270 13270
+wait 10
+press CROSS 8     # back up
+wait 30
+play 6000
+teleport -13400 9800   # (the pillar's landing place is hemmed in, where varies: a shortcut to the mirror)
+wait 20
+face -13400 8550
+wait 10
+press CROSS 8      # "It's a Magic Mirror."
+wait 100
+press CROSS 8      # SAVE / ENHANCE / EXIT
+wait 80
+press RIGHT 8
+wait 40
+press CROSS 8      # ENHANCE (Raizan selected)
+wait 150
+press DOWN 8
+wait 30
+press CROSS 1200   # Shiden to level 3
+wait 100
+press TRIANGLE 8
+wait 100
+press TRIANGLE 8
+wait 100
+play
+save build/story/s501k.state

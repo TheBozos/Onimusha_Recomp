@@ -1,0 +1,20 @@
+# Stage 2 room 19: the medicine, then room 20: the ogres' scene and fight (one-hit kills), the Statue Head, the bullets
+# and the Decorated Sword.
+play
+take 4
+play
+door 2 20
+play
+fight 6000
+play 6000
+go -11700 6300 200 -600   # (from the east: an ogre's body can lie north of the box)
+take 2
+play
+fight 6000
+play
+go -5400 12600 200 -600
+take 1
+play
+take 3
+play
+save build/story/s220k.state

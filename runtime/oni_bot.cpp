@@ -889,8 +889,18 @@ namespace oni::bot
                 else
                     g_buttons = 0;
             }
-            if (g_playAge > static_cast<uint64_t>(arg(s, 0, 3600)))
+            // (A negative N ends the step there without failing: an enemy that will not come out of hiding.)
+            const int limit = arg(s, 0, 3600);
+            if (g_playAge > static_cast<uint64_t>(limit < 0 ? -limit : limit))
+            {
+                if (limit < 0)
+                {
+                    log("%s", "enemies left, going on");
+                    next();
+                    return;
+                }
                 fail("fight: enemies still alive");
+            }
         }
         else if (s.op == "play")
         {

@@ -657,7 +657,29 @@ kills), and the ending in mode 10 (the movie, the staff roll, "Presented by CAPC
 save prompt, about 36000 frames. Every scene and the movie drawn as expected.
 
 - Bot: `fight N M` also ends once the game is in mode M (Fortinbras stays in the enemies' list while the ending runs).
-- The optional parts (the Dark Realm, the Bishamon Sword, the Great Armor's box, Fluorites) are not played.
+- The optional parts: the Dark Realm and the Bishamon Sword are a branch of their own (below); the Great Armor's box
+  and the Fluorites are not played.
+
+## The Dark Realm and the Bishamon Sword (scripts/story/bishamon, 2026-11-24)
+
+The optional branch, played by the bot as a variant of the main run: `scripts/story/bishamon/run.sh` plays leg 68 from
+the main state before leg 50, then the main legs 51-67 on states of its own (`STORY_PREFIX=b_`: leg.sh renames a
+script's saves), a leg in the branch folder taking the place of the main one where the branch differs, and leg 69
+after leg 65.
+
+- Leg 68: the save room's hanging head offers the Dark Realm once (after Boss 3: "Shall we go?", YES); stage 4 room
+  5, twenty floors of demons in one arena. When a floor's waves are done two pillars of light stand (event AOTs, type
+  0x51, stood in and pressed): slot 0 down, slot 3 back up to the save room. An enemy that stays hidden is left after
+  a while (`fight -N`: a negative limit ends the step without failing) and the round played again; forty rounds
+  cover the twenty floors (after floor 20 the down pillar is gone). Then the Bishamon Ocarina (item 0x50) and the
+  pillar up.
+- The ocarina is a key item listed just above the Herb, so every later key-item use from the menu is one row further
+  up: the branch's own legs 54, 55, 56, 62 (Kaede shares the inventory) and 65. Leg 53 approaches the ogres' yard's
+  boxes from the east (where their bodies fall differs).
+- Leg 69: in the Dark Fountain's room (stage 4 room 2) the ocarina from the item menu (a flag AOT for item 0x50 over
+  the room's west side), the wall opens, and the pedestal (event AOT slot 5): the Bishamon Sword. Legs 66-67 then
+  finish the game with it.
+
 
 
 

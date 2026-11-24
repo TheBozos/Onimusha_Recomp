@@ -1,0 +1,75 @@
+# Kaede from stage 1 room 3: room 18's ladder up to room 19 and its trick box (the 2 x 4 knob board: 7 5 4 2 / 8 1 3 6, seven
+# turns: left, left, middle, right, right, middle, middle; found by BFS): the Decorated Arrow. Down again (round the
+# room's west side), room 3, and room 6: the dragon pedestal gives up the Great Arrow and the doors shut; the Decorated
+# Arrow in its place (from the item menu, UP twice from the Herb, standing at the pedestal), the doors open and the odd
+# box beside them gives the Green Key.
+play
+fight 2000
+play
+door 1 18
+play
+open 2
+wait 60
+press CROSS 6
+wait 200
+play
+go -12596 -7767 120
+face -13500 -7580
+wait 10
+press CROSS 6     # "There is a trick treasure box."
+wait 90
+press CROSS 6     # the puzzle (the left knob selected)
+wait 240
+press CROSS 6     # left
+wait 90
+press CROSS 6     # left
+wait 90
+press RIGHT 6
+wait 40
+press CROSS 6     # middle
+wait 90
+press RIGHT 6
+wait 40
+press CROSS 6     # right
+wait 90
+press CROSS 6     # right
+wait 90
+press LEFT 6
+wait 40
+press CROSS 6     # middle
+wait 90
+press CROSS 6     # middle
+wait 240
+play
+go -11000 -9000 300
+go -9700 -13500 250
+examine 3
+play
+door 1 3
+play
+door 1 6
+play
+open 3
+wait 400
+play
+go -8000 13300 120
+face -8000 15000
+wait 10
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6        # (the Bishamon Ocarina sits just above the Herb)
+wait 30
+press UP 6
+wait 30
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 6000
+take 1
+play
+save build/story/s106k.state
