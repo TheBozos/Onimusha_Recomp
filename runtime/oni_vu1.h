@@ -113,6 +113,10 @@ namespace oni::vu1
     void runChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag);
     // A chain the game sends to the GIF itself (sceDmaSend on channel 2): its packets drawn as VU1's are.
     void runGifChain(uint8_t *ram, uint8_t *scratchpad, uint32_t tag);
+    // A normal-mode transfer to the GIF (sceDmaSendN on channel 2): qwc quadwords from address, drawn the same way.
+    void runGifData(uint8_t *ram, uint8_t *scratchpad, uint32_t address, uint32_t qwc);
+    // A GIF stream already gathered (a background movie's uploads into a texture), in its place among the frame's draws.
+    void runGifStream(std::vector<uint8_t> stream, uint32_t tag);
     // VIF1's, VU1's and the GS's registers and memories in save states.
     void state(bozo::state::Archive &a);
     // Whether the chains run on a thread of their own (the window; ONI_VU1_THREAD overrides), and the frame's draws

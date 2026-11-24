@@ -489,6 +489,9 @@ namespace oni::vu1
             case 0x53: // TRXDIR: host to local starts a transfer
                 gs.image.clear();
                 gs.imaging = (value & 3) == 0;
+                if ((value & 3) == 2)
+                    std::printf("[oni:gif] local->local (%s) bitbltbuf %016llx trxpos %016llx trxreg %016llx\n", g_source,
+                                (unsigned long long)gs.bitbltbuf, (unsigned long long)gs.trxpos, (unsigned long long)gs.trxreg);
                 break;
             case 0x4c:
                 gs.frame[0] = value;
@@ -619,6 +622,10 @@ namespace oni::vu1
                         {
                             oni::tex::upload(gs.bitbltbuf, gs.trxpos, gs.trxreg, gs.image.data(), gs.image.size());
                             ++gs.uploads;
+                            // Texels written over a target's block (the shadows' buffer, 0x1a40, which a room's water
+                            // movie also uses: stage 3 room 7): until something is drawn into it again, a read of that
+                            // block is the texture, not the target.
+                            g_targets.erase(static_cast<uint32_t>((gs.bitbltbuf >> 32) & 0x3fffu));
                             gs.imaging = false;
                             gs.image.clear();
                         }
@@ -1142,6 +1149,33 @@ namespace oni::vu1
         Job job;
         job.kind = Job::Kind::Gif;
         job.tag = tag;
+        job.stream = std::move(stream);
+        submit(std::move(job));
+    }
+
+    void runGifStream(std::vector<uint8_t> stream, uint32_t tag)
+    {
+        Job job;
+        job.kind = Job::Kind::Gif;
+        job.tag = tag;
+        job.stream = std::move(stream);
+        submit(std::move(job));
+    }
+
+    void runGifData(uint8_t *ram, uint8_t *scratchpad, uint32_t address, uint32_t qwc)
+    {
+        // A normal-mode transfer to the GIF (sceDmaSendN): qwc quadwords from address, one GIF stream.
+        std::vector<uint8_t> stream;
+        stream.reserve(static_cast<size_t>(qwc) * 16u);
+        for (uint32_t k = 0; k < qwc; ++k)
+        {
+            const uint8_t *q = (address & 0x80000000u) ? scratchpad + ((address + 16 * k) & 0x3ff0)
+                                                       : ram + ((address + 16 * k) & 0x1fffff0);
+            stream.insert(stream.end(), q, q + 16);
+        }
+        Job job;
+        job.kind = Job::Kind::Gif;
+        job.tag = address;
         job.stream = std::move(stream);
         submit(std::move(job));
     }

@@ -1,0 +1,7 @@
+# Kaede in stage 3 room 0: the two scorpions (one-hit kills), then the door to room 4 (key 181: the Shinobi Kit).
+play
+fight 6000
+play
+door 3 4
+play
+save build/story/s304k.state

@@ -1,0 +1,31 @@
+# Stage 4 room 0 (the Demon Gate) back through the keep, now in ruins (room 33 for 7, room 32 for the hall), to the
+# courtyard (stage 2 room 0): the east door's event (walked into) and its panel (a flag AOT for item 0x45 at the
+# player's position): the Decorated Sword from the item menu (UP from the Herb), the stone sinks, the door to stage 3.
+play
+door 5 33
+play
+door 5 6
+play
+door 5 5
+play
+door 5 32
+play
+door 2 0
+play
+go 6500 13500 250
+play 9000
+go 6500 13500 250
+face 9000 13500
+wait 10
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 9000
+save build/story/s200k.state

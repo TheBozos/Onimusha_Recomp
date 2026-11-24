@@ -1,0 +1,33 @@
+# Stage 3 room 7 (the garden) on through rooms 8, 9 and 10 (round its east side: the middle is a narrow way the bot
+# takes and is held in) to room 11 (the boathouse: its save room, the herb; the stairs down to the deck, an internal
+# door faced and pressed), the small boat (event AOT slot 6) to the turret (room 12), room 13 and its event (slot 0):
+# the scorpions' scene, and Kaede in room 0.
+play
+fight 4000
+play
+door 3 8
+play
+door 3 9
+play
+door 3 10
+play
+go -9500 13200 300
+go -3500 9000 300
+go -2750 3000 300
+go -7100 -1500 300
+door 3 11
+play
+take 8
+play
+go -10800 11900 600
+face -10950 10000
+wait 5
+press CROSS 8
+play
+examine 6
+play
+door 3 13
+play 12000
+examine 0
+play 12000
+save build/story/s300k.state

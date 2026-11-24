@@ -108,6 +108,33 @@ namespace oni::tex
         {
             // An upload at (x, y) of its buffer starts at another block: the palettes are packed four to a block group
             // (8 x 2 each at (0,0), (8,0), (0,8), (8,8)), and a TEX0's CBP names that block.
+            // A wide 32-bit buffer filled a rectangle at a time (a background movie into a texture: Movie_init's
+            // setLoadImageTags2 sends its frame to block 0x1a40, 640 wide, as 16 x 16 macroblocks at their places):
+            // the rectangles composed into one image at the buffer's first block, as the GS's memory holds them.
+            if (p.psm == 0 && p.dbw >= 4 && (p.x || p.y || p.w < p.dbw * 64u))
+            {
+                Upload &c = g_uploads[p.dbp];
+                const uint32_t width = p.dbw * 64u;
+                if (c.p.psm != 0 || c.p.w != width || c.p.x || c.p.y || c.p.dbw != p.dbw)
+                {
+                    c.p = Params{p.dbp, p.dbw, 0, 0, 0, width, 0};
+                    c.bytes.clear();
+                }
+                if (p.x + p.w <= width)
+                {
+                    if (c.p.h < p.y + p.h)
+                    {
+                        c.p.h = p.y + p.h;
+                        c.bytes.resize(static_cast<size_t>(width) * c.p.h * 4u, 0);
+                    }
+                    for (uint32_t r = 0; r < p.h; ++r)
+                        std::memcpy(c.bytes.data() + (static_cast<size_t>(p.y + r) * width + p.x) * 4u,
+                                    texels + static_cast<size_t>(r) * p.w * 4u, static_cast<size_t>(p.w) * 4u);
+                    c.generation = ++g_generation;
+                }
+                if (!p.x && !p.y)
+                    return; // (the canvas is this block's image)
+            }
             uint32_t block = p.dbp;
             const bool placed = (p.x || p.y) && blockAt(p.psm, p.dbw, p.x, p.y, block);
             if ((p.x || p.y) && !placed)
