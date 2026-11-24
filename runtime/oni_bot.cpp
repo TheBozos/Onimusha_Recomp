@@ -536,6 +536,16 @@ namespace oni::bot
         int g_target = -1;       // take: the AOT slot
         uint32_t g_targetAt = 0; // and the AOT it held
         bool g_windowSeen = false; // the item window opened
+        // take: the inventory when the step began (G.Item_work[65], +0x9eac: Id, Num, ...): a glint (Id 11) keeps its AOT
+        // once taken, so the change of the inventory says it was.
+        uint32_t g_inventory = 0;
+        uint32_t inventorySum(const uint8_t *ram)
+        {
+            uint32_t h = 2166136261u;
+            for (int i = 0; i < 65 * 4; ++i)
+                h = (h ^ ram[kG + 0x9eac + i]) * 16777619u;
+            return h;
+        }
         int g_atDoor = 0;          // door: frames left standing at it
         int g_inPlayFor = 0;       // frames in play in a row
         int g_reachStuck = 0;      // take / examine: frames left pressing from where the way ended
@@ -1020,8 +1030,9 @@ namespace oni::bot
                     std::memcpy(&at, ram + kG + 0x97e8 + 4 * k, 4);
                     at &= 0x1ffffffu;
                     const uint8_t id = ram[at];
-                    const bool wanted = s.op == "take" ? id == 2 : (id == 4 || id == 5 || id == 12 || (s.op == "open" && (id == 2 || id == 10)));
-                    if (!at || !wanted || (s.args.size() && k != arg(s, 0, -1)))
+                    // (take: an item box, Id 2, or a glint, Id 11: a Fluorite, the Gear.)
+                    const bool wanted = s.op == "take" ? (id == 2 || id == 11) : (id == 4 || id == 5 || id == 12 || (s.op == "open" && (id == 2 || id == 10)));
+                    if (!at || !wanted || (s.args.size() && arg(s, 0, -1) >= 0 && k != arg(s, 0, -1)))
                         continue;
                     float rx, rz, rw, rd;
                     aotRect(ram, at, rx, rz, rw, rd);
@@ -1031,12 +1042,20 @@ namespace oni::bot
                         g_target = k, bd = d, g_targetAt = at;
                 }
                 g_counter = 1;
+                // (`take K -N`: optional, none there or not reached in N frames is not a failure; K -1: the nearest.)
+                if (g_target < 0 && arg(s, 1, 0) < 0)
+                {
+                    log("%s", "nothing to take");
+                    next();
+                    return;
+                }
                 if (g_target < 0)
                 {
                     fail(s.op + ": no such AOT in the room");
                     return;
                 }
                 log("%s", "item slot " + std::to_string(g_target));
+                g_inventory = inventorySum(ram);
             }
             // Taken: the item window (fade.c's Fade_w 0x27c370, type 5) opened and closed again; or the AOT gone.
             uint32_t now;
@@ -1047,7 +1066,9 @@ namespace oni::bot
                 g_windowSeen = true;
             if (s.op == "examine" && g_counter > 8 && (!inPlay || ram[(now & 0x1ffffffu)] != ram[g_targetAt]))
                 g_windowSeen = true;
-            if (inPlay && g_inPlayFor > 30 && ((g_windowSeen && !ram[0x27c370]) || (now & 0x1ffffffu) != g_targetAt))
+            if (inPlay && g_inPlayFor > 30 &&
+                ((g_windowSeen && !ram[0x27c370]) || (now & 0x1ffffffu) != g_targetAt ||
+                 (s.op == "take" && (ram[g_targetAt] == 0 || inventorySum(ram) != g_inventory))))
             {
                 g_windowSeen = false;
                 log("%s", "taken");
@@ -1059,7 +1080,10 @@ namespace oni::bot
             aotRect(ram, at, x0, z0, w, dd);
             const float cx = x0 + w * 0.5f, cz = z0 + dd * 0.5f;
             // (The item may be solid, a box: its AOT reached within a margin.)
-            const bool inside = px >= x0 - 450 && px <= x0 + w + 450 && pz >= z0 - 450 && pz <= z0 + dd + 450;
+            // (An AOT checked at the player's own position, Type bit 0x40 (a glint of type 0x51): stood in, not near.)
+            const bool atPlayer = (ram[at + 1] & 0x40u) != 0;
+            const float margin = atPlayer ? -100.0f : 450.0f;
+            const bool inside = px >= x0 - margin && px <= x0 + w + margin && pz >= z0 - margin && pz <= z0 + dd + margin;
             if (s.op == "open" && !inPlay && g_counter > 8)
             {
                 // open: what it starts (a puzzle, a menu) is left to the next steps.
@@ -1076,7 +1100,7 @@ namespace oni::bot
             }
             else if (engage(ram))
                 ;
-            else if (inside || std::hypot(cx - px, cz - pz) < 450.0f || (g_reachStuck > 0) ||
+            else if (inside || (!atPlayer && std::hypot(cx - px, cz - pz) < 450.0f) || (g_reachStuck > 0) ||
                      (g_stuck > 30 && std::hypot(cx - px, cz - pz) < 1300.0f))
             {
                 if (g_stuck > 30 && g_reachStuck == 0)
@@ -1101,8 +1125,17 @@ namespace oni::bot
                 navigate(ram, cx, cz);
                 g_buttons = 0;
             }
-            if (g_playAge > static_cast<uint64_t>(arg(s, 1, 2400)))
+            const int limit = arg(s, 1, 2400);
+            if (g_playAge > static_cast<uint64_t>(limit < 0 ? -limit : limit))
+            {
+                if (limit < 0)
+                {
+                    log("%s", "not taken, going on");
+                    next();
+                    return;
+                }
                 fail("take: the item is still there");
+            }
         }
         else if (s.op == "attack")
         {

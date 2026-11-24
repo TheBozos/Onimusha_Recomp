@@ -1,3 +1,4 @@
+# (Branch: the Fluorite on the boathouse's lower deck (stage 3 room 11).)
 # (The optional branch: with the Great Armor from room 10's waterfall box.) Stage 3 room 7 (the garden) on through rooms 8, 9 and 10 (round its east side: the middle is a narrow way the bot
 # takes and is held in) to room 11 (the boathouse: its save room, the herb; the stairs down to the deck, an internal
 # door faced and pressed), the small boat (event AOT slot 6) to the turret (room 12), room 13 and its event (slot 0):
@@ -77,6 +78,8 @@ go -10800 11900 600
 face -10950 10000
 wait 5
 press CROSS 8
+play
+take 12 -2400    # a Fluorite on the lower deck
 play
 examine 6
 play

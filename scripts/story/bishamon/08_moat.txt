@@ -1,0 +1,24 @@
+# (Branch: the moat's enemies fought before the edge is examined; the run differs from the main one.)
+# From stage 2 room 0 to room 4 (the dry moat): "You need equipment to descend." Examined there, then the Rope Ladder used from the
+# status screen (START; RIGHT to ITEM, the cursor on the Herb, the ladder one above; CROSS, CROSS for YES).
+play
+door 2 4
+play
+fight -3000
+play
+examine 2
+wait 30
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 3000
+examine 2         # the ladder in place: down into the moat
+play 3000
+save build/story/s125.state

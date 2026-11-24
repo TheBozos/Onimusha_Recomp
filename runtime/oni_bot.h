@@ -4,7 +4,8 @@
 //   go X Z [R] [N]    walk to (X, Z) until within R (300), N frames in play at most (1800; negative: then go on)
 //   door S R          walk into the current room's door to stage S, room R and press the action button until the
 //                     game is in that room (in play; with `enter`, as soon as it is there: an event's question)
-//   take [K] [N]      walk into the nearest item AOT (or slot K), face it, press the action button, close the message
+//   take [K] [N]      walk into the nearest item AOT or glint (or slot K; -1 the nearest), face it, press the action
+//                     button, close the message (N frames, 2400; negative: none there or not reached is no failure)
 //   examine [K] [N]   the same with the nearest event / message AOT (Id 4, 5, 12): done when what it starts is over
 //   open [K]          walk to the nearest event / item AOT (or slot K), press the action button once it is faced, and
 //                     stop as soon as the game leaves play (a puzzle, a question: the next steps answer it)

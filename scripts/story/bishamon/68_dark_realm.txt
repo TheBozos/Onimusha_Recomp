@@ -2,6 +2,8 @@
 # offer taken ("Shall we go?" YES): stage 4 room 5, twenty floors of demons. A floor is done when its waves are; then two
 # pillars of light stand (event AOTs, type 0x51: stood in and pressed): slot 0 down to the next floor, slot 3 back up.
 # Forty rounds of: fight (an enemy that will not come out of hiding is left after a while: the round is played again),
+# the floor's reward (AOT slot 6 by the north wall, pressed: room405's Set0e draws a floor in each of three ranges for
+# the three Fluorites, and floor 20 holds the Ocarina),
 # the down pillar (a shortcut into it; after floor 20 it is gone and the rounds do nothing). Then six rounds of: fight
 # (floor 20's waves may still be coming), the Bishamon Ocarina (item 0x50, AOT slot 6), the pillar back up (once in the
 # save room they do nothing). The Magic Mirror as in leg 50 (Shiden to level 3).
@@ -26,25 +28,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -56,25 +45,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -86,25 +62,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -116,25 +79,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -146,25 +96,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -176,25 +113,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -206,25 +130,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -236,25 +147,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -266,25 +164,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -296,25 +181,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -326,25 +198,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -356,25 +215,12 @@ play
 wait 150
 fight -3000
 play
-teleport -9270 11680
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
 wait 10
+face -7600 13000
+wait 5
 press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
-play
-teleport -9270 11680
-wait 10
-press CROSS 8
-wait 30
-play 6000
-fight -6000
-play
-wait 150
-fight -3000
+wait 60
 play
 teleport -9270 11680
 wait 10
@@ -386,6 +232,13 @@ play
 wait 150
 fight -3000
 play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
 teleport -9270 11680
 wait 10
 press CROSS 8
@@ -396,6 +249,13 @@ play
 wait 150
 fight -3000
 play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
 teleport -9270 11680
 wait 10
 press CROSS 8
@@ -406,6 +266,13 @@ play
 wait 150
 fight -3000
 play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
 teleport -9270 11680
 wait 10
 press CROSS 8
@@ -415,6 +282,421 @@ fight -6000
 play
 wait 150
 fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9270 11680
+wait 10
+press CROSS 8
+wait 30
+play 6000
+fight -6000
+play
+wait 150
+fight -3000
+play
+teleport -7600 11700   # a floor's reward, if any (room405's table: a Fluorite on a floor of each of three ranges)
+wait 10
+face -7600 13000
+wait 5
+press CROSS 8
+wait 60
 play
 teleport -9270 11680
 wait 10

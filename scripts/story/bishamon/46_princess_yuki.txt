@@ -1,0 +1,35 @@
+# (Branch: the walk to the pots tolerant.)
+# Stage 2 room 38 back down its stairs (their landing is south of the door's AOT: a point there, faced north, pressed)
+# through room 37 to the burning room (36): its pots broken for Genbu and the Kunai. Room 39: the flesh bars are two
+# enemies the Sacred Knife cuts down on the way; past them the hanging flesh cannot be killed (not fought, and a go
+# whose point lies past the bars ends quietly); the step up (event AOT slot 1) and the prison (slot 3): Princess Yuki's
+# scene ("Forget about me...", "Your enemy is right in front of you, but this will not open!").
+play
+go 4800 -7350 150
+face 4800 -6000
+wait 5
+press CROSS 8
+play
+door 2 36
+play
+go 1400 -12000 200 -900
+attack 1400 -11000 8
+attack 900 -11000 8
+play
+take 3
+play
+take 4
+play
+door 2 39
+play
+go 9700 -13700 300 -900   # the bars (two enemies) cut down on the way
+play
+engage off        # the flesh hanging past the bars cannot be killed
+go 12750 -13650 200 -900
+play
+examine 1
+engage on
+play 9000
+examine 3
+play 12000
+save build/story/s239k.state

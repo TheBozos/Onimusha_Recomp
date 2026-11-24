@@ -1,0 +1,41 @@
+# (Branch: the Fluorite in stage 2 room 29.)
+# Stage 2 room 24 through the door the ghosts no longer block (room 29), room 32 and its double green-orb door (event
+# AOT slot 3, the Wind Spear equipped since the orb stand) into room 33: Apocalypse #1 and Byakko by the corpse, then the
+# trick treasure box (set06 again: a 2 x 4 board, three knobs, CROSS turns the selected one clockwise, three turns; the
+# board 2 4 3 8 / 1 6 5 7 to 1 2 3 4 / 5 6 7 8: middle, left, right; searched over set06_puz_Q / _A): the Blue Key.
+play
+door 2 29
+play
+take 7 -2400     # a Fluorite
+play
+door 2 32
+play
+examine 3
+play 6000
+take 1
+play
+take 3
+play
+go -11000 -12170 100
+face -10100 -12750
+wait 10
+press CROSS 6     # "There is a trick treasure box."
+wait 90
+press CROSS 6     # the puzzle (the left knob selected)
+wait 240
+press RIGHT 6
+wait 40
+press CROSS 6     # middle
+wait 90
+press LEFT 6
+wait 40
+press CROSS 6     # left
+wait 90
+press RIGHT 6
+wait 40
+press RIGHT 6
+wait 40
+press CROSS 6     # right
+wait 240
+play
+save build/story/s233c.state

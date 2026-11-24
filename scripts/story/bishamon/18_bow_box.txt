@@ -1,0 +1,30 @@
+# (Branch: the Fluorite in stage 5 room 9.)
+# Stage 5 room 10 (by the staircase): the trick treasure box (the dial puzzle again: 5 3 2 / 6 1 4, five turns, solved
+# left, right, left, right, right: the Bow), then the dangling rope slashed (its pail comes down).
+play
+take 5 -2400     # a Fluorite
+play
+door 5 10
+play
+open 6            # "There is a trick treasure box."
+wait 90
+press CROSS 6     # the puzzle (the left dial selected)
+wait 240
+press CROSS 6     # left
+wait 90
+press RIGHT 6
+wait 40
+press CROSS 6     # right
+wait 90
+press LEFT 6
+wait 40
+press CROSS 6     # left
+wait 90
+press RIGHT 6
+wait 40
+press CROSS 6     # right
+wait 90
+press CROSS 6     # right
+wait 240
+play
+save build/story/s510.state
