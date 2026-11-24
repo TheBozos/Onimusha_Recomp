@@ -60,7 +60,7 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, to Kaede's lever trap (23 legs so far) | 🔧 |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb (34 legs so far) | 🔧 |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +70,14 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** The keep's puzzles solved by the story bot (the lever trap with Kaede, the fall-trap floor of shogi
+pieces, the water prison's sliding crest puzzle, the crest door), then boss 2 on the keep's roof and the Wind Orb.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-boss2.png" width="400" alt="Boss 2: a horned demon warrior with a spear and a wheel-shaped shield">
+  <img src="docs/screenshots/2026-11-24-bozo-wind-orb.png" width="400" alt="Samanosuke receiving the Wind Orb, green wind swirling around him">
+</p>
 
 **2026-11-24.** Into the keep in the story's order (the bot's legs 13-21): Yunemaru's event in the keep, and the Magic
 Mirror's ENHANCE screen (the fire sword at level 2, which the double red-orb door asks for). The Magic Mirror's SAVE
