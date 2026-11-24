@@ -1,0 +1,43 @@
+# Stage 5 room 10 down through rooms 9, 7, 6, 5 and the hall to the save room (room 1): after Boss 3 the hanging head
+# there offers the Dark Realm (optional: "Shall we go?", YES selected; the door step stops at the room's entry, its
+# lines run on their own, then RIGHT and CROSS for NO), then the Magic Mirror's ENHANCE: Shiden (the thunder orb) to
+# level 3 (the triple blue-orb door asks for it).
+play
+door 5 9
+play
+door 5 7
+play
+door 5 6
+play
+door 5 5
+play
+door 5 0
+play
+door 5 1 enter
+wait 1350
+press RIGHT 6     # NO
+wait 30
+press CROSS 6
+wait 60
+play 6000
+go -13400 9800 200
+face -13400 8550
+wait 10
+press CROSS 8      # "It's a Magic Mirror."
+wait 100
+press CROSS 8      # SAVE / ENHANCE / EXIT
+wait 80
+press RIGHT 8
+wait 40
+press CROSS 8      # ENHANCE (Raizan selected)
+wait 150
+press DOWN 8
+wait 30
+press CROSS 1200   # Shiden to level 3
+wait 100
+press TRIANGLE 8
+wait 100
+press TRIANGLE 8
+wait 100
+play
+save build/story/s501k.state

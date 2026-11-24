@@ -1,0 +1,6 @@
+# Stage 2 room 39 after Princess Yuki's scene: the vanishing ninja (one-hit kills), Kaede's "Have to tell him.", and
+# back to Samanosuke in room 44 (the roots' pit).
+play
+fight 9000
+play 12000
+save build/story/s244k.state

@@ -60,7 +60,7 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), into Kaede's part (41 legs so far) | 🔧 |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3 (51 legs so far) | 🔧 |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +70,16 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** Kaede's part played through by the bot: the Red Key, the archers' yard, the furnace's Gold Plate,
+the Gear and the Silver Plate for the iron door, a second knob box (the Sacred Knife), the flesh bars and Princess
+Yuki's prison, the vanishing ninja; then Samanosuke's Boss 3 (his own double) and the climb back into the keep, where
+the hanging head offers the Dark Realm (declined).
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-princess-yuki.png" width="400" alt="Kaede at the prison bars with Princess Yuki: Forget about me. Escape from this castle with Samanosuke.">
+  <img src="docs/screenshots/2026-11-24-bozo-dark-realm-offer.png" width="400" alt="A head hanging upside down: but if you do, great rewards await you.">
+</p>
 
 **2026-11-24.** On through the keep: the green-orb door (Nui's scene), ENHANCE and the double blue-orb door, the stand
 of three orbs (each lit by its own sword), the rope and the Rosary, the Purifier Bell clearing the ghosts from a door,

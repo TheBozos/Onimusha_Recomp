@@ -540,10 +540,11 @@ namespace oni::bot
         int g_inPlayFor = 0;       // frames in play in a row
         int g_reachStuck = 0;      // take / examine: frames left pressing from where the way ended
         uint64_t g_playAge = 0;    // the step's frames in play (its timeouts: an event on the way does not count)
+        bool g_noEngage = false; // engage off: enemies on the way not fought (ones that cannot die: room 2:39's flesh)
         bool engage(const uint8_t *ram)
         {
             Enemy e{};
-            if (!nearestEnemy(ram, e) || e.dist > (g_engaged ? 2200.0f : 1500.0f))
+            if (g_noEngage || !nearestEnemy(ram, e) || e.dist > (g_engaged ? 2200.0f : 1500.0f))
             {
                 if (g_engaged)
                     g_buttons = 0;
@@ -751,13 +752,27 @@ namespace oni::bot
                 next();
                 return;
             }
-            if (g_playAge > static_cast<uint64_t>(arg(s, 3, 1800)))
+            // N frames in play at most (1800); a negative N ends the step there without failing (a way that only
+            // gives as the player runs into it: stage 2 room 39's flesh bars, past which the point is behind).
+            const int limit = arg(s, 3, 1800);
+            if (g_playAge > static_cast<uint64_t>(limit < 0 ? -limit : limit))
+            {
+                if (limit < 0)
+                {
+                    log("%s", "gone on from (" + std::to_string(static_cast<int>(px)) + ", " + std::to_string(static_cast<int>(pz)) + ")");
+                    next();
+                    return;
+                }
                 fail("go: not reached from (" + std::to_string(static_cast<int>(px)) + ", " + std::to_string(static_cast<int>(pz)) + ")");
+            }
         }
         else if (s.op == "door")
         {
             const int ts = arg(s, 0, 0), tr = arg(s, 1, 0);
-            if (stage == ts && room == tr && inPlay)
+            // `door S R enter`: done as soon as the game is in that room (an event there, a question, is the next
+            // steps' to answer: stage 5 room 1's offer of the Dark Realm).
+            const bool enter = std::find(s.args.begin(), s.args.end(), "enter") != s.args.end();
+            if (stage == ts && room == tr && (inPlay || (enter && mode == 2)))
             {
                 log("%s", "in " + std::to_string(ts) + ":" + std::to_string(tr));
                 next();
@@ -824,9 +839,11 @@ namespace oni::bot
                 // Not in play before the door is taken: a message it raised ("You have used the Blue Key."), closed as
                 // `play` closes one (not while a door is being gone through: mode 3).
                 halt();
-                g_buttons = (d && mode == 2 && age % 40 < 4) ? bozo::libs::kPadCross : 0;
+                // In the room it leads to, an event's message ("You got the Red Key.") likewise.
+                const bool there = stage == ts && room == tr;
+                g_buttons = ((d || there) && mode == 2 && age % 40 < 4) ? bozo::libs::kPadCross : 0;
             }
-            if (g_playAge > static_cast<uint64_t>(arg(s, 2, 2400)))
+            if (g_playAge > static_cast<uint64_t>(s.args.size() > 2 && s.args[2] != "enter" ? arg(s, 2, 2400) : 2400))
                 fail("door: still in " + std::to_string(stage) + ":" + std::to_string(room) + " at (" + std::to_string(static_cast<int>(px)) + ", " + std::to_string(static_cast<int>(pz)) + ")");
         }
         else if (s.op == "fight")
@@ -1106,6 +1123,12 @@ namespace oni::bot
                 halt();
             if (g_playAge > static_cast<uint64_t>(arg(s, 2, 900)))
                 fail("piece: no swap");
+        }
+        else if (s.op == "engage")
+        {
+            g_noEngage = !s.args.empty() && s.args[0] == "off";
+            g_engaged = false;
+            next();
         }
         else if (s.op == "learn")
         {

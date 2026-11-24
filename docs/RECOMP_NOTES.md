@@ -564,3 +564,28 @@ Kaede wakes in stage 5 room 8.
 - Some rooms' collision meshes hold no walls the bot can read (stage 5 rooms 2 and 29, as 18 and 21 before): waypoints
   or in-room shortcuts there.
 
+## Kaede's part, Princess Yuki, Boss 3 (story legs 41-50, 2026-11-24)
+
+Legs 41-49: Kaede from stage 5 room 8 (the dying soldier's Red Key) down to the courtyard and the moat's red-ink door
+(key 176), room 10's yard (the archers knock her back from the partitions: a shortcut to the ladder's foot) and its
+balcony, room 14 (the West Area Map, the Shinobi Kit's door), the trick shelf's room (6) and the furnace (stage 1 room
+23: the pull tab, the flames, the Gold Plate), room 22's Gear by a corpse (an AOT Id 11) and its two holders by the
+iron door (the Gold Plate, then the Silver Plate from the shelf's secret room), the burning room, room 38's trick box
+(the knob board again, 6 8 4 7 / 2 5 1 3 in five turns: the Sacred Knife, equipped from Kaede's EQUIP page), the flesh
+bars of room 39 cut down, Princess Yuki's scene in the prison, the vanishing ninja; Samanosuke's Boss 3 (his double),
+stage 1 room 17's Evil Plate and Wood Ladder, and up the ladder into the keep. Leg 50: the save room's hanging head
+offers the Dark Realm (optional, declined: "Shall we go?" opens on YES), and Shiden to level 3 at the Magic Mirror.
+
+- The item menu keeps used items, greyed (the Gear, the Gold Plate once inserted); its cursor opens on the Herb, so a
+  key item is UP from there by its place in the list.
+- Bot: the door step also closes a message in the room it leads to ("You got the Red Key."); `go X Z R N` with a
+  negative N ends quietly after |N| frames in play (a way that gives as the player runs into it, past which the point
+  is behind); `engage off|on` (enemies on the way not fought: room 39's hanging flesh cannot die); `door S R enter`
+  ends at the room's entry, leaving an event's question to the next steps (the door step otherwise presses CROSS on
+  messages, which took the Dark Realm's YES). `ONI_DRAW_ORDER=2` lists each draw's vertices too.
+- Open, not known to be a port bug: in Boss 3's room a red cloud (two tiling 8-bit noise textures, additive, on a 2 x 2
+  grid of quads whose vertex alpha falls only from the middle row, 0x26, to the top and bottom rows, 0x09) shows hard
+  left and right edges. The textures tile and the quads have no horizontal falloff, so the GS would draw the same edges
+  unless something else masks them; the game writes no TEX2 or PRMODE here. Needs a comparison with real hardware.
+
+

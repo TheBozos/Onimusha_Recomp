@@ -1,9 +1,9 @@
 // The story bot (ONI_BOT=<script>): plays the game from a save state by a script of goals, steering with the D-pad
 // against the player's position each frame, for headless runs that go through the story in its own order.
 // Script lines (# comments):
-//   go X Z [R]        walk to (X, Z) until within R (300)
+//   go X Z [R] [N]    walk to (X, Z) until within R (300), N frames in play at most (1800; negative: then go on)
 //   door S R          walk into the current room's door to stage S, room R and press the action button until the
-//                     game is in that room
+//                     game is in that room (in play; with `enter`, as soon as it is there: an event's question)
 //   take [K] [N]      walk into the nearest item AOT (or slot K), face it, press the action button, close the message
 //   examine [K] [N]   the same with the nearest event / message AOT (Id 4, 5, 12): done when what it starts is over
 //   open [K]          walk to the nearest event / item AOT (or slot K), press the action button once it is faced, and
@@ -18,6 +18,7 @@
 //   place S R [N]     wait until the game is in stage S, room R (N frames at most, 3600)
 //   attack X Z [N]    turn toward (X, Z) and swing N times (4): pots, crates
 //   piece X Z [N]     walk straight onto (X, Z) until the control passes to the other character (stage 5 room 20)
+//   engage on|off     enemies on the way fought (on, the default) or passed by
 //   learn on|off      where the way is held, an obstacle is learnt and the way planned around it (off by default)
 //   face X Z          turn toward (X, Z) on the spot
 //   teleport X Z [Y]  the player moved within the room (a shortcut where the bot cannot find the way)
