@@ -596,8 +596,8 @@ balcony to room 14's triple red-orb door ("This will not open at your current le
 Magic Mirror, the Fire Sword equipped), room 19 and room 20 (the ogres, the Statue Head, the bullets, the Decorated
 Sword); back to the headless statue: its head from the item menu, the gate retracts, the Matchlock.
 
-- The EQUIP page opens on its Sword row after the game has been saved / reloaded or the character changed; the orbs
-  are rows 2-4 (Shiden / Raizan, Kouen / Enryuu, Arashi / Shippuu).
+- The EQUIP page opened on its Sword row here (in leg 36 it had kept its last row; why is not known): a capture of
+  the page before scripting the presses. The orbs are rows 2-4 (Shiden / Raizan, Kouen / Enryuu, Arashi / Shippuu).
 - Room 19's garden (an L round a building) and room 10's yard (the archers) take waypoints / a shortcut; room 14's
   Magic Mirror is reached round its north wall. Room 8's two items are taken Vision Staff first (after Genbu the
   other is out of the bot's reach).
