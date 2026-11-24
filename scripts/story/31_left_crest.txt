@@ -1,0 +1,36 @@
+# The left crest piece: from room 24 down its ladder (room 23), through the door at the far side of room 23 into room
+# 16 (shortcuts: the bot finds no way along these rooms' walls), its item (72) taken, back to room 23 and up the
+# ladder to room 24; the left piece used from the item menu in front of the door (one row above the Herb), and the
+# door, whole now, into room 25.
+play
+examine 5
+play 6000
+teleport -9500 16400
+wait 20
+door 5 16
+play 6000
+take 2
+play
+teleport -8500 12700
+wait 20
+door 5 23
+play
+examine 0
+play 6000
+go -9250 7300 150 900
+face -9250 8300
+wait 10
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 6000
+door 5 25
+play 9000
+save build/story/s525.state
