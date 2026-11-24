@@ -496,3 +496,11 @@ must find a way out!"). Next: the lever puzzle (seven lever AOTs, Id 5: one by t
 by the door; Message2 AOTs 15 and 16 are the bars between the sections). The characters swap there (Player_change:
 Pl_swap_info, the HUD turns to Kaede's single bar), and the levers on the north wall were out of reach from where the
 active one stood in the first tries: the bot needs this room's map (its collision mesh reads as garbage here).
+
+Leg 23 is the lever trap: each pull hands control to the other character (the active one is always the player _OCW
+at 0x287ed0); the levers stand behind bars from where each one is, so the leg takes in-room shortcuts to each. The
+order: Samanosuke the lever by the start, Kaede the right one of the pair, Samanosuke the left one, Kaede the left one
+of the three (the middle one is a trap), Samanosuke the right one, Kaede the lever by the door, Samanosuke the
+door-side one (a Message2 AOT, 24), then the door into room 19. Room 19 is dark: the Fire Sword's special
+(R1 + TRIANGLE, a chord in the bot's `press`) lights its candles, the fire effect and the lit room drawn as they
+should be. The way on from there (the floor-tile puzzle, then the crest) is the next leg.

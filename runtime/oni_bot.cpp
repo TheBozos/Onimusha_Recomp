@@ -71,6 +71,8 @@ namespace oni::bot
 
         uint16_t button(const std::string &name)
         {
+            if (const size_t plus = name.find('+'); plus != std::string::npos) // a chord: R1+TRIANGLE
+                return static_cast<uint16_t>(button(name.substr(0, plus)) | button(name.substr(plus + 1)));
             using namespace bozo::libs;
             static const std::pair<const char *, uint16_t> names[] = {
                 {"CROSS", kPadCross}, {"CIRCLE", kPadCircle}, {"SQUARE", kPadSquare}, {"TRIANGLE", kPadTriangle},
