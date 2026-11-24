@@ -183,6 +183,9 @@ namespace oni::vu1
                 m.blendC = (a >> 4) & 3;
                 m.blendD = (a >> 6) & 3;
                 m.blendFix = static_cast<uint8_t>(a >> 32);
+                // A 24-bit frame (FRAME.PSM 1) has no alpha: the GS reads its destination alpha as 0x80 (Ad: FIX 128).
+                if (m.blendC == 1 && ((gs.frame[c] >> 24) & 0x3fu) == 1u)
+                    m.blendC = 2, m.blendFix = 0x80;
             }
             else
                 m.blend = Material::Blend::Opaque;
@@ -249,7 +252,10 @@ namespace oni::vu1
             // is the frame so far (an effect copying the scene, into the shadows' target or over itself), the other the
             // previous frame (Screen_blur_draw's motion blur); u, v the field's texels over the frame.
             gs.fromPrevious = false;
-            if (fbp < 0x8cu)
+            // (A context whose FRAME the game never set (0: Screen_blur_draw's context 2) draws into the display buffer
+            // of the frame: it does not say which one that is; reading it as page 0 made the blur's copy of the previous
+            // frame the frame so far, and the cinema bars went under the blur in stage 2 room 30's event.)
+            if (fbp < 0x8cu && gs.frame[c] != 0)
                 g_display = fbp;
             if (tme)
             {
@@ -268,6 +274,9 @@ namespace oni::vu1
                     gs.texture = nullptr;
                 }
             }
+            static const bool noBlur = std::getenv("ONI_NO_BLUR") != nullptr; // diagnostic: no draw reading a display buffer
+            if (noBlur && gs.fromPrevious)
+                gs.skip = true;
             static const bool noShadows = [] { const char *e = std::getenv("ONI_SHADOWS"); return e && *e == '0'; }();
             if (noShadows && (m.target || gs.fromTarget))
                 gs.skip = true;
@@ -1074,6 +1083,18 @@ namespace oni::vu1
             r.setClip(d.clip[0], d.clip[1], d.clip[2], d.clip[3]);
             if (trace() >= 2 && &d == &g_pending.front())
                 std::printf("[oni:vu1] clip %.0f %.0f %.0f %.0f\n", d.clip[0], d.clip[1], d.clip[2], d.clip[3]);
+            static const bool order = std::getenv("ONI_DRAW_ORDER") != nullptr; // each draw of the frame, in order
+            if (order && !d.vertices.empty())
+            {
+                float x0 = 1e9f, y0 = 1e9f, x1 = -1e9f, y1 = -1e9f;
+                for (const auto &v : d.vertices)
+                    x0 = std::min(x0, v.x), x1 = std::max(x1, v.x), y0 = std::min(y0, v.y), y1 = std::max(y1, v.y);
+                std::printf("[oni:draw] %s tex %016llx target %d source %d blend %d/%d%d%d%d fix %02x depth %d/%d rgba %08x: %zu vertices (%.0f,%.0f)-(%.0f,%.0f)\n",
+                            d.material.textured ? "textured" : "flat", (unsigned long long)d.material.tex0, d.material.target,
+                            d.material.source, static_cast<int>(d.material.blend), d.material.gsBlend ? 1 : 0, d.material.blendA,
+                            d.material.blendB, d.material.blendC, d.material.blendFix, d.material.depthTest ? 1 : 0,
+                            d.material.depthWrite ? 1 : 0, d.vertices.front().rgba, d.vertices.size(), x0, y0, x1, y1);
+            }
             r.draw(d.material, kIdentity, d.vertices.data(), static_cast<uint32_t>(d.vertices.size()), d.texture);
         }
         r.clearClip();

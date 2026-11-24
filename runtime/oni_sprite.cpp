@@ -88,8 +88,10 @@ namespace oni::sprite
             {
                 m.gsBlend = true;
                 const bool textureAlpha = (attr & 0x8000u) != 0;
-                m.blendC = textureAlpha ? 0 : g_pit ? 1 : 2; // As; Pit_trans: Ad; Ot_draw: FIX
-                m.blendFix = textureAlpha ? 0 : static_cast<uint8_t>(rgba >> 24);
+                // As; Pit_trans: Ad, which on the 24-bit display frame the GS reads as 0x80 (FIX 128; the frame's alpha
+                // here is whatever the port's draws left, and the cinema bars went through where it was 0); Ot_draw: FIX.
+                m.blendC = textureAlpha ? 0 : 2;
+                m.blendFix = textureAlpha ? 0 : g_pit ? 0x80 : static_cast<uint8_t>(rgba >> 24);
                 m.blendD = 1;
                 if (attr & 0x2000u) { m.blendA = 0; m.blendB = 1; }      // (Cs - Cd) A + Cd
                 else if (attr & 0x4000u) { m.blendA = 2; m.blendB = 0; } // (0 - Cs) A + Cd

@@ -70,6 +70,15 @@ what remains open.
 
 ## Screenshots
 
+**2026-11-24.** Further into the story, played by the bot: the first boss (the mace-wielding ogre, met at the bottom
+of the dry moat) and the event after it, its cinema bars now whole (the bars blend by the frame's alpha, which a
+24-bit frame does not keep: the GS reads it as 0x80).
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-ogre-boss.png" width="400" alt="The ogre boss towering over Samanosuke in a dark pit, subtitle: AND I haven't eaten in a while...">
+  <img src="docs/screenshots/2026-11-24-bozo-tentacle-event.png" width="400" alt="A cutscene: red tentacles over an armoured corpse on stone steps, blue fire in bowls behind">
+</p>
+
 **2026-11-24.** The underground temple's trick treasure box, its six tiles all drawn now (the room's depth had hidden
 most of them behind the puzzle), solved by the story bot for the Rope Ladder.
 
@@ -243,7 +252,7 @@ Diagnostics: `ONI_BG_TRACE=1` (backgrounds), `ONI_2D_TRACE=1..3` (the 2D), `ONI_
 `ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames), `ONI_MOVIE_TRACE=1` (movies),
 `ONI_BGMV_TRACE=1` (animated backgrounds), `ONI_FADE_TRACE=1` (the game's fade and mode), `ONI_PLAYER_TRACE=<n>`
 (the player's place, position, facing and life every n frames), `ONI_VU1_TRACE=1..3`
-(models; 3 lists every drawn batch), `ONI_THREADS_AT=<frame>` (every thread's state and pc at that frame).
+(models; 3 lists every drawn batch), `ONI_DRAW_ORDER=1` (each draw of a frame, in order), `ONI_THREADS_AT=<frame>` (every thread's state and pc at that frame).
 
 Story bot: `ONI_BOT=<script>` plays from a save state by a script of goals (doors, items, fights; the steps in
 `runtime/oni_bot.h`); `scripts/story/leg.sh <state> <script> <frames>` runs one leg headless with the cheats on,
