@@ -1,0 +1,19 @@
+# The Dark Fountain's room (stage 4 room 2) with the Bishamon Ocarina: played from the item menu where Samanosuke comes in
+# (a flag AOT over the room's west side for item 0x50; UP from the Herb), the wall opens; the pedestal behind it (event
+# AOT slot 5): the Bishamon Sword drawn out of the demon.
+play
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 9000
+play
+examine 5 4000
+play 6000
+save build/story/s402s.state

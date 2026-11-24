@@ -61,6 +61,7 @@ the game, scene by scene.
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
 | The whole story, played headless by a scripted bot (`ONI_BOT`) from the forest cave to Fortinbras, the ending and the RESULT screen: 68 legs, every boss, puzzle and scene of the main route | ✅ |
+| The optional Dark Realm (twenty floors) and the Bishamon Sword, played as a branch of the bot's run to the end of the game | ✅ |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +71,15 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** The optional branch: the hanging head's offer taken, the Dark Realm's twenty floors of demons, the
+Bishamon Ocarina at the bottom, and in the Dark Fountain's room the ocarina opens the wall on the Bishamon Sword; the
+game then finished with it.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-dark-realm.png" width="400" alt="A Dark Realm floor: demons in a round arena of bone spikes">
+  <img src="docs/screenshots/2026-11-24-bozo-bishamon-sword.png" width="400" alt="Samanosuke raising the Bishamon Sword, its purple blade glowing">
+</p>
 
 **2026-11-24.** The end of the game: the Great Arrow breaks the Demon Gate's seal, Marcellus in the Demon Realm, the
 spiral down to the king's chamber, Fortinbras, the ending movie, the staff roll and the RESULT screen. The story bot

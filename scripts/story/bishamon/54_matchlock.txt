@@ -1,0 +1,51 @@
+# Stage 2 room 20 back to the Statue of the West: room 19 (along its south edge and west side), room 14 (the ladder up),
+# room 10 (the balcony, the ladder down; the archers hold the yard: a shortcut to the door to room 7), room 7 and room
+# 8: the Statue Head used at the headless statue (from the item menu, UP from the Herb), the gate retracts, the Matchlock.
+play
+door 2 19
+play
+go -1000 1800 300
+go -9000 1700 300
+go -13500 4000 300
+go -14200 9500 300
+door 2 14
+play
+go -12436 9250 150
+go -13900 8575 150
+go -14050 8150 80
+face -14050 7000
+wait 5
+press CROSS 8
+play
+door 2 10
+play
+go -8000 2300 150
+go -14000 1900 100
+face -14000 0
+wait 5
+press CROSS 8
+play
+teleport -14600 12200
+wait 20
+door 2 7
+play
+door 2 8
+play
+examine 5
+play
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6        # (the Bishamon Ocarina sits just above the Herb)
+wait 30
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 9000
+take 3
+play
+save build/story/s208m.state
