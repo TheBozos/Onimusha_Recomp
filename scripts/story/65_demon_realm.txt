@@ -1,0 +1,31 @@
+# Stage 5 room 8 through the ruined keep (rooms 5, 6, 33) to the Demon Gate (stage 4 room 0): the Great Arrow from the
+# item menu (a flag AOT over the room for item 0x4e; UP from the Herb) breaks the seal, into the Demon Realm (room 1):
+# Guildenstern's "Come, Marcellus!!" and Marcellus (one-hit kills), then the Dark Fountain's room (2).
+play
+door 5 5
+play
+door 5 6
+play
+door 5 33
+play
+door 4 0
+play
+go -11000 12000 400
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 12000
+fight 12000
+play 12000
+take 2
+play
+door 4 2
+play
+save build/story/s402k.state

@@ -646,6 +646,20 @@ down, the escape by boat, Kaede hurt and resting in stage 5 room 8.
 - The room files' item AOTs (opcode 0x3a / 0x3b, Id 2: the item number at +0x0e) and used-item checks (`0b 00 <item> 00
   01 00`) are how the next step's room is found when the walkthrough is vague.
 
+## The Demon Realm, Fortinbras, the ending (story legs 65-67, 2026-11-24)
+
+Legs 65-67 finish the game: Samanosuke back through the ruined keep to the Demon Gate (stage 4 room 0), the Great Arrow
+from the item menu (a flag AOT over the room for item 0x4e) breaks the seal; the Demon Realm (room 1): Guildenstern's
+"Come, Marcellus!!" and Marcellus; the Dark Fountain (room 2); room 3, a ramp spiralling down a ring (about 9000 lower
+a turn: two and a half turns by waypoints S, E, N, W; the bot's planner works on one level, so it is not used there),
+the king's door at its foot; room 4: Fortinbras, Princess Yuki and Yumemaru, Nobunaga's return, the fight (one-hit
+kills), and the ending in mode 10 (the movie, the staff roll, "Presented by CAPCOM") up to the RESULT screen and its
+save prompt, about 36000 frames. Every scene and the movie drawn as expected.
+
+- Bot: `fight N M` also ends once the game is in mode M (Fortinbras stays in the enemies' list while the ending runs).
+- The optional parts (the Dark Realm, the Bishamon Sword, the Great Armor's box, Fluorites) are not played.
+
+
 
 
 

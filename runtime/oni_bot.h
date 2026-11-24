@@ -8,7 +8,7 @@
 //   examine [K] [N]   the same with the nearest event / message AOT (Id 4, 5, 12): done when what it starts is over
 //   open [K]          walk to the nearest event / item AOT (or slot K), press the action button once it is faced, and
 //                     stop as soon as the game leaves play (a puzzle, a question: the next steps answer it)
-//   fight [N]         attack the nearest live enemy until none is left (or N frames, 3600)
+//   fight [N] [M]     attack the nearest live enemy until none is left (or N frames, 3600; or the game in mode M)
 //   play [N]          let an event play until the game is in play for a second (CROSS every 40 frames advances its
 //                     messages; N frames at most, 12000)
 //   press BTN [F]     hold a button (or a chord: R1+TRIANGLE) F frames (6), then release it for as long

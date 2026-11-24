@@ -1,0 +1,6 @@
+# Stage 4 room 4: Fortinbras (one-hit kills; he stays in the enemies' list as the story runs on: the step ends in mode 10,
+# the ending movie), the Onimusha, the escape, the staff roll, "Presented by CAPCOM" and the RESULT screen (save? NO).
+play
+fight 12000 10
+wait 35000
+save build/story/s_end.state

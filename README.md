@@ -60,7 +60,7 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3, the Statue of the West and the Matchlock, the Demon Gate, Kaede's Great Arrow and the Queen Bee (65 legs so far) | 🔧 |
+| The whole story, played headless by a scripted bot (`ONI_BOT`) from the forest cave to Fortinbras, the ending and the RESULT screen: 68 legs, every boss, puzzle and scene of the main route | ✅ |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +70,16 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** The end of the game: the Great Arrow breaks the Demon Gate's seal, Marcellus in the Demon Realm, the
+spiral down to the king's chamber, Fortinbras, the ending movie, the staff roll and the RESULT screen. The story bot
+has played Onimusha: Warlords through from start to finish on BozoEngine.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-marcellus.png" width="270" alt="Marcellus, a horned demon with two swords">
+  <img src="docs/screenshots/2026-11-24-bozo-fortinbras.png" width="270" alt="Before the king's chamber: I am Fortinbras...">
+  <img src="docs/screenshots/2026-11-24-bozo-result.png" width="270" alt="The RESULT screen after the ending: play time, defeated, save prompt">
+</p>
 
 **2026-11-24.** Kaede's part by the lake (the attic's book in demon script, a third knob box for the Decorated Arrow,
 the dragon pedestal's Great Arrow swapped for it, the Green Key, the second boat), then Samanosuke against the Queen
