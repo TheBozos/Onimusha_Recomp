@@ -1,5 +1,7 @@
-# Stage 2 room 4 (the dry moat): "You need equipment to descend." Examined there, then the Rope Ladder used from the
+# From stage 2 room 0 to room 4 (the dry moat): "You need equipment to descend." Examined there, then the Rope Ladder used from the
 # status screen (START; RIGHT to ITEM, the cursor on the Herb, the ladder one above; CROSS, CROSS for YES).
+play
+door 2 4
 play
 examine 2
 wait 30

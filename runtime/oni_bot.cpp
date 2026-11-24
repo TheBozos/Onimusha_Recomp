@@ -221,6 +221,7 @@ namespace oni::bot
         size_t g_wpsLeft = 0;
         float g_bestToPoint = 1e30f;
         int g_noProgress = 0;
+        bool g_learn = false; // learn on: obstacles learnt where the way is held (off by default: enemies and stands hold it too)
         int g_obstacleRoom = -1;
 
         bool buildGrid(const uint8_t *ram, float py, Grid &g, float px, float pz, float tx, float tz)
@@ -445,6 +446,10 @@ namespace oni::bot
         }
 
         // Steers along the planned way to (x, z) (planned again when the goal moves far); returns the distance to it.
+        struct Enemy;
+        bool nearestEnemy(const uint8_t *ram, Enemy &out);
+        bool enemyNear(const uint8_t *ram, float within);
+
         float navigate(const uint8_t *ram, float x, float z, bool walk = true)
         {
             if (std::hypot(x - g_goalX, z - g_goalZ) > 500.0f) // (a moving goal, an enemy: planned again when it has gone far)
@@ -472,7 +477,9 @@ namespace oni::bot
                 g_wpsLeft = g_wps.size(), g_bestToPoint = toPoint, g_noProgress = 0;
             else if (g_stickOn)
                 ++g_noProgress;
-            if (g_noProgress > 90 && !g_wps.empty() && g_obstacles.size() < 64)
+            if (g_noProgress > 90 && (enemyNear(ram, 2500.0f) || dist < 1500.0f))
+                g_noProgress = 0; // (held by enemies, which move, or near the goal: the step presses from there)
+            if (g_learn && g_noProgress > 90 && !g_wps.empty() && g_obstacles.size() < 64)
             {
                 g_noProgress = 0;
                 g_bestToPoint = 1e30f;
@@ -547,6 +554,12 @@ namespace oni::bot
         // A live door AOT of the room to that stage and room (G.Sce_aot, Id 1: a rectangle and the door's work after
         // the 12 bytes, or with Type bit 7 four corners and the work after 20), first; else the room files' doors.
         Door g_liveDoor{};
+        bool enemyNear(const uint8_t *ram, float within)
+        {
+            Enemy e{};
+            return nearestEnemy(ram, e) && e.dist < within;
+        }
+
         const Door *findDoor(const uint8_t *ram, int stage, int room, int toStage, int toRoom)
         {
             for (int k = 0; k < 32; ++k)
@@ -1005,6 +1018,11 @@ namespace oni::bot
             g_buttons = phase < 5 ? bozo::libs::kPadSquare : 0;
             if (g_counter >= swings * 30)
                 next();
+        }
+        else if (s.op == "learn")
+        {
+            g_learn = !s.args.empty() && s.args[0] == "on";
+            next();
         }
         else if (s.op == "face")
         {

@@ -1,6 +1,10 @@
 # Stage 1 room 0 (the castle gate inside the walls): the box by the stand (the South Area Map), then the gate into
 # stage 2 room 0.
 play
+fight 6000
+play
+go -6880 5700 300
+attack -6150 3900 6   # the stand before the box (destroyed)
 take 3
 play
 door 2 0
