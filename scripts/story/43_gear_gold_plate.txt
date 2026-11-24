@@ -1,0 +1,47 @@
+# Stage 2 room 18 back up through room 14 (its ladder from the foot: waypoints, faced, pressed) and room 10 (its
+# balcony, the ladder down) into room 21 (the fireflies) and room 22 (the Shinobi Kit opens its door, key 182): the Gear
+# by the corpse (an AOT Id 11, pressed from inside it facing north), then the Gold Plate into the gold holder (event AOT
+# slot 0, the left of the two by the iron door; from the item menu, UP from the Herb).
+play
+door 2 14
+play
+go -12436 9250 150
+go -13900 8575 150
+go -14050 8150 80
+face -14050 7000
+wait 5
+press CROSS 8
+play
+door 2 10
+play
+go -8000 2300 150
+go -14000 1900 100
+face -14000 0
+wait 5
+press CROSS 8
+play
+door 2 21
+play
+door 2 22
+play
+go 9000 -11450 150
+face 9000 -10000
+wait 5
+press CROSS 8
+wait 30
+play
+play
+examine 0
+play
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 3000
+save build/story/s222k.state

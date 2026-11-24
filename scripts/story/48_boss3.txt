@@ -1,0 +1,9 @@
+# Stage 2 room 44: the medicine's box, then room 42: Boss 3, Samanosuke's own double (one-hit kills), its death.
+play
+take 1
+play
+door 2 42
+play 9000
+fight 12000
+play 12000
+save build/story/s242k.state

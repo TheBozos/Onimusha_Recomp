@@ -1,0 +1,42 @@
+# Kaede's part: stage 5 room 8 (the item by the bed), room 5 (the dying soldier's Red Key, "Monsters... from... West...
+# Prison..."), down through the hall to stage 2: the courtyard, past the moat (room 4) and its red-ink door (key 176)
+# into room 5 (the herb), room 7, room 10's yard and its archers (they knock Kaede back from the partitions: a shortcut
+# to the ladder's foot), up the ladder and along the balcony (a waypoint before its turn south) into room 14: down its
+# ladder, the West Area Map's box, and the door the Shinobi Kit opens (key 183) into room 18.
+play
+take 1
+play
+door 5 5
+play
+door 5 0
+play
+door 2 0
+play
+door 2 4
+play
+door 2 5
+play
+take 3
+play
+door 2 7
+play
+door 2 10
+play
+teleport -14100 1600
+wait 20
+examine 0
+play
+go -8000 2300 150
+face -8000 0
+wait 5
+press UP 60
+wait 10
+door 2 14
+play
+examine 3
+play
+take 6
+play
+door 2 18
+play
+save build/story/s218k.state

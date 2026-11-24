@@ -1,0 +1,33 @@
+# Stage 2 room 42 after Boss 3, out to stage 1 room 17: the two boxes (the Evil Plate, the Wood Ladder; round the box
+# that stands in the corridor), the wooden platform (a message AOT checked at the player's own position: walked into,
+# CROSS), the Wood Ladder used there from the item menu (UP twice from the Herb), and up it into the keep (stage 5
+# room 10).
+play
+door 1 17
+play
+take 2
+play
+take 3
+play
+go -1500 2400 200
+go -3800 2400 200
+go -4700 1400 200
+press CROSS 8
+wait 60
+play
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 6000
+examine 7
+play 6000
+save build/story/s510k.state

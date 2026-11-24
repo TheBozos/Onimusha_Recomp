@@ -1,0 +1,23 @@
+# Stage 2 room 18: room 6 (the trick shelf's room: the herb box, Journal #5, Suzaku; its string does nothing without the
+# gear), back, then stage 1 room 23 (the furnace): the pull tab opens the far door and the flames burst, across to the
+# shiny object (event AOT slot 10: the Gold Plate), the far side's tab, and back to room 18.
+play
+door 2 6
+play
+take 2
+play
+take 4
+play
+take 5
+play
+door 2 18
+play
+door 1 23
+play
+examine 1
+examine 10
+play
+examine 2
+door 2 18
+play
+save build/story/s218m.state

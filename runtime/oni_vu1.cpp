@@ -1094,6 +1094,11 @@ namespace oni::vu1
                             d.material.source, static_cast<int>(d.material.blend), d.material.gsBlend ? 1 : 0, d.material.blendA,
                             d.material.blendB, d.material.blendC, d.material.blendFix, d.material.depthTest ? 1 : 0,
                             d.material.depthWrite ? 1 : 0, d.vertices.front().rgba, d.vertices.size(), x0, y0, x1, y1);
+                static const bool each = std::getenv("ONI_DRAW_ORDER")[0] == '2'; // ONI_DRAW_ORDER=2: and the vertices
+                if (each)
+                    for (const auto &v : d.vertices)
+                        std::printf("[oni:draw]   (%.1f, %.1f, %.0f) uv %.4f %.4f q %.4f rgba %08x\n", v.x, v.y, v.z, v.u, v.v, v.q,
+                                    v.rgba);
             }
             r.draw(d.material, kIdentity, d.vertices.data(), static_cast<uint32_t>(d.vertices.size()), d.texture);
         }

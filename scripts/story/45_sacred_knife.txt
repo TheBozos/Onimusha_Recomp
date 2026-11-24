@@ -1,0 +1,52 @@
+# Stage 2 room 22 through the iron door into room 36 (the burning room), room 37 and up to room 38: the trick treasure
+# box (set06's 2 x 4 knob board again: 6 8 4 7 / 2 5 1 3, five turns, middle, left, left, right, right; found by BFS):
+# the Sacred Knife, equipped (START, CROSS on the Knife row, DOWN, CROSS, CROSS for YES, TRIANGLE twice).
+play
+door 2 36
+play
+door 2 37
+play
+door 2 38
+play
+go 6789 -7750 100
+face 7700 -7200
+wait 10
+press CROSS 6     # "There is a trick treasure box."
+wait 90
+press CROSS 6     # the puzzle (the left knob selected)
+wait 240
+press RIGHT 6
+wait 40
+press CROSS 6     # middle
+wait 90
+press LEFT 6
+wait 40
+press CROSS 6     # left
+wait 90
+press CROSS 6     # left
+wait 90
+press RIGHT 6
+wait 40
+press RIGHT 6
+wait 40
+press CROSS 6     # right
+wait 90
+press CROSS 6     # right
+wait 240
+play
+press START 6
+wait 120
+press CROSS 6     # the Knife row
+wait 90
+press DOWN 6
+wait 40
+press CROSS 6     # Sacred Knife
+wait 90
+press CROSS 6     # YES
+wait 90
+press TRIANGLE 6
+wait 90
+press TRIANGLE 6
+wait 60
+play
+save build/story/s238k.state
