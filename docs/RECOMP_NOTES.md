@@ -671,11 +671,12 @@ after leg 65.
   5, twenty floors of demons in one arena. When a floor's waves are done two pillars of light stand (event AOTs, type
   0x51, stood in and pressed): slot 0 down, slot 3 back up to the save room. An enemy that stays hidden is left after
   a while (`fight -N`: a negative limit ends the step without failing) and the round played again; forty rounds
-  cover the twenty floors (after floor 20 the down pillar is gone). Then the Bishamon Ocarina (item 0x50) and the
-  pillar up.
+  cover the twenty floors (after floor 20 the down pillar is gone). Then six rounds of fighting (floor 20's waves
+  may still be coming when the forty rounds are done), the Bishamon Ocarina (item 0x50) and the pillar up; once back
+  in the save room they do nothing. The leg's run varies (the floors' fights do), so it is written to tolerate it.
 - The ocarina is a key item listed just above the Herb, so every later key-item use from the menu is one row further
   up: the branch's own legs 54, 55, 56, 62 (Kaede shares the inventory) and 65. Leg 53 approaches the ogres' yard's
-  boxes from the east (where their bodies fall differs).
+  boxes from the east (where their bodies fall differs); leg 55 passes the hall's balcony archer by.
 - Leg 69: in the Dark Fountain's room (stage 4 room 2) the ocarina from the item menu (a flag AOT for item 0x50 over
   the room's west side), the wall opens, and the pedestal (event AOT slot 5): the Bishamon Sword. Legs 66-67 then
   finish the game with it.
