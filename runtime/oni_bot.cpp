@@ -552,6 +552,22 @@ namespace oni::bot
             return best;
         }
 
+        // An AOT's rectangle: X, Z, W, D, or with Type bit 7 four corners (their bounding box).
+        void aotRect(const uint8_t *ram, uint32_t at, float &x0, float &z0, float &w, float &d)
+        {
+            if (ram[at + 1] & 0x80u)
+            {
+                int16_t p[8];
+                std::memcpy(p, ram + at + 4, 16);
+                const int16_t xs[4] = {p[0], p[2], p[4], p[6]}, zs[4] = {p[1], p[3], p[5], p[7]};
+                x0 = *std::min_element(xs, xs + 4), z0 = *std::min_element(zs, zs + 4);
+                w = *std::max_element(xs, xs + 4) - x0, d = *std::max_element(zs, zs + 4) - z0;
+                return;
+            }
+            x0 = read16(ram, at + 4), z0 = read16(ram, at + 6);
+            w = static_cast<uint16_t>(read16(ram, at + 8)), d = static_cast<uint16_t>(read16(ram, at + 10));
+        }
+
         int arg(const Step &s, size_t i, int fallback)
         {
             return i < s.args.size() ? std::atoi(s.args[i].c_str()) : fallback;
@@ -843,8 +859,9 @@ namespace oni::bot
                     const bool wanted = s.op == "take" ? id == 2 : (id == 4 || id == 5 || id == 12);
                     if (!at || !wanted || (s.args.size() && k != arg(s, 0, -1)))
                         continue;
-                    const float cx = read16(ram, at + 4) + static_cast<uint16_t>(read16(ram, at + 8)) * 0.5f;
-                    const float cz = read16(ram, at + 6) + static_cast<uint16_t>(read16(ram, at + 10)) * 0.5f;
+                    float rx, rz, rw, rd;
+                    aotRect(ram, at, rx, rz, rw, rd);
+                    const float cx = rx + rw * 0.5f, cz = rz + rd * 0.5f;
                     const float d = std::hypot(cx - px, cz - pz);
                     if (g_target < 0 || d < bd)
                         g_target = k, bd = d, g_targetAt = at;
@@ -874,8 +891,8 @@ namespace oni::bot
                 return;
             }
             const uint32_t at = g_targetAt;
-            const float x0 = read16(ram, at + 4), z0 = read16(ram, at + 6);
-            const float w = static_cast<uint16_t>(read16(ram, at + 8)), dd = static_cast<uint16_t>(read16(ram, at + 10));
+            float x0, z0, w, dd;
+            aotRect(ram, at, x0, z0, w, dd);
             const float cx = x0 + w * 0.5f, cz = z0 + dd * 0.5f;
             // (The item may be solid, a box: its AOT reached within a margin.)
             const bool inside = px >= x0 - 450 && px <= x0 + w + 450 && pz >= z0 - 450 && pz <= z0 + dd + 450;

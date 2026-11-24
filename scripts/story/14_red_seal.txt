@@ -1,0 +1,6 @@
+# Stage 2 room 0: the south door (to stage 5 room 0) behind the red seal (event AOT slot 5), opened with the Fire Sword
+# equipped; into the keep's hall.
+play
+examine 5
+play 6000
+save build/story/s500.state
