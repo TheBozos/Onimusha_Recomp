@@ -657,8 +657,8 @@ kills), and the ending in mode 10 (the movie, the staff roll, "Presented by CAPC
 save prompt, about 36000 frames. Every scene and the movie drawn as expected.
 
 - Bot: `fight N M` also ends once the game is in mode M (Fortinbras stays in the enemies' list while the ending runs).
-- The optional parts: the Dark Realm and the Bishamon Sword are a branch of their own (below); the Great Armor's box
-  and the Fluorites are not played.
+- The optional parts: the Dark Realm, the Bishamon Sword and the Great Armor are a branch of their own (below); the
+  Fluorites are not collected.
 
 ## The Dark Realm and the Bishamon Sword (scripts/story/bishamon, 2026-11-24)
 
@@ -677,6 +677,11 @@ after leg 65.
 - The ocarina is a key item listed just above the Herb, so every later key-item use from the menu is one row further
   up: the branch's own legs 54, 55, 56, 62 (Kaede shares the inventory) and 65. Leg 53 approaches the ogres' yard's
   boxes from the east (where their bodies fall differs); leg 55 passes the hall's balcony archer by.
+- Leg 59 (branch copy): the Great Armor's trick box behind stage 3 room 10's waterfall (event AOT slot 3): a 3 x 3
+  board, four knobs moved between with the D-pad (DOWN from the top-left one to the bottom-left), CROSS a clockwise
+  turn; 1 3 8 / 2 5 9 / 6 4 7 (the question table's third board) to 1 2 3 / 4 5 6 / 7 8 9 in five turns: bottom-left,
+  top-right, bottom-right, bottom-left, bottom-right. Equipped from the EQUIP page's armor row (an empty row between
+  Normal Armor and Great Armor).
 - Leg 69: in the Dark Fountain's room (stage 4 room 2) the ocarina from the item menu (a flag AOT for item 0x50 over
   the room's west side), the wall opens, and the pedestal (event AOT slot 5): the Bishamon Sword. Legs 66-67 then
   finish the game with it.
