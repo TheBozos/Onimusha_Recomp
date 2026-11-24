@@ -528,3 +528,7 @@ Samanosuke is free.
 Legs 28-30: Samanosuke out of the drained cell (room 21's collision mesh does not read as walls: waypoints by the
 corridor's west end) into room 22 with Kaede; the table's tab opens the way up to room 24 and its door with two crest
 sockets; the right crest piece fits (used from the item menu). The left piece is next.
+
+Leg 31: the left crest piece is item 72 (the right one 71: found by scanning every room file's Item_aot_set for
+them), in room 16, reached through room 23's far door; back up, both pieces in, the door opens on Tokichiro's scene
+in room 25 ("Princess Yuki's skull will be filled with her own blood...").
