@@ -224,6 +224,8 @@ namespace oni::bot
         float g_bestToPoint = 1e30f;
         int g_noProgress = 0;
         float g_pieceX = 0, g_pieceZ = 0;
+        int g_lastCursorC = -1, g_lastCursorR = -1, g_cursorAxis = 0;
+        uint16_t g_cursorPress = 0;
         bool g_learn = false; // learn on: obstacles learnt where the way is held (off by default: enemies and stands hold it too)
         int g_obstacleRoom = -1;
 
@@ -883,6 +885,65 @@ namespace oni::bot
             const int hold = arg(s, 1, 6);
             g_buttons = static_cast<int>(age) < hold ? button(s.args.empty() ? "" : s.args[0]) : 0;
             if (static_cast<int>(age) >= 2 * hold)
+                next();
+        }
+        else if (s.op == "cursor")
+        {
+            // Stage 5 room 21's sliding puzzle: its cursor (an Om 138 whose +0x23 is 2; the cell it is on at +0x7b2,
+            // +0x7b3) moved to column C, row R by the D-pad, a press every 24 frames, read back each time.
+            const int tc = arg(s, 0, 0), tr = arg(s, 1, 0);
+            uint32_t at, end, cursor = 0;
+            std::memcpy(&at, ram + kG + 0x45c4, 4);
+            std::memcpy(&end, ram + kG + 0x45d4, 4);
+            at &= 0x1ffffffu, end &= 0x1ffffffu;
+            for (int guard = 0; at && at + 0x7e0 <= 0x2000000u && guard < 128; ++guard)
+            {
+                if (ram[at + 2] == 138 && ram[at + 0x23] == 2)
+                    cursor = at;
+                if (at == end)
+                    break;
+                std::memcpy(&at, ram + at + 0x30, 4);
+                at &= 0x1ffffffu;
+            }
+            if (!cursor)
+            {
+                fail("cursor: no puzzle cursor");
+                return;
+            }
+            const int cc = static_cast<int8_t>(ram[cursor + 0x7b2]), cr = static_cast<int8_t>(ram[cursor + 0x7b3]);
+            if (cc == tc && cr == tr)
+            {
+                g_buttons = 0;
+                next();
+                return;
+            }
+            using namespace bozo::libs;
+            const int phase = static_cast<int>(age % 24);
+            if (phase == 0)
+            {
+                // Alternate the axis when the last press on one did not move the cursor.
+                const bool sameAsLast = cc == g_lastCursorC && cr == g_lastCursorR;
+                if (sameAsLast)
+                    g_cursorAxis ^= 1;
+                g_lastCursorC = cc, g_lastCursorR = cr;
+                const bool horizontal = (cc != tc && (cr == tr || g_cursorAxis == 0)) || cr == tr;
+                g_cursorPress = horizontal ? (tc > cc ? kPadRight : kPadLeft) : (tr > cr ? kPadDown : kPadUp);
+                if (age > 200 && age % 240 == 0)
+                    std::printf("[oni:bot] cursor at (%d, %d) for (%d, %d), pressing %04x\n", cc, cr, tc, tr, g_cursorPress);
+            }
+            g_buttons = phase < 6 ? g_cursorPress : 0;
+            if (age > 2400)
+                fail("cursor: (" + std::to_string(tc) + ", " + std::to_string(tr) + ") not reached");
+        }
+        else if (s.op == "slide")
+        {
+            // Hold one button and tap another while it is held (a sliding puzzle: CROSS held grabs the panel, the
+            // direction then moves it): slide HOLD DIR [F]: HOLD for F frames (40), DIR tapped from frame 12 to 18.
+            const int hold = arg(s, 2, 40);
+            const uint16_t held = button(s.args.size() > 0 ? s.args[0] : "");
+            const uint16_t tap = button(s.args.size() > 1 ? s.args[1] : "");
+            g_buttons = static_cast<int>(age) < hold ? static_cast<uint16_t>(held | (age >= 12 && age < 18 ? tap : 0)) : 0;
+            if (static_cast<int>(age) >= hold + 20)
                 next();
         }
         else if (s.op == "wait")

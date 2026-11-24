@@ -514,3 +514,13 @@ character is caged and the control passes to the other (the player _OCW is alway
 Python over that model and played by the bot (`piece X Z`: walk onto a tile until the control passes): Samanosuke and
 Kaede take seven turns down to the king, the cages open, and the door to room 21 (the crest puzzle) is reached.
 `tools/oni_disasm.py` reads a prepared module too (build/bozo/oni_prep/roomNNN.elf).
+
+Leg 27: room 21, Kaede alone while Samanosuke is in the water prison. The control board by the iron door is a sliding
+puzzle (room521.c's om8a: panels are `Om` 138, the grid cell at +0x7b0 and +0x7b2; the cursor is the one whose
++0x23 is 2). The board is 6 x 4: five 2 x 1 wave panels, two 1 x 2 waves, two 1 x 1, the two 1 x 2 halves of the
+Saito crest at the far sides and a 2 x 2 hole in the middle; the crest whole in the middle opens the cage. Solved by
+BFS (`tools/story/crest_puzzle.py`, 26 one-cell slides). Its controls, from the code and the game's pad words at
+0x281e30 (held: CROSS 0x40, CIRCLE 0x20, TRIANGLE 0x10, SQUARE 0x80, UP 0x1000, RIGHT 0x2000) and 0x281e34 (pressed
+this frame): the D-pad moves the cursor cell by cell to the next occupied cell, CROSS held grabs the panel and a fresh
+direction press slides it (the bot's `cursor C R`, read back from RAM, and `slide CROSS DIR`). The water drains and
+Samanosuke is free.

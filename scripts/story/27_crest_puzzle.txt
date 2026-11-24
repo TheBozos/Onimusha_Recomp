@@ -1,0 +1,175 @@
+# Stage 5 room 21 (Kaede alone; Samanosuke in the water prison): the control board by the iron door, a sliding puzzle
+# (room521.c's om8a: 6 x 4 cells, five 2 x 1 wave panels, two 1 x 2 waves, two 1 x 1, the two 1 x 2 halves of the
+# Saito crest at the far sides, a 2 x 2 hole in the middle). The crest whole in the centre opens the cage. Solved by
+# search (26 one-cell slides); the bot moves the puzzle's cursor onto each panel (cursor C R), CROSS held grabs it
+# and a direction moves it (slide).
+play
+teleport -11300 11875
+wait 20
+face -10650 11875
+wait 10
+press CROSS 8      # "Looks like a control board for the water prison..."
+wait 200
+press CROSS 8
+wait 100
+press CROSS 8      # "...the crest of the Saito clan in the center."
+wait 100
+cursor 0 3
+slide CROSS RIGHT 32
+wait 20
+press UP 6
+wait 18
+press LEFT 6
+wait 18
+cursor 0 2
+slide CROSS DOWN 32
+wait 20
+press RIGHT 6
+wait 18
+cursor 1 3
+slide CROSS RIGHT 32
+wait 20
+press UP 6
+wait 18
+press LEFT 6
+wait 18
+cursor 1 1
+slide CROSS DOWN 32
+wait 20
+press DOWN 6
+wait 18
+press RIGHT 6
+wait 18
+press UP 6
+wait 18
+cursor 2 1
+slide CROSS LEFT 32
+wait 20
+cursor 1 1
+slide CROSS LEFT 32
+wait 20
+press RIGHT 6
+wait 18
+cursor 3 1
+slide CROSS LEFT 32
+wait 20
+cursor 2 1
+slide CROSS LEFT 32
+wait 20
+press RIGHT 6
+wait 18
+cursor 4 1
+slide CROSS LEFT 32
+wait 20
+cursor 3 1
+slide CROSS LEFT 32
+wait 20
+press RIGHT 6
+wait 18
+cursor 5 1
+slide CROSS LEFT 32
+wait 20
+cursor 4 1
+slide CROSS LEFT 32
+wait 20
+press UP 6
+wait 18
+press RIGHT 6
+wait 18
+cursor 4 0
+slide CROSS DOWN 32
+wait 20
+press LEFT 6
+wait 18
+press UP 6
+wait 18
+cursor 3 0
+slide CROSS RIGHT 32
+wait 20
+cursor 4 0
+slide CROSS RIGHT 32
+wait 20
+press LEFT 6
+wait 18
+press LEFT 6
+wait 18
+press DOWN 6
+wait 18
+press RIGHT 6
+wait 18
+cursor 2 1
+slide CROSS UP 32
+wait 20
+press RIGHT 6
+wait 18
+press DOWN 6
+wait 18
+press DOWN 6
+wait 18
+cursor 4 3
+slide CROSS UP 32
+wait 20
+press LEFT 6
+wait 18
+press DOWN 6
+wait 18
+cursor 3 3
+slide CROSS RIGHT 32
+wait 20
+press LEFT 6
+wait 18
+press LEFT 6
+wait 18
+cursor 1 3
+slide CROSS RIGHT 32
+wait 20
+press LEFT 6
+wait 18
+cursor 0 3
+slide CROSS RIGHT 32
+wait 20
+press RIGHT 6
+wait 18
+press RIGHT 6
+wait 18
+cursor 3 3
+slide CROSS RIGHT 32
+wait 20
+press UP 6
+wait 18
+press LEFT 6
+wait 18
+cursor 3 2
+slide CROSS DOWN 32
+wait 20
+press LEFT 6
+wait 18
+press UP 6
+wait 18
+press UP 6
+wait 18
+cursor 2 1
+slide CROSS RIGHT 32
+wait 20
+press DOWN 6
+wait 18
+press LEFT 6
+wait 18
+cursor 2 2
+slide CROSS UP 32
+wait 20
+cursor 2 1
+slide CROSS UP 32
+wait 20
+press LEFT 6
+wait 18
+press DOWN 6
+wait 18
+press DOWN 6
+wait 18
+cursor 1 2
+slide CROSS RIGHT 32
+wait 20
+wait 120
+play 12000
+save build/story/s521b.state
