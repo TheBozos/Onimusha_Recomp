@@ -632,6 +632,21 @@ from 0x1a40 (CT24) and blended Cd + (Cs - Cd) * 0x69 / 128. Three things kept it
 
 `ONI_DRAW_ORDER=2` lists each draw's vertices; `[oni:gif] local->local` would log a GS-to-GS copy (none seen so far).
 
+## Kaede's Great Arrow, the Queen Bee (story legs 61-64, 2026-11-24)
+
+Legs 61-64: Kaede from stage 3 room 4 (room 5's vase broken: Apocalypse #2) back round the lake to the boathouse and
+stage 2 room 13 into stage 1: room 4, room 5's demons, the save room's ladder to the attic (room 21: crates the mesh
+does not hold; the book in demon script), room 18's ladder to room 19 and its trick box (the knob board: 7 5 4 2 /
+8 1 3 6, seven turns, left, left, middle, right, right, middle, middle: the Decorated Arrow), room 6's dragon pedestal
+(examined, it gives up the Great Arrow and the doors shut; the Decorated Arrow in its place reopens them) and the odd
+box (the Green Key). The Green Key opens room 5's door to room 8 (key 177): the second dock, the boat to the turret
+(stage 3 rooms 14, 12, 13), "Samanosuke, a monster is coming!" and the Queen Bee (one-hit kills); the turret burns
+down, the escape by boat, Kaede hurt and resting in stage 5 room 8.
+
+- The room files' item AOTs (opcode 0x3a / 0x3b, Id 2: the item number at +0x0e) and used-item checks (`0b 00 <item> 00
+  01 00`) are how the next step's room is found when the walkthrough is vague.
+
+
 
 
 

@@ -1,0 +1,6 @@
+# Stage 3 room 13: the Queen Bee (one-hit kills), the turret burning down, the escape by boat, Kaede hurt; she rests in
+# stage 5 room 8 and Samanosuke sets out ("Princess Yuki, Yumemaru, I will save you!").
+play
+fight 12000
+play 12000
+save build/story/s508q.state

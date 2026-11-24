@@ -1,0 +1,62 @@
+# Kaede from stage 3 room 4: room 5 (the vase in the corridor broken: Apocalypse #2), back through rooms 4, 7-10
+# (round room 10's east side) to the boathouse (11), stage 2 room 13 and stage 1 room 4, room 5 (its demons), the save
+# room (1) and its ladder up to the attic (21: crates the mesh does not hold, in-room shortcuts): the book in demon script
+# ("A Dragon Orb which...") and back down to room 3.
+play
+take 5
+play
+door 3 5
+play
+go -9850 14000 300 -1200
+attack -9752 10600 8
+play
+take 1
+play
+door 3 4
+play
+door 3 7
+play
+fight 3000
+play
+door 3 8
+play
+door 3 9
+play
+door 3 10
+play
+go -9500 13200 300
+go -3500 9000 300
+go -2750 3000 300
+go -7100 -1500 300
+door 3 11
+play
+door 2 13
+play
+door 1 4
+play
+door 1 5
+play
+fight 3000
+play
+door 1 1
+play
+examine 4
+play
+teleport -12250 -11900
+wait 20
+face -12250 -10500
+wait 5
+press CROSS 8
+wait 30
+play
+teleport -13300 -11200
+wait 20
+take 2
+play
+teleport -12250 -14000
+wait 20
+examine 3
+play
+door 1 3
+play
+save build/story/s103k.state
