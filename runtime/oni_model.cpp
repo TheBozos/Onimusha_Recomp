@@ -75,6 +75,21 @@ namespace oni::model
         bozo::port::callLibrary(rt, ctx, 0x101c50);
     }
 
+    // sceDmaSendN(channel, address, qwc): a normal-mode transfer. On the GIF's channel the game sends packets it built
+    // itself this way: StencilMapPolygon's (a room's animated water, the background movie kept in block 0x1a40 drawn
+    // through the cut's polygons: stage 3 room 7's pond). BozoEngine's libdma completes it without reading it.
+    void dmaSendN(uint8_t *ram, R5900Context *ctx, Runtime *rt)
+    {
+        static const bool trace = std::getenv("ONI_DMA_TRACE") != nullptr;
+        const uint32_t handle = ctx->r[4].uw[0], address = ctx->r[5].uw[0], qwc = ctx->r[6].uw[0];
+        if (trace)
+            std::printf("[oni:dma] sceDmaSendN channel %x address %x qwc %u from %x\n", handle, address, qwc, ctx->r[31].uw[0]);
+        static const bool gif = [] { const char *e = std::getenv("ONI_GIF_CHAINS"); return !(e && *e == '0'); }();
+        if (gif && handle == 0x1000a000u && qwc > 0 && qwc < 0x10000u)
+            oni::vu1::runGifData(ram, bozo::port::scratchpad(rt), address, qwc);
+        bozo::port::callLibrary(rt, ctx, 0x101d28);
+    }
+
     // ONI_CD_TRACE=1: every sceCdRead (sector, count, buffer, caller).
     void cdRead(uint8_t *ram, R5900Context *ctx, Runtime *rt)
     {
@@ -88,6 +103,7 @@ namespace oni::model
         if (std::getenv("ONI_CD_TRACE"))
             r.registerFunction(0x1121c0, cdRead); // sceCdRead
         r.registerFunction(0x101c50, dmaSend); // sceDmaSend
+        r.registerFunction(0x101d28, dmaSendN); // sceDmaSendN
         r.registerFunction(0x130e40, tagTrans); // Md_tag_trans
     }
 } // namespace oni::model

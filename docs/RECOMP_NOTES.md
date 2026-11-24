@@ -602,5 +602,36 @@ Sword); back to the headless statue: its head from the item menu, the gate retra
   Magic Mirror is reached round its north wall. Room 8's two items are taken Vision Staff first (after Genbu the
   other is out of the bot's reach).
 
+## The Evil Plate, stage 3, the pond's water (story legs 55-60, 2026-11-24)
+
+Legs 55-60: the Evil Plate on stage 5 room 7's south door (item 0x44; found by scanning the room files for the script's
+used-item check, `0b 00 <item> 00 01 00`, a flag AOT at the player's position) and the demon's scene at the Demon Gate
+(stage 4 room 0); back through the keep in ruins (rooms 33 and 32 stand in for 7 and the hall) to the courtyard, the
+Decorated Sword on its east door's panel (item 0x45), stage 3: room 0's double green-orb door, rooms 1-3 (a book in
+demon script, the Bullets), room 6's triple green-orb door (Arashi to level 3 at stage 2 room 14's mirror, the only one
+on this side being past that door), the garden (7), rooms 8-10, the boathouse (11), the small boat to the turret (12,
+13), the scorpions' scene; Kaede in room 0 against two scorpions and through room 4's door (key 181). Next: Kaede's part
+(the Great Arrow: a puzzle box and a replica-arrow weight puzzle, a Green Key, a second boat), then the Queen Bee.
+
+### Stage 3 room 7's pond (runtime/oni_model.cpp, oni_vu1.cpp, oni_tex.cpp, oni_bg.cpp)
+
+The garden's koi lay on a dry bed. The room's picture is the drained pond; the water is a background movie of type 2
+(Movie_init's setLoadImageTags2: its frames go to GS block 0x1a40, 640 wide, as 16 x 16 macroblocks, not into the frame)
+drawn each frame by the room module's set07_trans -> StencilMapPolygon: a strip over the pond's outline per cut, textured
+from 0x1a40 (CT24) and blended Cd + (Cs - Cd) * 0x69 / 128. Three things kept it away:
+
+- StencilMapPolygon sends its packet with sceDmaSendN (a normal-mode transfer), which BozoEngine's libdma completes
+  without reading it under native graphics; only sceDmaSend was hooked. sceDmaSendN on the GIF channel is now drawn
+  (oni::vu1::runGifData). Rooms 5:1, 5:19, 5:24 and 2:25 use it too.
+- Block 0x1a40 is also the shadows' buffer (page 0xd2): every read of it was taken as the shadow target. On the GS it
+  is a matter of order (the movie uploaded, the pond drawn from it, then the shadows drawn over it and read back): an
+  IMAGE upload into a target's block now makes it a texture again until the next draw into it, and a type-2 movie's
+  chain (only the one the game sends: the field shown) goes to the GS in its place among the frame's draws.
+- The texture cache kept one upload per block: the movie's 800 macroblocks at their places became one 16 x 16 tile.
+  32-bit uploads into a buffer at least 256 wide are now composed into one image at the buffer's first block.
+
+`ONI_DRAW_ORDER=2` lists each draw's vertices; `[oni:gif] local->local` would log a GS-to-GS copy (none seen so far).
+
+
 
 

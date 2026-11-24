@@ -60,7 +60,7 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3, the Statue of the West and the Matchlock (55 legs so far) | 🔧 |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3, the Statue of the West and the Matchlock, the Demon Gate, the lake's turret and Kaede again (61 legs so far) | 🔧 |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +70,15 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** The Evil Plate and the Demon Gate, the Decorated Sword's door, and stage 3 up to the turret. Found
+by looking at the story gallery: the garden's pond (stage 3 room 7) had no water, its koi on the dry bed. The water is a
+background movie kept in the shadows' buffer and drawn through the room's own polygons, sent with a DMA call the port
+did not catch; it is drawn now.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-pond.png" width="480" alt="A night garden by a temple, its pond filled with dark water, two koi under the surface">
+</p>
 
 **2026-11-24.** The triple orb doors: the Thunder orb and then the Fire orb raised to level 3 at the Magic Mirrors,
 the triple blue-orb seal into the Statue of the West's room, the triple red-orb door to the ogres (the Statue Head),

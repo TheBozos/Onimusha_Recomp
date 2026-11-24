@@ -1,0 +1,36 @@
+# Into stage 3 (the courtyard's east door): room 0's double green-orb door (event AOT slot 4: the Wind Spear equipped,
+# EQUIP DOWN three times to Arashi / Shippuu) into room 1 (its box; the other item is on a floor below), room 2, and room 3:
+# a book in demon script (the translation between its lines) and the Bullets.
+play
+door 3 0
+play
+press START 6
+wait 120
+press DOWN 6
+wait 40
+press DOWN 6
+wait 40
+press DOWN 6
+wait 60
+press CROSS 6
+wait 90
+press CROSS 6
+wait 90
+press TRIANGLE 6
+wait 90
+press TRIANGLE 6
+wait 60
+play
+examine 4
+play
+take 3
+play
+door 3 2
+play
+door 3 3
+play
+take 2
+play
+take 3
+play
+save build/story/s303k.state

@@ -1,0 +1,102 @@
+# From stage 3 room 3: room 6's triple green-orb door (event AOT slot 6; its archers on the scaffolds cannot be reached,
+# so they are not fought) asks for Arashi at level 3. The only Magic Mirror on this side is past that door, so the long
+# way to stage 2 room 14's (rooms 2, 1, 0, the courtyard, 4, 5, 7, 10's yard and balcony): ENHANCE Arashi (DOWN five
+# times from Raizan), and back again: the door opens into room 7 (the garden).
+play
+door 3 2
+play
+door 3 1
+play
+door 3 0
+play
+door 2 0
+play
+door 2 4
+play
+door 2 5
+play
+door 2 7
+play
+door 2 10
+play
+teleport -14100 1600
+wait 20
+examine 0
+play
+go -8000 2300 150
+face -8000 0
+wait 5
+press UP 60
+wait 10
+door 2 14
+play
+examine 3
+play
+go -10400 13600 200
+go -11950 13300 500
+face -11950 14400
+wait 10
+press CROSS 8
+wait 100
+press CROSS 8
+wait 80
+press RIGHT 8
+wait 40
+press CROSS 8
+wait 150
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press CROSS 1200
+wait 100
+press TRIANGLE 8
+wait 100
+press TRIANGLE 8
+wait 100
+play
+go -10400 13600 200
+go -12436 9250 150
+go -13900 8575 150
+go -14050 8150 80
+face -14050 7000
+wait 5
+press CROSS 8
+play
+door 2 10
+play
+go -8000 2300 150
+go -14000 1900 100
+face -14000 0
+wait 5
+press CROSS 8
+play
+teleport -14600 12200
+wait 20
+door 2 7
+play
+door 2 5
+play
+door 2 4
+play
+door 2 0
+play
+door 3 0
+play
+door 3 1
+play
+door 3 2
+play
+door 3 6
+play
+engage off
+examine 6
+engage on
+play 6000
+save build/story/s307k.state

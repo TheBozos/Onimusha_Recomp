@@ -1,0 +1,40 @@
+# Stage 2 room 8 back through rooms 7, 5, 4 and the courtyard into the keep (rooms 0, 5, 6, 7): room 7's south door
+# with the blue metal part (a flag AOT, slot 4, for item 0x44: the Evil Plate; found by scanning the room files for the
+# script's used-item check, 0b 00 <item> 00 01 00), the plate used from the item menu (UP twice from the Herb), then
+# the door to stage 4 room 0: the demon's scene and the Demon Gate.
+play
+door 2 7
+play
+door 2 5
+play
+door 2 4
+play
+door 2 0
+play
+door 5 0
+play
+door 5 5
+play
+door 5 6
+play
+door 5 7
+play
+go -12700 8500 250
+face -12700 6500
+wait 10
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 12000
+door 4 0
+play 12000
+save build/story/s400k.state

@@ -383,7 +383,7 @@ namespace oni::bg
         // Natively both chains' transfers go into the room picture's field buffers (0xa69c80 even, 0x9ddc80 odd): the
         // picture drawn under the frame is rebuilt from them.
         constexpr uint32_t kMovieImageEven = 0xaf5c80, kMovieImageStride = 0x1a500;
-        void movieImages(uint8_t *ram, uint32_t chain, uint32_t field)
+        void movieImages(uint8_t *ram, uint32_t chain, uint32_t field, bool sent)
         {
             static const bool trace = std::getenv("ONI_BGMV_TRACE") != nullptr;
             static int logged = 0;
@@ -401,6 +401,23 @@ namespace oni::bg
                 if (id == 0 || id == 7)
                     break;
                 at = (id == 3 || id == 4) ? at + 16 : (id == 2 ? address : at + 16 + 16 * qwc);
+            }
+            // A movie into a texture rather than the frame (Movie_init's setLoadImageTags2, a movie of type 2: block
+            // 0x1a40, the shadows' buffer too; stage 5 room 19's water caustics, stage 3 room 7's pond, drawn through
+            // StencilMapPolygon's strips): the chain goes to the GS in its place among the frame's draws, so that a
+            // read of the block after it is the movie and one after the shadows are drawn there is the shadows.
+            if (stream.size() >= 32)
+            {
+                uint64_t ad[2];
+                std::memcpy(ad, stream.data() + 16, 16);
+                const uint64_t tag0 = [&] { uint64_t t; std::memcpy(&t, stream.data(), 8); return t; }();
+                const uint32_t dbp = static_cast<uint32_t>((ad[0] >> 32) & 0x3fff);
+                if (((tag0 >> 58) & 3) == 0 && (ad[1] & 0xff) == 0x50 && dbp != 0u && dbp != 0x8c0u)
+                {
+                    if (sent) // (the chain the game sends this frame: the field shown)
+                        oni::vu1::runGifStream(std::move(stream), chain);
+                    return;
+                }
             }
             uint64_t bitbltbuf = 0, trxpos = 0, trxreg = 0;
             const size_t qwords = stream.size() / 16;
@@ -452,8 +469,9 @@ namespace oni::bg
         void movieLoadImage(uint8_t *ram, R5900Context *ctx, Runtime *)
         {
             ctx->pc = ctx->r[31].uw[0];
-            movieImages(ram, kMovieImageEven, 0);
-            movieImages(ram, kMovieImageEven + kMovieImageStride, 1);
+            const uint32_t sent = ctx->r[4].uw[0] & 0x1ffffffu;
+            movieImages(ram, kMovieImageEven, 0, sent == kMovieImageEven);
+            movieImages(ram, kMovieImageEven + kMovieImageStride, 1, sent == kMovieImageEven + kMovieImageStride);
         }
 
         // sceIpuSync(mode, timeout): waits for the IPU; nothing runs.
