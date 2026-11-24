@@ -12,6 +12,8 @@
 //   play [N]          let an event play until the game is in play for a second (CROSS every 40 frames advances its
 //                     messages; N frames at most, 12000)
 //   press BTN [F]     hold a button (or a chord: R1+TRIANGLE) F frames (6), then release it for as long
+//   cursor C R        stage 5 room 21's sliding puzzle: its cursor moved to column C, row R (read back from RAM)
+//   slide HOLD DIR [F] hold a button F frames (40) and tap another while it is held (a sliding puzzle's grab-and-move)
 //   wait N            nothing for N frames
 //   place S R [N]     wait until the game is in stage S, room R (N frames at most, 3600)
 //   attack X Z [N]    turn toward (X, Z) and swing N times (4): pots, crates
