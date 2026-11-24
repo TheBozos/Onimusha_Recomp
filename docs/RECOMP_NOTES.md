@@ -588,4 +588,19 @@ offers the Dark Realm (optional, declined: "Shall we go?" opens on YES), and Shi
   left and right edges. The textures tile and the quads have no horizontal falloff, so the GS would draw the same edges
   unless something else masks them; the game writes no TEX2 or PRMODE here. Needs a comparison with real hardware.
 
+## The triple orb doors, the Statue of the West (story legs 51-54, 2026-11-24)
+
+Legs 51-54: from the save room back out to stage 2 room 7 and its triple blue-orb door (Shiden at level 3, the Thunder
+Sword equipped) into room 8, the Statue of the West's room (Genbu, the Vision Staff); back through room 10's yard and
+balcony to room 14's triple red-orb door ("This will not open at your current level": Kouen to level 3 at room 14's own
+Magic Mirror, the Fire Sword equipped), room 19 and room 20 (the ogres, the Statue Head, the bullets, the Decorated
+Sword); back to the headless statue: its head from the item menu, the gate retracts, the Matchlock.
+
+- The EQUIP page opens on its Sword row after the game has been saved / reloaded or the character changed; the orbs
+  are rows 2-4 (Shiden / Raizan, Kouen / Enryuu, Arashi / Shippuu).
+- Room 19's garden (an L round a building) and room 10's yard (the archers) take waypoints / a shortcut; room 14's
+  Magic Mirror is reached round its north wall. Room 8's two items are taken Vision Staff first (after Genbu the
+  other is out of the bot's reach).
+
+
 

@@ -1,0 +1,35 @@
+# From the save room (stage 5 room 1) out through the hall to stage 2: the courtyard, the moat's room, rooms 5 and 7;
+# the triple blue-orb door (event AOT slot 4 over the door to room 8: the Thunder Sword equipped from the EQUIP page,
+# Shiden at level 3) into the Statue of the West's room: Genbu and the Vision Staff (the Matchlock waits behind the
+# gate).
+play
+door 5 0
+play
+door 2 0
+play
+door 2 4
+play
+door 2 5
+play
+door 2 7
+play
+press START 6
+wait 120
+press DOWN 6
+wait 60
+press CROSS 6
+wait 90
+press CROSS 6
+wait 90
+press TRIANGLE 6
+wait 90
+press TRIANGLE 6
+wait 60
+play
+examine 4
+play 6000
+take 4
+play
+take 1
+play
+save build/story/s208k.state
