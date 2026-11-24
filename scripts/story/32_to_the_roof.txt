@@ -1,0 +1,16 @@
+# Stage 5 room 25 after Tokichiro: the arrows by the stairs, rooms 26 and 27 up to the save room (room 29, its Magic
+# Mirror), and its ladder (an event AOT; a shortcut to its foot) up to the rooftop (room 30: boss 2).
+play
+take 3
+play
+door 5 26
+play
+door 5 27
+play
+door 5 29
+play
+teleport -14500 9000
+wait 20
+examine 4
+play 9000
+save build/story/s530.state

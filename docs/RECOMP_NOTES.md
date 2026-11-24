@@ -532,3 +532,7 @@ sockets; the right crest piece fits (used from the item menu). The left piece is
 Leg 31: the left crest piece is item 72 (the right one 71: found by scanning every room file's Item_aot_set for
 them), in room 16, reached through room 23's far door; back up, both pieces in, the door opens on Tokichiro's scene
 in room 25 ("Princess Yuki's skull will be filled with her own blood...").
+
+Legs 32-33: the arrows, rooms 26, 27 and the save room (29), its ladder to the rooftop (room 30); boss 2 (the
+warrior with the wheel shield) beaten and the Wind Orb taken ("You got the Wind Orb.", the Wind Spear's ceremony),
+every scene drawn as it should be.

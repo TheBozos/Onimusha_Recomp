@@ -1,0 +1,8 @@
+# Stage 5 room 30 (the rooftop): boss 2 (the warrior with the wheel shield) fought with one-hit kills, its death
+# played, then the green orb it leaves (the Wind Orb and the Wind Spear).
+play 6000
+fight 9000
+play 9000
+take 1
+play 9000
+save build/story/s530c.state
