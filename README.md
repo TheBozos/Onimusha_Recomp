@@ -60,7 +60,7 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3, the Statue of the West and the Matchlock, the Demon Gate, the lake's turret and Kaede again (61 legs so far) | 🔧 |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep, Kaede's traps and puzzles, boss 2 and the Wind Orb, the orb doors, the keep's underground (the Purifier Bell, the Blue Key), Kaede's part and Princess Yuki, Boss 3, the Statue of the West and the Matchlock, the Demon Gate, Kaede's Great Arrow and the Queen Bee (65 legs so far) | 🔧 |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -70,6 +70,15 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** Kaede's part by the lake (the attic's book in demon script, a third knob box for the Decorated Arrow,
+the dragon pedestal's Great Arrow swapped for it, the Green Key, the second boat), then Samanosuke against the Queen
+Bee in the turret and the turret burning down.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-queen-bee.png" width="400" alt="The Queen Bee, a winged insect woman, facing Samanosuke: I knew that you would come!">
+  <img src="docs/screenshots/2026-11-24-bozo-queen-bee-burns.png" width="400" alt="The Queen Bee engulfed in fire">
+</p>
 
 **2026-11-24.** The Evil Plate and the Demon Gate, the Decorated Sword's door, and stage 3 up to the turret. Found
 by looking at the story gallery: the garden's pond (stage 3 room 7) had no water, its koi on the dry bed. The water is a

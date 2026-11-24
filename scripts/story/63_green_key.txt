@@ -1,0 +1,21 @@
+# Kaede from stage 1 room 6: rooms 3, 1, 5 (its demons) and room 5's door that the Green Key opens (key 177) into room 8:
+# the second dock, the boat (event AOT slot 2) drifting to the turret (stage 3 room 14), its dock (slot 2) to room 12's
+# and the door (slot 0) into room 13: "Samanosuke, a monster is coming!", the Queen Bee's scene.
+play
+door 1 3
+play
+door 1 1
+play
+door 1 5
+play
+fight 2000
+play
+door 1 8
+play
+examine 2
+play 12000
+examine 2
+play 12000
+examine 0
+play 12000
+save build/story/s313k.state
