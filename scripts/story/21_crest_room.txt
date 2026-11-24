@@ -12,4 +12,6 @@ teleport -14000 13300   # (the left one is behind the U's inner wall)
 wait 20
 take 2
 play
+teleport -9700 14100   # back to the door's side
+wait 20
 save build/story/s515b.state

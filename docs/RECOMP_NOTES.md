@@ -469,3 +469,23 @@ no longer says which buffer the frame is drawn into. `ONI_DRAW_ORDER=1` lists ea
 renderer gets them (material, blend, bounds); `ONI_NO_BLUR=1` leaves out the draws that read a display buffer.
 
 Played on: the ogre's room's box and the passage behind it, into stage 2 room 30's event.
+
+## The keep, the Magic Mirror (story legs 13-21, 2026-11-24)
+
+Played on in the story's order by the bot: the Fire Orb (stage 2 room 30's fire stand), back up the moat's rope ladder
+(an event AOT, four-point), the red seal on stage 2 room 0's south door (the Fire Sword equipped) into the keep's hall
+(stage 5 room 0: the LINKS01 movie in its place now), the save room, Yunemaru's event, the long talk with Tokichiro,
+the red-orb door, Kaede and Yunemaru's event, the Bow's trick box (the dial puzzle again: 5 3 2 / 6 1 4, five turns,
+solved left, right, left, right, right), the Magic Mirror's ENHANCE (Enryuu and Kouen to level 2: the double red-orb
+door asks for Kouen's, "This will not open at your current level" below it) and the double red-orb door's room.
+
+- The Magic Mirror (an AOT Id 10): "It's a Magic Mirror.", then SAVE / ENHANCE / EXIT. SAVE runs the memory card
+  screens through: "A game data for Onimusha could not be found", "OK to create a file?" (NO selected first), then
+  file 1 written ("The Keep: Sentry Box", save count 1). ENHANCE pours souls into the selected sword or orb while CROSS
+  is held (the level when the bar is full).
+- The bot: an event holds System_flg (+0x4a78) bit 18 through all its lines and cuts (the stop flags only now and
+  then): in play only without it. Its timeouts count frames in play (an event on the way does not use them up). Held
+  on the way (no nearer the next point in 90 frames: sliding along a wall still moves the player), it takes the place
+  ahead for an obstacle the mesh does not hold and plans again; an item or event it cannot get closer to is faced and
+  pressed from where it is held. Stage 5 room 15's U is held by something the mesh does not have: that leg takes
+  shortcuts within the room.

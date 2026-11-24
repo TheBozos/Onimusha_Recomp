@@ -15,6 +15,7 @@
 //   wait N            nothing for N frames
 //   place S R [N]     wait until the game is in stage S, room R (N frames at most, 3600)
 //   attack X Z [N]    turn toward (X, Z) and swing N times (4): pots, crates
+//   learn on|off      where the way is held, an obstacle is learnt and the way planned around it (off by default)
 //   face X Z          turn toward (X, Z) on the spot
 //   teleport X Z [Y]  the player moved within the room (a shortcut where the bot cannot find the way)
 //   aots              the room's live AOTs (doors, items, events) logged

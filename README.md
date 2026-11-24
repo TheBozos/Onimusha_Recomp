@@ -60,7 +60,8 @@ the game, scene by scene.
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
-| The story in its own order, played headless by a scripted bot (`ONI_BOT`): through the forest cave into the underground temple | 🔧 |
+| The story in its own order, played headless by a scripted bot (`ONI_BOT`): the underground temple, the first boss, the Fire Orb, into the keep (22 legs so far) | 🔧 |
+| The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -69,6 +70,15 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-24.** Into the keep in the story's order (the bot's legs 13-21): Yunemaru's event in the keep, and the Magic
+Mirror's ENHANCE screen (the fire sword at level 2, which the double red-orb door asks for). The Magic Mirror's SAVE
+writes the game to the memory card too.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-24-bozo-yunemaru.png" width="400" alt="Samanosuke in the keep, subtitle: What is going on here!?">
+  <img src="docs/screenshots/2026-11-24-bozo-enhance.png" width="400" alt="The ENHANCE screen: Raizan, Shiden, Enryuu LV2, Kouen; souls, herbs, arrows">
+</p>
 
 **2026-11-24.** Further into the story, played by the bot: the first boss (the mace-wielding ogre, met at the bottom
 of the dry moat) and the event after it, its cinema bars now whole (the bars blend by the frame's alpha, which a
