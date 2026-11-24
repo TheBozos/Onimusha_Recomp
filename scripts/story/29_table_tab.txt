@@ -1,0 +1,7 @@
+# Stage 5 room 22: the table investigated (its event: the tab pulled), which opens the way up (a door to room 24).
+play
+examine 2
+play 9000
+door 5 24
+play 9000
+save build/story/s524.state

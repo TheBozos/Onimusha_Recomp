@@ -1,0 +1,8 @@
+# Stage 5 room 21, Samanosuke free again: out of the cell's corridor by its west end (the collision mesh of this room
+# does not read as walls: waypoints), north to the door Kaede could not use, on to room 22.
+play
+go -12300 10450 200 600
+go -12400 13300 200 600
+door 5 22
+play 9000
+save build/story/s522.state
