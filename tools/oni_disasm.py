@@ -1,6 +1,6 @@
 """oni_disasm.py <SLUS_200.18> <function name | 0xADDR> [byte count]: disassemble resident code with the ELF's symbols.
 
-A function name prints that whole function (its symbol size); an address prints `byte count` bytes (default 0x100).
+Also a prepared module (build/bozo/oni_prep/roomNNN.elf). A function name prints that whole function (its symbol size); an address prints `byte count` bytes (default 0x100).
 Calls and jumps are annotated with the symbol of their target. Needs capstone (pip install capstone).
 """
 import struct
@@ -24,7 +24,13 @@ def symbols(elf):
 
 
 def main():
+    global BASE, FILE_OFFSET
     elf = open(sys.argv[1], 'rb').read()
+    # (Another image, a room or enemy module prepared by oni_prepare.py: its first PT_LOAD segment.)
+    phoff, = struct.unpack_from('<I', elf, 0x1C)
+    p_type, p_offset, p_vaddr = struct.unpack_from('<3I', elf, phoff)
+    if p_type == 1 and p_vaddr != BASE:
+        BASE, FILE_OFFSET = p_vaddr, p_offset
     by_addr, by_name = {}, {}
     for name, value, size, kind in symbols(elf):
         if name and not name.startswith('.'):

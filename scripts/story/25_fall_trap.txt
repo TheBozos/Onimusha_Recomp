@@ -1,0 +1,39 @@
+# Stage 5 room 20: the fall-trap floor (Om8c, room520.c). 4 x 8 panels: X (the bishop: its diagonals fall), + (the
+# rook: its row and column fall), plain, and the O (the king, the goal). The last piece stepped on drops the panels on
+# its lines (falltrap: a table of distances at 0x4d9920), and each piece step freezes that character and gives the
+# control to the other. Kaede starts on the X by the door. Solved by search (tools in RECOMP_NOTES): Samanosuke the X
+# by the left door corner, Kaede the X two below hers, Samanosuke the + four rows down, Kaede back to the door X,
+# Samanosuke the X below, Kaede the X again, Samanosuke to the O.
+play
+# Samanosuke
+piece -14350 13909
+wait 90
+# Kaede
+go -11650 13009 150 900
+piece -11650 12109
+wait 90
+# Samanosuke
+go -14350 13009 150 900
+go -13450 13009 150 900
+go -13450 12109 150 900
+piece -13450 11209
+wait 90
+# Kaede
+go -11650 13009 150 900
+piece -11650 13909
+wait 90
+# Samanosuke
+go -13450 10309 150 900
+piece -13450 9409
+wait 90
+# Kaede
+go -11650 13009 150 900
+piece -11650 12109
+wait 90
+# Samanosuke
+go -13450 8509 150 900
+go -13450 7609 150 900
+go -14350 7609 150 900
+wait 90
+play 9000
+save build/story/s520b.state

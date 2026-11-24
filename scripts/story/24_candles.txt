@@ -1,0 +1,18 @@
+# Stage 5 room 19 (dark): the Fire Sword's special (R1 + TRIANGLE) lights the candles by the west table, then the
+# second set from the room's east side ("If you light the candles, you will be able to see this room more clearly");
+# the door with no keyhole opens: on into room 20 (the fall-trap floor).
+play
+go -13000 12300 200 900
+face -13000 13500
+press R1+TRIANGLE 20
+wait 150
+play
+go -9800 12400 150 900
+face -10900 13500
+wait 20
+press R1+TRIANGLE 20
+wait 200
+play
+door 5 20
+play 6000
+save build/story/s520.state
