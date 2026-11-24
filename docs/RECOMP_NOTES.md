@@ -524,3 +524,7 @@ BFS (`tools/story/crest_puzzle.py`, 26 one-cell slides). Its controls, from the 
 this frame): the D-pad moves the cursor cell by cell to the next occupied cell, CROSS held grabs the panel and a fresh
 direction press slides it (the bot's `cursor C R`, read back from RAM, and `slide CROSS DIR`). The water drains and
 Samanosuke is free.
+
+Legs 28-30: Samanosuke out of the drained cell (room 21's collision mesh does not read as walls: waypoints by the
+corridor's west end) into room 22 with Kaede; the table's tab opens the way up to room 24 and its door with two crest
+sockets; the right crest piece fits (used from the item menu). The left piece is next.

@@ -1,0 +1,19 @@
+# Stage 5 room 24: the door with two crest sockets ("A locked door. Looks like you need to fit something here."): the
+# right crest piece (taken in room 15) used from the item menu in front of it (START, RIGHT to ITEM, UP from the Herb
+# to the R. Crest Piece, CROSS, CROSS for YES).
+play
+go -9250 7300 150 900
+face -9250 8300
+wait 10
+press START 6
+wait 90
+press RIGHT 6
+wait 50
+press UP 6
+wait 30
+press CROSS 6
+wait 40
+press CROSS 6
+wait 60
+play 6000
+save build/story/s524c.state
