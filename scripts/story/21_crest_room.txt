@@ -1,0 +1,15 @@
+# Stage 5 room 15 (behind the double red-orb door): its three items along the north wall (the Red Book on the table,
+# the right crest piece in the box, and one more). The way round the room's U is held by something the collision mesh
+# does not have: a shortcut within the room to the items' side.
+play
+teleport -12500 13300
+wait 20
+take 4
+play
+take 3
+play
+teleport -14000 13300   # (the left one is behind the U's inner wall)
+wait 20
+take 2
+play
+save build/story/s515b.state

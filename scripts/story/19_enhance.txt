@@ -1,0 +1,50 @@
+# Back to the keep's save room (stage 5 room 1) and its Magic Mirror: ENHANCE (with the souls cheat): Enryuu and
+# Kouen to level 2 (Kouen is the fire orb the double red-orb door asks for), Raizan with the rest; TRIANGLE leaves.
+play
+door 5 9
+play
+door 5 7
+play
+door 5 6
+play
+door 5 5
+play
+door 5 0
+play
+door 5 1
+play
+go -13400 9800 200 900
+face -13400 8550
+wait 10
+press CROSS 8      # "It's a Magic Mirror."
+wait 100
+press CROSS 8      # SAVE / ENHANCE / EXIT
+wait 80
+press RIGHT 8
+wait 40
+press CROSS 8      # ENHANCE (Raizan selected)
+wait 150
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press CROSS 450    # Enryuu to level 2
+wait 100
+press DOWN 8
+wait 30
+press CROSS 450    # Kouen to level 2 (the fire orb's level: the double red-orb door asks for it)
+wait 100
+press UP 8
+wait 30
+press UP 8
+wait 30
+press UP 8
+wait 30
+press CROSS 450    # Raizan, with what is left
+wait 100
+press TRIANGLE 8
+wait 100
+press TRIANGLE 8
+wait 100
+play
+save build/story/s501b.state
