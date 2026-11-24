@@ -504,3 +504,13 @@ of the three (the middle one is a trap), Samanosuke the right one, Kaede the lev
 door-side one (a Message2 AOT, 24), then the door into room 19. Room 19 is dark: the Fire Sword's special
 (R1 + TRIANGLE, a chord in the bot's `press`) lights its candles, the fire effect and the lit room drawn as they
 should be. The way on from there (the floor-tile puzzle, then the crest) is the next leg.
+
+Legs 24-26: room 19's second candle set lights from the room's east side (then the door with no keyhole is a door);
+room 20 is the fall-trap floor (room520.c's Om8c: 4 x 8 panels, `Om` objects 140 plain, 141 the rook "+", 142 the
+bishop "X", 143 the king "O"; each panel's grid column and row at +0x7b0, its type at +0x20). Stepping on a piece
+records it and fills a table of distances (0x4d9920) along its lines: the rook's row and column, the bishop's
+diagonals; every panel there falls, the nearest first, and a character on it drops back to the start. The stepping
+character is caged and the control passes to the other (the player _OCW is always the active one). Searched in
+Python over that model and played by the bot (`piece X Z`: walk onto a tile until the control passes): Samanosuke and
+Kaede take seven turns down to the king, the cages open, and the door to room 21 (the crest puzzle) is reached.
+`tools/oni_disasm.py` reads a prepared module too (build/bozo/oni_prep/roomNNN.elf).

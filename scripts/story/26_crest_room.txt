@@ -1,0 +1,5 @@
+# Stage 5 room 20, past the fall trap: the door at its far end into room 21 (the crest sliding puzzle's room).
+play
+door 5 21
+play 9000
+save build/story/s521.state

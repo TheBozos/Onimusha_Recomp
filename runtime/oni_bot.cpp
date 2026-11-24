@@ -223,6 +223,7 @@ namespace oni::bot
         size_t g_wpsLeft = 0;
         float g_bestToPoint = 1e30f;
         int g_noProgress = 0;
+        float g_pieceX = 0, g_pieceZ = 0;
         bool g_learn = false; // learn on: obstacles learnt where the way is held (off by default: enemies and stands hold it too)
         int g_obstacleRoom = -1;
 
@@ -1020,6 +1021,26 @@ namespace oni::bot
             g_buttons = phase < 5 ? bozo::libs::kPadSquare : 0;
             if (g_counter >= swings * 30)
                 next();
+        }
+        else if (s.op == "piece")
+        {
+            // Walk onto (X, Z) until the control goes to the other character (the player's position jumps: the active
+            // one is always the player _OCW), as a piece tile of stage 5 room 20 does; or reached (no swap).
+            const float tx = static_cast<float>(arg(s, 0, 0)), tz = static_cast<float>(arg(s, 1, 0));
+            if (g_counter > 0 && std::hypot(px - g_pieceX, pz - g_pieceZ) > 500.0f)
+            {
+                log("%s", "control to the other character");
+                next();
+                return;
+            }
+            g_counter = 1;
+            g_pieceX = px, g_pieceZ = pz;
+            if (!inPlay)
+                halt();
+            else if (steer(ram, tx, tz) < 60.0f)
+                halt();
+            if (g_playAge > static_cast<uint64_t>(arg(s, 2, 900)))
+                fail("piece: no swap");
         }
         else if (s.op == "learn")
         {
