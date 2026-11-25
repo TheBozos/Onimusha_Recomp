@@ -19,6 +19,10 @@
 //   wait N            nothing for N frames
 //   place S R [N]     wait until the game is in stage S, room R (N frames at most, 3600)
 //   attack X Z [N]    turn toward (X, Z) and swing N times (4): pots, crates
+//   pots [N] [ID]     Oni Spirits: break pots (the objects of id 0x7a), enemies on the ground fought first (but not
+//                     enemy id ID), until the holy ground's quota is released or no pot stands (N frames in play,
+//                     7200; negative: then go on)
+//   cheat NAME on|off health, magic, souls, items or kills switched (the Cheats tab's)
 //   piece X Z [N]     walk straight onto (X, Z) until the control passes to the other character (stage 5 room 20)
 //   engage on|off     enemies on the way fought (on, the default) or passed by
 //   learn on|off      where the way is held, an obstacle is learnt and the way planned around it (off by default)

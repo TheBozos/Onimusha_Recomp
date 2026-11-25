@@ -1,0 +1,78 @@
+# Oni Spirits, step 3: the twelve holy grounds (stage 4 room 7; the ground at G+0x93f9 picks the pots' table).
+# Each: the pots broken until the ground's quota is released (the pots step; the quotas 20 20 26 26 28 6 32 36 28 6
+# 30 36), with infinite health: the time is the player's life, which drains on holy ground; then the health cheat
+# off and the life left to run out, set16_game 0x1e7e30 then winning the ground, and the next ground's card (play:
+# CROSS). After the twelfth: the spirits' scene (stage 4 room 8, "You have truly become the Onimusha!") and the
+# RESULT with its save prompt, where the run stops.
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g02.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g03.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g04.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g05.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g06.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g07.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g08.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g09.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g10.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g11.state
+pots 12000
+cheat health off
+wait 1700
+play 9000
+cheat health on
+save build/story/os_g12.state
+pots 12000
+cheat health off
+wait 4800
+save build/story/os_end.state
+wait 5
+end

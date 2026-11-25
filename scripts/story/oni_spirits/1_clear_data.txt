@@ -1,0 +1,23 @@
+# Oni Spirits, step 1: the GAME CLEAR DATA saved from the end of the branch's run (b_s_end: the RESULT screen, twenty
+# Fluorites) to an empty memory card: the three lines naming what it unlocks (CROSS each), "Will you save the game
+# data?" YES (LEFT), slot 1, "ERROR: A game data for "Onimusha" could not be found.", "OK to create a file" YES.
+wait 600
+press CROSS 8
+wait 250
+press CROSS 8
+wait 250
+press CROSS 8
+wait 250
+press LEFT 6
+wait 30
+press CROSS 8
+wait 150
+press CROSS 8
+wait 150
+press CROSS 8
+wait 100
+press LEFT 6
+wait 30
+press CROSS 8
+wait 400
+end

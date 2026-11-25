@@ -64,6 +64,7 @@ the game, scene by scene.
 | The optional Dark Realm (twenty floors), the Bishamon Sword, the Great Armor and all twenty Fluorites, played as a branch of the bot's run from the start to the end of the game | ✅ |
 | The Magic Mirror: an in-game save to the memory card, loaded back from the title's LOAD GAME; ENHANCE (souls into swords and orbs) | ✅ |
 | After the credits: the GAME CLEAR DATA save and its unlocks, Special Feature (the Special Trailer, the Oni Spirits mini-game) and Samanosuke EXTRA (the panda costume) | ✅ |
+| Oni Spirits played through its twelve holy grounds by the bot, its farewell scene and RESULT | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -72,6 +73,17 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-25.** Oni Spirits played through, all twelve holy grounds, by the bot from a boot with the clear data on
+the card (`scripts/story/oni_spirits/run.sh`): on each ground the pots broken until its quota of spirits is
+released (20 to 36; the time is Samanosuke's draining life), the enemies and the blue spirit that race for the pots,
+the spirits' farewell after the twelfth ("You have truly become the Onimusha!") and the RESULT, saved and read back.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-25-bozo-oni-spirits-ground3.png" width="270" alt="Oni Spirits' third ground: Samanosuke among the pots, the blue spirit diving on them, RELEASE 26">
+  <img src="docs/screenshots/2026-11-25-bozo-oni-spirits-ending.png" width="270" alt="The spirits' farewell: Samanosuke in a pillar of violet light, subtitle: You have truly become the Onimusha!">
+  <img src="docs/screenshots/2026-11-25-bozo-oni-spirits-result.png" width="270" alt="Oni Spirits' RESULT: stage 12, time 07:17:01">
+</p>
 
 **2026-11-25.** The window under load: the late fights (the ogre boss, Boss 3, the Queen Bee, Marcellus, the King's
 Chamber, Fortinbras) and the Dark Realm's floors hold 60 frames a second with 3 to 6 ms of work a frame; the frames
