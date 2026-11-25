@@ -781,3 +781,29 @@ that two later runs did not: something else loading the machine; it also took 17
   `oni_vu1_std_cl`), the background movies (`decodeIpuMovie`, `mpeg2_decode_block_intra`), the game's code
   (`body_0x...`).
 
+## Oni Spirits through its twelve holy grounds (scripts/story/oni_spirits, 2026-11-25)
+
+Oni Spirits (Special Feature, after the GAME CLEAR DATA) is the game's tsubo mode: `Tsubo_task`, `set16_start` /
+`set16_game` 0x1e7e30 / `set16_game_disp`, `game_tsubo_end`, the room module room407's `Set00` (the pots from a table
+by the ground) and `Om7a` (the pot, object kind 4, id 0x7a; `Tsubo_cnt` 0x1c0d50 counts the standing ones, +0x23
+below 5). Stage 4 room 7, twelve grounds (G+0x93f9 = 0x287229, 0 to 11):
+- A ground is won when its quota (the table at 0x20d668: 20 20 26 26 28 6 32 36 28 6 30 36) of pots has been
+  released (0x28722a) by the time no pot stands or the time runs out; the time is the player's Life (+0x6d0 =
+  0x2885a0), which drains on holy ground (the infinite-health cheat stops it). Lost: "Died", the mode's RESULT and
+  back to the title. After the twelfth: a flag, the spirits' scene in room 8 ("You have truly become the Onimusha!")
+  and the RESULT (stage, time, SPIRITS Pts.: the spirits absorbed with CIRCLE, which the bot does not do), saved as
+  the mode's record (its menu's RESULT reads it back). No further unlock appears on the title or NEW GAME.
+- A pot counts only when the player's blow (its +0x6a8 the player) or an area attack (`Involve_oba_ck`) breaks it:
+  the enemies race for them. Ground 5's 36 pots: 19 broken by the player, 11 by its two soldiers, 2 by the blue
+  spirit (id 0x17, from the third ground on, flying above 1000 and diving on the pots, out of the sword's reach).
+  Ground 8 has an enemy that does not die (id 0x18); ground 9 a fast one (id 0x19) that guards from the front.
+- The bot's `pots [N] [id]` (oni_bot.h): until the quota, the nearest pot straight on (no other pot can stand in its
+  way) or a ground enemy first; the spirit's pot taken first when it comes down; the player put beside a target
+  more than 2000 off or not got nearer in three seconds (950 off a pot, 600 off an enemy from behind, its sides,
+  its front in turn), facing it; an enemy not killed in five seconds left for ten. `cheat NAME on|off` switches the
+  Cheats tab's cheats: health off once the quota is met, the life then running out wins the ground.
+- `run.sh`: the clear data saved from `b_s_end` to a fresh card (`1_clear_data.txt`: on an empty card the "could
+  not be found" error, then "OK to create a file", YES), the boot into ground 1 (`2_boot.txt`), each ground from its
+  own state (`3_grounds.txt`), a lost one played again a few frames later (up to four tries: ground 9 is won about
+  five times in six). From scratch: all twelve won, the RESULT at 07:17:01.
+

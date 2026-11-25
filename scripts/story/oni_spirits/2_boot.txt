@@ -1,0 +1,18 @@
+# Oni Spirits, step 2: from a boot with that card, the title's Special Feature (DOWN from LOAD GAME, which the menu
+# opens on), Oni Spirits (DOWN from Special Trailer), START, its opening scene, the first ground's card (CROSS).
+wait 900
+press START 8
+wait 100
+press DOWN 6
+wait 30
+press CROSS 8
+wait 60
+press DOWN 6
+wait 30
+press CROSS 8
+wait 200
+press CROSS 8
+wait 3900
+press CROSS 8
+wait 300
+save build/story/os_g01.state

@@ -7,6 +7,7 @@
 // Dir_y (+0xc2), UP walks where it faces; the bot turns toward its goal and walks once roughly facing it, and slides
 // sideways for a while when it walks into something.
 #include "oni_bot.h"
+#include "oni_cheats.h"
 
 #include "bozo/host/free_host.h"
 #include "bozo/libs/pad.h"
@@ -452,7 +453,7 @@ namespace oni::bot
 
         // Steers along the planned way to (x, z) (planned again when the goal moves far); returns the distance to it.
         struct Enemy;
-        bool nearestEnemy(const uint8_t *ram, Enemy &out);
+        bool nearestEnemy(const uint8_t *ram, Enemy &out, float maxAbove = 1e9f, int skipId = -1);
         bool enemyNear(const uint8_t *ram, float within);
 
         float navigate(const uint8_t *ram, float x, float z, bool walk = true)
@@ -504,8 +505,9 @@ namespace oni::bot
         struct Enemy
         {
             float x, z, dist;
+            uint32_t at = 0; // its _ENEMY_WORK (0: a pot)
         };
-        bool nearestEnemy(const uint8_t *ram, Enemy &out)
+        bool nearestEnemy(const uint8_t *ram, Enemy &out, float maxAbove, int skipId)
         {
             uint32_t at, end;
             std::memcpy(&at, ram + kEnemyTop, 4);
@@ -516,18 +518,103 @@ namespace oni::bot
             bool found = false;
             for (int guard = 0; at && at + 0x7e0 <= 0x2000000u && guard < 64; ++guard)
             {
-                if ((ram[at] & 1u) && read16(ram, at + 0x6d0) > 0)
+                if ((ram[at] & 1u) && read16(ram, at + 0x6d0) > 0 && readf(ram, at + 0x74) - readf(ram, kPlayer + 0x74) <= maxAbove &&
+                    static_cast<int>(ram[at + 2]) != skipId)
                 {
                     const float ex = readf(ram, at + 0x70), ez = readf(ram, at + 0x78);
                     const float d = std::hypot(ex - px, ez - pz);
                     if (!found || d < out.dist)
-                        out = {ex, ez, d}, found = true;
+                        out = {ex, ez, d, at}, found = true;
                 }
                 if (at == end)
                     break;
                 std::memcpy(&at, ram + at + 0x30, 4);
                 at &= 0x1ffffffu;
             }
+            return found;
+        }
+
+        // Oni Spirits' pots: the room's objects (the list at 0x2823f4, linked by +0x30, as Tsubo_cnt 0x1c0d50 walks it)
+        // of kind 4, id 0x7a, live, not yet broken (+0x23 below 5); their place at +0x70 / +0x78.
+        // Oni Spirits' blue spirit (an enemy of id 0x17, from the third ground on): it flies about 2000 up, comes down
+        // to about 1000 over a pot and smashes it a second later (that pot then releases nothing). Its place when it is
+        // down within `maxAbove` of the player.
+        bool spiritDown(const uint8_t *ram, float &sx, float &sz, float maxAbove)
+        {
+            uint32_t at, end;
+            std::memcpy(&at, ram + kEnemyTop, 4);
+            std::memcpy(&end, ram + kEnemyEnd, 4);
+            at &= 0x1ffffffu;
+            end &= 0x1ffffffu;
+            const float py = readf(ram, kPlayer + 0x74);
+            for (int guard = 0; at && at + 0x7e0 <= 0x2000000u && guard < 64; ++guard)
+            {
+                if ((ram[at] & 1u) && ram[at + 2] == 0x17 && read16(ram, at + 0x6d0) > 0 && readf(ram, at + 0x74) - py <= maxAbove)
+                {
+                    sx = readf(ram, at + 0x70), sz = readf(ram, at + 0x78);
+                    return true;
+                }
+                if (at == end)
+                    break;
+                std::memcpy(&at, ram + at + 0x30, 4);
+                at &= 0x1ffffffu;
+            }
+            return false;
+        }
+
+        // The live enemies (pEm_top .. pEm_end, alive, life above 0).
+        int enemyCount(const uint8_t *ram)
+        {
+            uint32_t at, end;
+            std::memcpy(&at, ram + kEnemyTop, 4);
+            std::memcpy(&end, ram + kEnemyEnd, 4);
+            at &= 0x1ffffffu;
+            end &= 0x1ffffffu;
+            int n = 0;
+            for (int guard = 0; at && at + 0x7e0 <= 0x2000000u && guard < 64; ++guard)
+            {
+                if ((ram[at] & 1u) && read16(ram, at + 0x6d0) > 0)
+                    ++n;
+                if (at == end)
+                    break;
+                std::memcpy(&at, ram + at + 0x30, 4);
+                at &= 0x1ffffffu;
+            }
+            return n;
+        }
+
+        uint32_t g_pot = 0; // pots: the pot struck at (kept until it breaks: two pots nearly as near made the bot dither)
+        bool nearestPot(const uint8_t *ram, Enemy &out, int &left, const float *from = nullptr)
+        {
+            uint32_t chosen = 0;
+            float bestRank = 0.0f;
+            Enemy locked{};
+            uint32_t at;
+            std::memcpy(&at, ram + 0x2823f4, 4);
+            at &= 0x1ffffffu;
+            const float px = readf(ram, kPlayer + 0x70), pz = readf(ram, kPlayer + 0x78);
+            bool found = false;
+            left = 0;
+            for (int guard = 0; at && at + 0x100 <= 0x2000000u && guard < 512; ++guard)
+            {
+                if (ram[at] && ram[at + 1] == 4 && ram[at + 2] == 0x7a && ram[at + 3] == 0 && ram[at + 0x23] < 5)
+                {
+                    ++left;
+                    const float ox = readf(ram, at + 0x70), oz = readf(ram, at + 0x78);
+                    const float d = std::hypot(ox - px, oz - pz);
+                    const float rank = from ? std::hypot(ox - from[0], oz - from[1]) : d; // (nearest the point given)
+                    if (at == g_pot)
+                        locked = {ox, oz, d};
+                    if (!found || rank < bestRank)
+                        out = {ox, oz, d}, found = true, chosen = at, bestRank = rank;
+                }
+                std::memcpy(&at, ram + at + 0x30, 4);
+                at &= 0x1ffffffu;
+            }
+            if (found && g_pot && locked.dist > 0.0f && !from)
+                out = locked; // the pot already struck at, still standing
+            else
+                g_pot = found ? chosen : 0;
             return found;
         }
 
@@ -1136,6 +1223,162 @@ namespace oni::bot
                 }
                 fail("take: the item is still there");
             }
+        }
+        else if (s.op == "pots")
+        {
+            // Oni Spirits: the nearest pot walked to and struck until none is left, an enemy near (1200) fought first;
+            // done when no pot is left for a second and a half, or when the game leaves play for good (the stage's end).
+            Enemy pot{}, e{};
+            int left = 0;
+            bool havePot = inPlay && nearestPot(ram, pot, left);
+            // The blue spirit come down over a pot: that pot first (it then counts for the player; the spirit's dive
+            // is lost). Ground 7: 29 released of the 32 needed, the spirit having smashed 4.
+            float spirit[2];
+            if (havePot && !g_noEngage && spiritDown(ram, spirit[0], spirit[1], 1400.0f))
+                havePot = nearestPot(ram, pot, left, spirit);
+            // The holy ground's quota (0x20d668[ground 0x287229]) reached by the pots released (0x28722a): set16_game
+            // 0x1e7e30 wins the ground when the time (the player's life) runs out with it, or once no pot is left.
+            const uint8_t ground = ram[0x287229], released = ram[0x28722a], quota = ram[0x20d668 + (ground < 12 ? ground : 0)];
+            if (inPlay && quota && released >= quota)
+            {
+                log("%s", "ground " + std::to_string(ground + 1) + ": " + std::to_string(released) + " released, the quota " +
+                              std::to_string(quota) + " met");
+                halt();
+                g_buttons = 0;
+                next();
+                return;
+            }
+            if (!inPlay)
+            {
+                halt();
+                g_buttons = 0;
+                if (age > 600 && ++g_counter > 600)
+                {
+                    log("%s", "out of play: the stage over");
+                    next();
+                    return;
+                }
+            }
+            else if (!havePot)
+            {
+                halt();
+                g_buttons = 0;
+                if (++g_counter > 90)
+                {
+                    log("%s", "no pot left");
+                    next();
+                    return;
+                }
+            }
+            else
+            {
+                g_counter = 0;
+                // An enemy on the ground first, wherever it is: a pot an enemy's blow breaks releases nothing (Om7a counts
+                // the player's blows and area attacks only). Ground 5's 36 pots: 19 broken by the player, 11 by its two
+                // soldiers, 2 by the blue spirit (id 0x17, from the third ground on), which flies above 1000, out of the
+                // sword's reach, and is left to itself.
+                // An enemy that does not die (ground 8's id 0x18, its life kept at 1 and never lost) or will not be hit:
+                // after five seconds of fighting without one less enemy (four approaches), the enemies are left for ten
+                // and the pots taken instead; ground 9's id 0x19 smashes about a pot a second meanwhile.
+                static uint64_t ignoreUntil = 0;
+                static int fighting = 0, enemies = 0;
+                const int count = enemyCount(ram);
+                if (count < enemies)
+                    fighting = 0;
+                enemies = count;
+                const bool enemyNear = !g_noEngage && age >= ignoreUntil && nearestEnemy(ram, e, 800.0f, arg(s, 1, -1));
+                if (enemyNear && ++fighting > 300)
+                {
+                    log("%s", "an enemy that does not die: left for a while");
+                    ignoreUntil = age + 600, fighting = 0;
+                }
+                const Enemy t = enemyNear ? e : pot;
+                if (age % 300 == 0)
+                    log("%s", std::to_string(left) + " pots left; " + (enemyNear ? "enemy" : "pot") + " at (" +
+                                  std::to_string(static_cast<int>(t.x)) + ", " + std::to_string(static_cast<int>(t.z)) + ")");
+                // Straight at the target: no other pot stands in the way of the nearest pot (it would be nearer), and the
+                // room's way planning does not know the pots (objects, not walls). Held on the way (a pillar of the room,
+                // a treasure box a pot left, an enemy boxed in among the pots) for three seconds, or the target more than
+                // 2000 off: the player put beside it (950 off a pot, 600 off an enemy) on the side it came from, as the
+                // story legs' teleports do; the enemies and the spirit race the bot for the pots. (No progress: the
+                // distance not 150 shorter in a second; sliding along an obstacle moves the player, not nearer.)
+                const float reach = enemyNear ? 700.0f : 1150.0f; // (a pot's body stops the player about 1000 off)
+                static float lastDist = 0;
+                static int stalls = 0;
+                const bool far = t.dist > 2000.0f;
+                const bool blocked = enemyNear && fighting > 0 && fighting % 75 == 0; // (it moves on: caught up with every 75 frames, a swing's time)
+                if (age % 60 == 0 || far || blocked)
+                {
+                    stalls = (far || blocked) ? 3 : (t.dist > reach && lastDist - t.dist < 150.0f) ? stalls + 1 : 0;
+                    lastDist = t.dist;
+                    if (stalls >= 3)
+                    {
+                        const float k = (enemyNear ? 600.0f : 950.0f) / std::max(t.dist, 1.0f);
+                        float x = t.x + (px - t.x) * k, z = t.z + (pz - t.z) * k;
+                        if (enemyNear && t.at)
+                        {
+                            // An enemy from behind (600 back from where it faces, Dir_y +0xc2), then from its left, its
+                            // right and its front at the next tries: ground 9's id 0x19 guarded blows from the front, and
+                            // when it stands against the back wall, behind it is in the wall.
+                            static int approach = 0;
+                            const float sides[4] = {kPi, kPi / 2, -kPi / 2, 0.0f};
+                            const float d = read16(ram, t.at + 0xc2) * (2 * kPi / 4096.0f) + sides[approach++ % 4];
+                            x = t.x + std::sin(d) * 600.0f, z = t.z + std::cos(d) * 600.0f;
+                        }
+                        for (uint32_t at : {kPlayer + 0x70u, kPlayer + 0x80u})
+                        {
+                            std::memcpy(ram + at, &x, 4);
+                            std::memcpy(ram + at + 8, &z, 4);
+                        }
+                        // Facing it (Dir_y +0xc2, 4096 a turn): the tank controls' turn on the spot cost a second.
+                        const int16_t dir = static_cast<int16_t>(std::lround(std::atan2(t.x - x, t.z - z) * 4096.0f / (2 * kPi)));
+                        std::memcpy(ram + kPlayer + 0xc2, &dir, 2);
+                        if (age % 300 == 0 || !far)
+                            log("%s", std::string(enemyNear ? "an enemy" : "a pot") + " out of reach: the player put beside it at (" +
+                                          std::to_string(static_cast<int>(x)) + ", " + std::to_string(static_cast<int>(z)) + ")");
+                        stalls = 0;
+                    }
+                }
+                const float dist = steer(ram, t.x, t.z, t.dist > reach);
+                if (dist <= reach)
+                {
+                    steer(ram, t.x, t.z, false); // face it, standing
+                    g_buttons = (age % 10) < 4 ? bozo::libs::kPadSquare : 0;
+                }
+                else
+                    g_buttons = 0;
+            }
+            const int limit = arg(s, 0, 7200);
+            if (g_playAge > static_cast<uint64_t>(limit < 0 ? -limit : limit))
+            {
+                if (limit < 0)
+                {
+                    log("%s", std::to_string(left) + " pots left, going on");
+                    next();
+                    return;
+                }
+                fail("pots: pots still standing");
+            }
+        }
+        else if (s.op == "cheat")
+        {
+            // cheat NAME on|off: health, magic, souls, items, kills (the Cheats tab's switches).
+            static const std::pair<const char *, oni::cheats::Cheat> names[] = {
+                {"health", oni::cheats::Cheat::InfiniteHealth}, {"magic", oni::cheats::Cheat::InfiniteMagic},
+                {"souls", oni::cheats::Cheat::InfiniteSouls},   {"items", oni::cheats::Cheat::InfiniteItems},
+                {"kills", oni::cheats::Cheat::OneHitKills}};
+            const std::string name = s.args.empty() ? "" : s.args[0];
+            const bool on = s.args.size() > 1 && s.args[1] == "on";
+            bool known = false;
+            for (const auto &[n, cheat] : names)
+                if (name == n)
+                    oni::cheats::setEnabled(cheat, on), known = true;
+            if (!known)
+            {
+                fail("cheat: unknown " + name);
+                return;
+            }
+            next();
         }
         else if (s.op == "attack")
         {
