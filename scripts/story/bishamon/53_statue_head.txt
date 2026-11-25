@@ -1,5 +1,15 @@
+# (Branch: the Fluorite in stage 2 room 19.)
 # Stage 2 room 19: the medicine, then room 20: the ogres' scene and fight (one-hit kills), the Statue Head, the bullets
 # and the Decorated Sword.
+play
+teleport -7780 2800   # a Fluorite on the step, where the ogres' siege cart may stand: struck, it rolls back
+wait 10
+attack -7780 3600 20
+wait 100
+play
+teleport -7780 3500
+wait 10
+take 3 -2400
 play
 take 4
 play

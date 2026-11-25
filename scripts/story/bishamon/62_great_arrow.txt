@@ -1,3 +1,4 @@
+# (Branch: the Fluorite in stage 1 room 18.)
 # Kaede from stage 1 room 3: room 18's ladder up to room 19 and its trick box (the 2 x 4 knob board: 7 5 4 2 / 8 1 3 6, seven
 # turns: left, left, middle, right, right, middle, middle; found by BFS): the Decorated Arrow. Down again (round the
 # room's west side), room 3, and room 6: the dragon pedestal gives up the Great Arrow and the doors shut; the Decorated
@@ -7,6 +8,8 @@ play
 fight 2000
 play
 door 1 18
+play
+take 5 -2400     # a Fluorite
 play
 open 2
 wait 60

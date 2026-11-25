@@ -657,8 +657,8 @@ kills), and the ending in mode 10 (the movie, the staff roll, "Presented by CAPC
 save prompt, about 36000 frames. Every scene and the movie drawn as expected.
 
 - Bot: `fight N M` also ends once the game is in mode M (Fortinbras stays in the enemies' list while the ending runs).
-- The optional parts: the Dark Realm, the Bishamon Sword and the Great Armor are a branch of their own (below); the
-  Fluorites are not collected.
+- The optional parts: the Dark Realm, the Bishamon Sword, the Great Armor and the twenty Fluorites are a branch of
+  their own (below).
 
 ## The Dark Realm and the Bishamon Sword (scripts/story/bishamon, 2026-11-24)
 
@@ -685,6 +685,33 @@ after leg 65.
 - Leg 69: in the Dark Fountain's room (stage 4 room 2) the ocarina from the item menu (a flag AOT for item 0x50 over
   the room's west side), the wall opens, and the pedestal (event AOT slot 5): the Bishamon Sword. Legs 66-67 then
   finish the game with it.
+
+### The twenty Fluorites
+
+The branch also collects every Fluorite (item 7; the RESULT screen counts them): 17 lie in rooms, 3 are Dark Realm
+floor rewards. The branch runs from leg 00 (`run.sh` with no argument; leg 0 from the main run's own start state), so
+its copies of the early legs pick them up on the way.
+
+- Most are glints: AOTs of Id 11 placed by the room script's opcode 0x7a, the item at +0x0e, that keep their AOT once
+  taken. `take` now accepts them (Id 2 or 11) and calls the item taken when the inventory (G.Item_work[65], +0x9eac)
+  changes. A glint of type 0x51 (bit 0x40) is checked at the player's own position, so `take` walks into it rather
+  than next to it. `take K -N` is optional (none there, or not reached in N frames, goes on); `take -1` is the nearest.
+- Where a glint can't be walked to (behind props, at a wall), the leg teleports next to it, faces it and presses:
+  1:24, 5:14, 5:25, 1:21.
+- 2:19's lies on a step in the path of the siege cart two ogres push up the yard: where the cart stands when the
+  player comes in varies, and on the step it covers the glint (the player is pushed out of its box). Struck from the
+  step's south side it rolls back, and the glint is taken from a teleport into it.
+- 2:6's lies in its secret room (leg 44); 3:11's up the turret's stairs (leg 59).
+- 3:15, the bell loft, is reached from stage 3 room 6's scaffold: up its internal stairs, round its loops (west side
+  north, north side east, east side south, each a level higher) to the top walkway's west end, where a ladder
+  ("There is a ladder.", CROSS facing -13610 7900) climbs to room 15. An archer out of reach shoots along that
+  walkway and its arrows knock the player back east, so the last stretch is a teleport. Room 15's event 1 leads back
+  down to room 6.
+- The Dark Realm's three: room405's `Set0e` reads a table of ten entries (item, first floor, last floor, count, flag)
+  at 0x4daa00 and draws a floor for each: Fluorites in floors 4-8, 9-13 and 14-18 (the counter at 0x287225), the
+  Ocarina (0x50) at 19. On its floor `Item_replace` puts the item in AOT slot 6 by the arena's north wall
+  (-7600, 13000), where the Ocarina is taken too. Leg 68 presses there after every floor; an empty spot does
+  nothing.
 
 
 

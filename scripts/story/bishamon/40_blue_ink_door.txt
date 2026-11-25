@@ -1,0 +1,17 @@
+# (Branch: the Fluorite in stage 2 room 33.)
+# Room 33 back through rooms 32 and 29 to the blue-ink door (to room 43: the Blue Key used, "You have used the Blue
+# Key."), and room 43's event (an AOT walked into, type 0x41): Samanosuke and Tokichiro, the demon's trap; then Kaede
+# wakes in stage 5 room 8 (her part of the story).
+play
+take 4 -2400     # a Fluorite
+play
+door 2 32
+play
+door 2 29
+play
+door 2 43
+play
+go -12000 11300 150
+press UP 40       # into the event's AOT (z 11500 on)
+play 12000
+save build/story/s508k.state

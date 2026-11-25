@@ -61,7 +61,7 @@ the game, scene by scene.
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
 | The whole story, played headless by a scripted bot (`ONI_BOT`) from the forest cave to Fortinbras, the ending and the RESULT screen: 68 legs, every boss, puzzle and scene of the main route | ✅ |
-| The optional Dark Realm (twenty floors), the Bishamon Sword and the Great Armor, played as a branch of the bot's run to the end of the game | ✅ |
+| The optional Dark Realm (twenty floors), the Bishamon Sword, the Great Armor and all twenty Fluorites, played as a branch of the bot's run from the start to the end of the game | ✅ |
 | The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
@@ -71,6 +71,15 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-25.** All twenty Fluorites: the branch now runs from the first leg, picking up the seventeen in rooms on
+the way (one in the bell loft above stage 3's scaffold, one under the ogres' siege cart) and the three the Dark Realm
+hands out on random floors; the RESULT screen counts them all.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-25-bozo-result-20-fluorites.png" width="400" alt="The RESULT screen: twenty Fluorites, 357 defeated, twenty Dark Realm floors">
+  <img src="docs/screenshots/2026-11-25-bozo-bell-loft-fluorite.png" width="400" alt="Samanosuke in the bell loft under the great bell, a Fluorite glinting by the rail">
+</p>
 
 **2026-11-24.** The optional branch: the hanging head's offer taken, the Dark Realm's twenty floors of demons, the
 Bishamon Ocarina at the bottom, and in the Dark Fountain's room the ocarina opens the wall on the Bishamon Sword; the

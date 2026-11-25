@@ -1,0 +1,31 @@
+# (Branch: the Fluorite in stage 5 room 14.)
+# From stage 5 room 15 back to room 11, the storeroom (room 12: the pail's shiny thing), the hall's upper floor
+# (room 0, floor 2) and its single red-orb door (event AOT slot 19) into room 13 (its zombies), up to room 14 and 17,
+# and the double red-orb door there (slot 4) into room 18: Kaede's event, the two of them trapped behind bars.
+play
+door 5 11
+play
+door 5 12
+play
+examine 1
+play
+door 5 11
+play
+door 5 0
+play
+examine 19
+play 6000
+fight 6000
+play
+door 5 14
+play
+teleport -5500 10400   # a Fluorite in the corner
+wait 10
+press CROSS 8
+wait 60
+play
+door 5 17
+play
+examine 4
+play 9000
+save build/story/s518.state

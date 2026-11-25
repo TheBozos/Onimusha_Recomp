@@ -1,0 +1,31 @@
+# (Branch: the Fluorite in stage 1 room 24.)
+# Stage 2 room 30 (the tentacle thing's room): its event and the fight, the fire stand (the Fire Orb: the red orb on the
+# HUD, Kouen / Enryuu equipped), then back the way we came: rooms 1:24, 1:26, 1:25 and up the moat's ladder to 2:4, 2:0.
+play 6000
+fight 6000
+play 4000
+take 1
+play 4000
+door 1 24
+play
+fight -3000
+play
+teleport -7300 4400   # a Fluorite, past the pots
+wait 10
+face -6000 4400
+wait 5
+press CROSS 8
+wait 60
+play
+teleport -9090 4150   # (back past the pots)
+wait 10
+door 1 26
+play
+door 1 25
+play
+examine 7         # the rope ladder (an event AOT): up to 2:4
+place 2 4
+play
+door 2 0
+play
+save build/story/s200b.state

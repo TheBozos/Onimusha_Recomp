@@ -1,0 +1,8 @@
+# (Branch: the Fluorite in stage 1 room 15.)
+# The temple's corridor (stage 1 room 15): its zombie, then the far door into room 16 (the blue orb's room).
+play
+take 4 -2400     # a Fluorite
+play
+door 1 16
+play
+save build/story/s116.state

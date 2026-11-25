@@ -1,0 +1,72 @@
+# (Branch: room 2's walk tolerant, a shortcut to the door if held.)
+# Room 8 down to the keep's hall (rooms 5, 0) and the save room (room 1): the Magic Mirror's ENHANCE (the souls cheat):
+# Shiden (the thunder orb) to level 2, then the wind pair (Shippuu, Arashi: a double green-orb door is ahead). Then
+# room 2 and its double blue-orb door (event AOT slot 2: "A crystal is fitted in the center, and there seems to be a
+# thunder inside the crystal..."), the Thunder Sword equipped from the status screen (START, DOWN to Shiden / Raizan,
+# CROSS, CROSS for YES, TRIANGLE twice).
+play
+door 5 5
+play
+door 5 0
+play
+door 5 1
+play
+go -13400 9800 200 900
+face -13400 8550
+wait 10
+press CROSS 8      # "It's a Magic Mirror."
+wait 100
+press CROSS 8      # SAVE / ENHANCE / EXIT
+wait 80
+press RIGHT 8
+wait 40
+press CROSS 8      # ENHANCE (Raizan selected)
+wait 150
+press DOWN 8
+wait 30
+press CROSS 450    # Shiden to level 2
+wait 100
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press DOWN 8
+wait 30
+press CROSS 450    # Shippuu
+wait 100
+press DOWN 8
+wait 30
+press CROSS 450    # Arashi
+wait 100
+press TRIANGLE 8
+wait 100
+press TRIANGLE 8
+wait 100
+play
+door 5 0
+play
+door 5 2
+play
+press START 6
+wait 120
+press DOWN 6
+wait 60
+press CROSS 6      # Shiden / Raizan
+wait 90
+press CROSS 6      # YES
+wait 90
+press TRIANGLE 6
+wait 90
+press TRIANGLE 6
+wait 60
+play
+go -12500 13800 300 -900   # room 2's mesh holds no walls: by the west side
+go -14200 12000 300 -900
+go -14200 7000 300 -900
+fight -2000
+play
+teleport -12400 5600
+wait 10
+examine 2
+play 6000
+save build/story/s503.state
