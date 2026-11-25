@@ -16,6 +16,7 @@ set(ONI_GAME_DIR "${CMAKE_SOURCE_DIR}/game" CACHE PATH "User-owned extracted dis
 set(ONI_ISO "${CMAKE_SOURCE_DIR}/Onimusha - Warlords (USA).iso" CACHE FILEPATH "User-owned NTSC-U disc image")
 set(BOZO_ENGINE_DIR "${CMAKE_SOURCE_DIR}/BozoEngine" CACHE PATH "Pinned native engine source")
 option(ONI_WINDOW "Build the SDL3 native game window (onimusha) next to oni-headless" ON)
+option(ONI_GUI_SUBSYSTEM "onimusha.exe without a console window (the release's build, tools/oni_build.py)" OFF)
 set(BOZO_APP ${ONI_WINDOW} CACHE BOOL "" FORCE)
 set(BOZO_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 # FFmpeg: the backgrounds' IPU decoder (runtime/oni_bg.cpp) and the movies' MPEG-2 (BozoEngine's libmpeg). The minimal
@@ -189,6 +190,13 @@ if(ONI_WINDOW)
     set_source_files_properties(runtime/app/onimusha.rc PROPERTIES OBJECT_DEPENDS
       "${CMAKE_SOURCE_DIR}/runtime/app/onimusha.ico;${CMAKE_SOURCE_DIR}/runtime/app/onimusha.manifest")
     target_sources(onimusha PRIVATE runtime/app/onimusha.rc)
+    if(ONI_GUI_SUBSYSTEM)
+      # The release's build (tools/oni_build.py): no console, and static, so the game folder needs no compiler DLL.
+      set_target_properties(onimusha PROPERTIES WIN32_EXECUTABLE TRUE)
+      if(MINGW)
+        target_link_options(onimusha PRIVATE -static)
+      endif()
+    endif()
   endif()
   target_compile_definitions(onimusha PRIVATE ONI_WITH_WINDOW ONI_DEFAULT_ELF="${oni_prep}/oni.elf" ONI_DEFAULT_ISO="${ONI_ISO}")
   if(MINGW)
