@@ -1360,6 +1360,13 @@ namespace oni::bot
                 fail("pots: pots still standing");
             }
         }
+        else if (s.op == "poke")
+        {
+            // poke ADDR BYTE: one byte of the game's RAM set (hex address): a test's starting condition (a counter).
+            const uint32_t at = static_cast<uint32_t>(std::strtoul(s.args.empty() ? "0" : s.args[0].c_str(), nullptr, 16)) & 0x1ffffffu;
+            ram[at] = static_cast<uint8_t>(arg(s, 1, 0));
+            next();
+        }
         else if (s.op == "cheat")
         {
             // cheat NAME on|off: health, magic, souls, items, kills (the Cheats tab's switches).

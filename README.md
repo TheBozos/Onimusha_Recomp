@@ -65,6 +65,7 @@ the game, scene by scene.
 | The Magic Mirror: an in-game save to the memory card, loaded back from the title's LOAD GAME; ENHANCE (souls into swords and orbs) | ✅ |
 | After the credits: the GAME CLEAR DATA save and its unlocks, Special Feature (the Special Trailer, the Oni Spirits mini-game) and Samanosuke EXTRA (the panda costume) | ✅ |
 | Oni Spirits played through its twelve holy grounds by the bot, its farewell scene and RESULT | ✅ |
+| Movie captions (the epilogue's narration), the OPTION menu, Easy mode after four game overs | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -74,6 +75,17 @@ what remains open.
 
 ## Screenshots
 
+**2026-11-25.** The movies' captions: the epilogue's narration (`LINKS04`, `LINKS05`) is captioned by the game from a
+sheet it keeps in video memory, which the port had not drawn; now it shows at each line's picture, in every language
+setting. Also checked: the OPTION menu (every page), Easy mode (offered after the fourth game over) and the sound
+under load, measured on the real device: no underruns in the late fights, a crackle or two at Boss 3's doorway.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-25-bozo-movie-caption.png" width="270" alt="The epilogue movie captioned: The demons' ambitions were shattered by the hand of Samanosuke and his friends.">
+  <img src="docs/screenshots/2026-11-25-bozo-options.png" width="270" alt="The Options page: Language, Subtitle, Sound Settings, volumes, Vibration, Brightness, Screen Adjust, Controls">
+  <img src="docs/screenshots/2026-11-25-bozo-easy-mode.png" width="270" alt="The title's NEW GAME offering Easy Mode and Normal Mode">
+</p>
+
 **2026-11-25.** Oni Spirits played through, all twelve holy grounds, by the bot from a boot with the clear data on
 the card (`scripts/story/oni_spirits/run.sh`): on each ground the pots broken until its quota of spirits is
 released (20 to 36; the time is Samanosuke's draining life), the enemies and the blue spirit that race for the pots,
@@ -82,7 +94,7 @@ the spirits' farewell after the twelfth ("You have truly become the Onimusha!") 
 <p align="center">
   <img src="docs/screenshots/2026-11-25-bozo-oni-spirits-ground3.png" width="270" alt="Oni Spirits' third ground: Samanosuke among the pots, the blue spirit diving on them, RELEASE 26">
   <img src="docs/screenshots/2026-11-25-bozo-oni-spirits-ending.png" width="270" alt="The spirits' farewell: Samanosuke in a pillar of violet light, subtitle: You have truly become the Onimusha!">
-  <img src="docs/screenshots/2026-11-25-bozo-oni-spirits-result.png" width="270" alt="Oni Spirits' RESULT: stage 12, time 07:17:01">
+  <img src="docs/screenshots/2026-11-25-bozo-oni-spirits-result.png" width="270" alt="Oni Spirits' RESULT: stage 12, time 09:14:41, 28470 SPIRITS Pts.">
 </p>
 
 **2026-11-25.** The window under load: the late fights (the ogre boss, Boss 3, the Queen Bee, Marcellus, the King's

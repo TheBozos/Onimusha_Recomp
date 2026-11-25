@@ -23,6 +23,7 @@
 //                     enemy id ID), until the holy ground's quota is released or no pot stands (N frames in play,
 //                     7200; negative: then go on)
 //   cheat NAME on|off health, magic, souls, items or kills switched (the Cheats tab's)
+//   poke ADDR BYTE    one byte of RAM (hex address) set: a test's starting condition
 //   piece X Z [N]     walk straight onto (X, Z) until the control passes to the other character (stage 5 room 20)
 //   engage on|off     enemies on the way fought (on, the default) or passed by
 //   learn on|off      where the way is held, an obstacle is learnt and the way planned around it (off by default)
