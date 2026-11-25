@@ -63,6 +63,7 @@ the game, scene by scene.
 | The whole story, played headless by a scripted bot (`ONI_BOT`) from the forest cave to Fortinbras, the ending and the RESULT screen: 68 legs, every boss, puzzle and scene of the main route | ✅ |
 | The optional Dark Realm (twenty floors), the Bishamon Sword, the Great Armor and all twenty Fluorites, played as a branch of the bot's run from the start to the end of the game | ✅ |
 | The Magic Mirror: an in-game save to the memory card, loaded back from the title's LOAD GAME; ENHANCE (souls into swords and orbs) | ✅ |
+| After the credits: the GAME CLEAR DATA save and its unlocks, Special Feature (the Special Trailer, the Oni Spirits mini-game) and Samanosuke EXTRA (the panda costume) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -71,6 +72,17 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-25.** What finishing earns, checked from the bot's full run (twenty Fluorites): after the RESULT screen the
+game names three unlocks and saves them as GAME CLEAR DATA on the card. After a reboot the title gains Special
+Feature, with the Special Trailer (the Onimusha 2 teaser) and the Oni Spirits mini-game (its scene, the twelve holy
+grounds, the Oni pots), and NEW GAME offers Samanosuke EXTRA: the panda costume, in the events and in play.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-25-bozo-unlocks-result.png" width="270" alt="The RESULT screen: If you save this game data, the Oni Spirits game will be available">
+  <img src="docs/screenshots/2026-11-25-bozo-oni-spirits.png" width="270" alt="Oni Spirits: Samanosuke among the Oni pots, purple spirits rising, RELEASE 18">
+  <img src="docs/screenshots/2026-11-25-bozo-samanosuke-extra.png" width="270" alt="Samanosuke Extra: Samanosuke in the panda costume beside Kaede, subtitle: The western path or the northern passage.">
+</p>
 
 **2026-11-25.** Saving and loading checked end to end: the Magic Mirror's SAVE writes the game to the memory card on
 disk (a new file on an empty card, its place, play time and picture), and after a fresh boot the title's LOAD GAME

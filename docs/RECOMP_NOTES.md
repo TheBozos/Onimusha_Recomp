@@ -410,6 +410,19 @@ word (word 8, cleared and set again at every door) and a room counter. Legs 50 (
 from the loaded game end as from the bot's own states. (Leg 55 first stopped there: in stage 2 room 7 the archer on
 the wall knocked the bot into the north-west corner, where its way to the door to room 5 did not recover; with the
 loaded game's other timing, 90 frames later failed and 30 passed. A teleport to the door's front now, both copies.)
+
+What finishing earns (2026-11-25), from the branch's end state (`b_s_end`, twenty Fluorites) with a test card: after
+the RESULT screen's tally, three lines ("If you save this game data, the "Special Trailer" / "Oni Spirits" game /
+"Samanosuke Extra" will be available.", CROSS each), "Will you save the game data?" (YES is LEFT), GAME CLEAR DATA
+on slot 1 ("OK to overwrite the data?": the card's system part, in the same `BASLUS-20018` file), "Save completed.".
+`Title_check` reads it at boot (`sys_load`). The title then has NEW GAME / LOAD GAME / Special Feature / OPTION:
+- Special Feature: Special Trailer (`LINKS08E.PSS`, the Onimusha 2 teaser, "10 years have passed...": 2100 field
+  pictures, all shown) and Oni Spirits (its menu START / RESULT / RETURN, the scene with subtitles, the stage card
+  "RELEASE ONI 28, BREAK VASES 20", play among the Oni pots with the RELEASE count; life drains on the holy ground,
+  "Died" and its RESULT with a save prompt).
+- NEW GAME: "Samanosuke NORMAL / EXTRA"; EXTRA is the panda costume (`pl_panda_head`, `pl_kopanda_*`), in the
+  opening events and in play.
+All native, nothing to fix. (The bot's `end` step stops a window run: a long `wait` keeps a capture going.)
 - A save state brought its memory cards back without their folder, so a game saved after loading a state stayed in
   memory and was lost at exit: BozoEngine #141 (1da19c9) reads the cards again from their folders when a state is
   loaded with one; the engine is at b7298d5 (master) for it. Without a folder (tests) the state's cards are kept.
