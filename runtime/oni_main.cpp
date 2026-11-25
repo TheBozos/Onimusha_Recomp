@@ -102,11 +102,11 @@ int main(int argc, char **argv)
     options.realTime = window;
 #ifdef ONI_WITH_WINDOW
     // The memory cards of a played game live in the user folder (%APPDATA%\Onimusha_Recomp: mc0, mc1), so a save
-    // outlives the session without --card-dir. Headless and scripted runs keep fresh cards in memory unless given
-    // --card-dir, so a test never touches the player's saves; ONI_MEMORY_CARDS=1 keeps them in memory for a played
-    // game too.
-    if (window && options.padScript.empty() && options.cardDir.empty() && !std::getenv("ONI_MEMORY_CARDS") &&
-        !bozo::app::userDirectory().empty())
+    // outlives the session without --card-dir. Headless and scripted runs (a pad script, the story bot, a hidden
+    // window's captures) keep fresh cards in memory unless given --card-dir, so a test never touches the player's
+    // saves; ONI_MEMORY_CARDS=1 keeps them in memory for a played game too.
+    if (window && !windowOptions.hidden && options.padScript.empty() && !std::getenv("ONI_BOT") && options.cardDir.empty() &&
+        !std::getenv("ONI_MEMORY_CARDS") && !bozo::app::userDirectory().empty())
     {
         options.cardDir = bozo::app::userDirectory().string();
         std::printf("[oni] memory cards in %s\n", options.cardDir.c_str());
