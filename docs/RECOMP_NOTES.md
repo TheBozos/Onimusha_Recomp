@@ -159,10 +159,15 @@ field buffers as the renderer's backdrop. The `IPU_CTRL` resets in `Cut_set` / `
   0x28-byte sprite record of title.c's `sprite` / `item_sprite`, TEX0 pointer +0x24), 5 a textured quad (+0x50), 6 a 3D
   model (`Md_draw_entry`), 7 another quad layout (+0x70). Coordinates: x 0..639, y 0..447 of the frame (`Ot_draw`
   halves y: the GS draws 640 x 224 fields at XYOFFSET (1728, 1936)).
-  Natively the same walk turns each primitive into a frame draw in screen space (identity matrix, no depth, table
-  order over the background): the frame pass has the GS blend equation, the alpha test and point sampling (the
-  overlay pass reduces them to plain blends). The draw environment's `TEST_2` (alpha test: transparent texels are not
-  drawn) is not changed by `Ot_draw`: textured draws test alpha > 0, which keeps the menu's frame under its items.
+  Natively the same walk turns each primitive into a frame draw in screen space (identity matrix, table order over
+  the background): the frame pass has the GS blend equation, the alpha test and point sampling (the overlay pass
+  reduces them to plain blends). `Ot_draw` starts by setting `TEST_2` to 0x7000d: alpha test GREATER 0 (transparent
+  texels are not drawn, which keeps the menu's frame under its items) and the depth test, ZTST GREATER, against the
+  frame's Z buffer; `ZBUF_2` is written by opaque primitives and not by blended ones. Each vertex's Z is in the
+  primitive (layout 2 +0x10 per 12 bytes, layouts 3 and 5 +0x14 per 16 bytes, the sprite +0x14 and +0x20), so the
+  native draws carry it and test it too (`ONI_2D_DEPTH=0` turns that off, a diagnostic). The 3D effects queued in
+  the table are cut by the room's depth that way (Boss 3's lock wall below), and the Magic Mirror's ENHANCE page
+  hides the Bullet row before the matchlock and shows the souls' count (both were wrong without it).
 - **Pit_trans** `0x1af6f0`: the sprites `Pit_prim_entry(prim, priority)` queues (the fades: `fade.c`'s black sprite
   whose alpha `fade_in00` and friends animate; pointers at `0x40d690`, count `0x214604`), priorities 0-7, the sprite
   layout, offset by the origin at `0x28e420`. Its fixed-alpha blend scales by the destination's alpha (ALPHA C = Ad).
@@ -583,10 +588,13 @@ offers the Dark Realm (optional, declined: "Shall we go?" opens on YES), and Shi
   is behind); `engage off|on` (enemies on the way not fought: room 39's hanging flesh cannot die); `door S R enter`
   ends at the room's entry, leaving an event's question to the next steps (the door step otherwise presses CROSS on
   messages, which took the Dark Realm's YES). `ONI_DRAW_ORDER=2` lists each draw's vertices too.
-- Open, not known to be a port bug: in Boss 3's room a red cloud (two tiling 8-bit noise textures, additive, on a 2 x 2
-  grid of quads whose vertex alpha falls only from the middle row, 0x26, to the top and bottom rows, 0x09) shows hard
-  left and right edges. The textures tile and the quads have no horizontal falloff, so the GS would draw the same edges
-  unless something else masks them; the game writes no TEX2 or PRMODE here. Needs a comparison with real hardware.
+- Boss 3's red cloud (fixed 2026-11-25): `esp080c_lock_wall` `0x1ce980`, the wall that seals a fight's doorway. Its 3 x
+  3 grid in world space (4000 x 4000 at stage 2 room 42) is projected each frame into four layout-5 quads in the
+  ordering table (attribute 0x05008b5c: a strip in context 2, blended by the texture's alpha), drawn twice with two
+  128 x 128 noise textures (PSMT8, CT32 palettes whose alpha follows the grey) scrolled by `Texmove_entry`; the
+  vertex alpha falls only from the middle row (the effect's +0xcc) to the top and bottom rows (a quarter of it), so the
+  sides are hard by design. On the GS `Ot_draw`'s depth test hides them behind the doorway's rock; the native walk
+  drew without depth, a rectangle over the room. It now tests each vertex's Z (see the ordering table above).
 
 ## The triple orb doors, the Statue of the West (story legs 51-54, 2026-11-24)
 

@@ -72,6 +72,16 @@ what remains open.
 
 ## Screenshots
 
+**2026-11-25.** Boss 3's red cloud explained and fixed: it is the wall that seals a fight's doorway, and on the GS
+the 2D ordering table's draws are depth-tested against the room, so its square sides go behind the doorway's rock.
+The native walk had drawn it without depth (left: before, right: now). The same test hides the Bullet row on the
+Magic Mirror's ENHANCE page until the matchlock is found and shows the souls' count there.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-25-bozo-lock-wall-before.png" width="400" alt="Before: a square of red mist with hard sides over the cave's roots in Boss 3's room">
+  <img src="docs/screenshots/2026-11-25-bozo-lock-wall.png" width="400" alt="Now: the red mist fills only the cave's opening, the roots in front of it">
+</p>
+
 **2026-11-25.** All twenty Fluorites: the branch now runs from the first leg, picking up the seventeen in rooms on
 the way (one in the bell loft above stage 3's scaffold, one under the ogres' siege cart) and the three the Dark Realm
 hands out on random floors; the RESULT screen counts them all.
