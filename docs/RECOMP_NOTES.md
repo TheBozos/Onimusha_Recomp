@@ -774,7 +774,7 @@ that two later runs did not: something else loading the machine; it also took 17
   each transfer (thousands of lines a fight, slow on a console) and drawn them still: `oni::tex::copyLocal` now makes
   the copy between the kept images of the same format (an 8-bit scratch image for 0x1a40, whose kept image is the
   background movie's CT32 canvas). In 300 frames of each of 105 story states, only those rooms move textures this way.
-- BozoEngine's sampling profiler (engine PR #144): F2's Profiler tab, or `PS2X_PROFILE=<from>:<to>[:<file>]` with
+- BozoEngine's sampling profiler (BozoEngine #144, 467ff78): F2's Profiler tab, or `PS2X_PROFILE=<from>:<to>[:<file>]` with
   the window build (`--hidden` for scripted runs). Threads "game" and "window" from the engine, "vu1" from
   `oni_vu1.cpp`'s worker. The Dark Realm's arrival: the game thread mostly waiting
   (`ntdll.dll!ZwWaitForSingleObject`, the frame pacer and the VU1 worker), then the VU1 programs (`oni_vu1_std_nc`,
