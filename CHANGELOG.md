@@ -13,8 +13,8 @@ The first release: Onimusha: Warlords (USA, SLUS-20018) as a native PC game, bui
 - The pre-rendered rooms and their animated backgrounds, the movies with their sound and the epilogue's captions, the characters drawn by the game's own microprograms with the rooms' depth and their shadows, the effects (the magic, the souls, the lock walls' mist, the Demon Gate's energy).
 - The game's own saves on memory cards kept in `%APPDATA%\Onimusha_Recomp`, loaded from the title's LOAD GAME; the GAME CLEAR DATA and its unlocks; Easy mode after four game overs, as on the console.
 - PC options in the settings window (F2): widescreen (a 16:9 zoom: the rooms are 4:3 pictures, so the top and bottom are cut; the menus stay 4:3), render scale, anti-aliasing, texture smoothing and upscaling, frame rates above 60, window size and full screen, rebindable controls and gamepads, save states (F5 / F7), screenshots (F12), fast forward (`).
-- Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills, a room warp.
-- A sampling profiler (F2 → Profiler), for reports of slow spots.
+- Cheats (F2, Cheats): infinite health, magic, souls and items, one-hit kills, a room warp.
+- A sampling profiler (F2, Profiler), for reports of slow spots.
 
 ### Known limits
 - The whole game was played through by a scripted test player (with cheats, and teleports where it could not find its way); a human playthrough with a controller is still to come.
