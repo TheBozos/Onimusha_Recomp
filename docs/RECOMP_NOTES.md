@@ -396,8 +396,23 @@ One-hit kills (the Cheats tab): an active enemy's life (the enemies are G's list
 Without a card folder the engine keeps the memory cards in memory: a game saved in the window was lost at its end. The
 window now puts them in the user folder (`bozo::app::userDirectory()`: `%APPDATA%\Onimusha_Recomp\mc0`, `mc1`), as
 Dark Cloud and The Third Age do; headless and scripted runs keep fresh cards in memory (a test never touches the
-player's saves), `--card-dir` chooses, `ONI_MEMORY_CARDS=1` keeps them in memory. Not yet exercised by an in-game
-save (a save point is still to be reached).
+player's saves), `--card-dir` chooses, `ONI_MEMORY_CARDS=1` keeps them in memory. A hidden window (captures) and
+the story bot keep them in memory too, unless given `--card-dir`.
+
+In-game save and load (2026-11-25), checked with the bot and a test card folder (`--card-dir build/story/cards`):
+the Magic Mirror's SAVE in stage 5's Sentry Box (after leg 49) checks the card, picks slot 1 and file 1 ("ERROR: A
+game data for Onimusha could not be found." on an empty card, then "OK to create a file", YES), "Now saving...",
+"Save completed." with the save count, play time, place and its picture. On disk: `mc0/BASLUS-20018/` with the
+save (`BASLUS-20018`, 17184 bytes), `icon.sys` and the three `slime*.ico` models. A fresh boot's main menu then
+opens on LOAD GAME; slot 1 lists the save, "Will you start the game with this data?", YES, and the game resumes
+in the Sentry Box at the mirror. Its items are the same as the saved game's; the flags differ only in a room's own
+word (word 8, cleared and set again at every door) and a room counter. Legs 50 (the rest: ENHANCE) to 58 chained
+from the loaded game end as from the bot's own states. (Leg 55 first stopped there: in stage 2 room 7 the archer on
+the wall knocked the bot into the north-west corner, where its way to the door to room 5 did not recover; with the
+loaded game's other timing, 90 frames later failed and 30 passed. A teleport to the door's front now, both copies.)
+- A save state brought its memory cards back without their folder, so a game saved after loading a state stayed in
+  memory and was lost at exit: BozoEngine #141 (1da19c9) reads the cards again from their folders when a state is
+  loaded with one; the engine is at b7298d5 (master) for it. Without a folder (tests) the state's cards are kept.
 
 Fast forward needs nothing of the port: the window raises the frame pacer's speed while the FastForward binding (`) is
 held, and Onimusha's frames end in that pacer. Checked from room 6 with `PS2X_FAST_FORWARD_AT=6-26`: 3x is ~178

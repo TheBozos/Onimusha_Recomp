@@ -62,7 +62,7 @@ the game, scene by scene.
 | Every door-reachable room loaded and played (116): no crash, no misplaced picture | ✅ |
 | The whole story, played headless by a scripted bot (`ONI_BOT`) from the forest cave to Fortinbras, the ending and the RESULT screen: 68 legs, every boss, puzzle and scene of the main route | ✅ |
 | The optional Dark Realm (twenty floors), the Bishamon Sword, the Great Armor and all twenty Fluorites, played as a branch of the bot's run from the start to the end of the game | ✅ |
-| The Magic Mirror: an in-game save to the memory card, ENHANCE (souls into swords and orbs) | ✅ |
+| The Magic Mirror: an in-game save to the memory card, loaded back from the title's LOAD GAME; ENHANCE (souls into swords and orbs) | ✅ |
 | PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -71,6 +71,16 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-25.** Saving and loading checked end to end: the Magic Mirror's SAVE writes the game to the memory card on
+disk (a new file on an empty card, its place, play time and picture), and after a fresh boot the title's LOAD GAME
+lists it and resumes in the same room with the same items; the bot plays on from the loaded game. BozoEngine is
+updated for it: a save made after loading a save state used to stay in memory and be lost at exit.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-25-bozo-save-completed.png" width="400" alt="The SAVE screen: slot 1, save count 1, play time 1:06, The Keep: Sentry Box, Save completed">
+  <img src="docs/screenshots/2026-11-25-bozo-load-game.png" width="400" alt="The LOAD screen after a fresh boot: the same save, Will you start the game with this data?">
+</p>
 
 **2026-11-25.** Boss 3's red cloud explained and fixed: it is the wall that seals a fight's doorway, and on the GS
 the 2D ordering table's draws are depth-tested against the room, so its square sides go behind the doorway's rock.
@@ -356,7 +366,7 @@ The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR -
 | F2 | Settings: controls (rebindable), video (render scale, anti-aliasing, texture upscaling, fast-forward speed), cheats |
 | ` (hold; rebindable) | Fast forward (3x by default; the sound keeps its pace) |
 | F5 / F7 | Save state / load state (ten slots) |
-| Game saves | The memory cards live in `%APPDATA%\Onimusha_Recomp\mc0` and `mc1`: an in-game save outlives the session (`--card-dir DIR` elsewhere; `ONI_MEMORY_CARDS=1` keeps them in memory) |
+| Game saves | The memory cards live in `%APPDATA%\Onimusha_Recomp\mc0` and `mc1`: an in-game save outlives the session, also one made after loading a save state (`--card-dir DIR` elsewhere; `ONI_MEMORY_CARDS=1` keeps them in memory; the story bot and hidden captures keep them in memory unless given `--card-dir`) |
 Diagnostics: `ONI_BG_TRACE=1` (backgrounds), `ONI_2D_TRACE=1..3` (the 2D), `ONI_TEX_TRACE=1` and
 `ONI_TEX_DUMP=<dir>` (textures), `ONI_RENDER_TRACE=1` (frames), `ONI_MOVIE_TRACE=1` (movies),
 `ONI_BGMV_TRACE=1` (animated backgrounds), `ONI_FADE_TRACE=1` (the game's fade and mode), `ONI_PLAYER_TRACE=<n>`
