@@ -4,7 +4,7 @@ All notable changes for players. The format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-11-25
+## [0.1.1] - 2026-11-25
 
 The first release: Onimusha: Warlords (USA, SLUS-20018) as a native PC game, built on your PC from your own disc.
 
