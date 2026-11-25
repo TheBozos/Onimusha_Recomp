@@ -7,6 +7,7 @@
 
 #include "oni_render.h"
 #include "oni_tex.h"
+#include "bozo/app/profiler.h"
 #include "bozo/state.h"
 
 #include <algorithm>
@@ -489,8 +490,9 @@ namespace oni::vu1
             case 0x53: // TRXDIR: host to local starts a transfer
                 gs.image.clear();
                 gs.imaging = (value & 3) == 0;
-                if ((value & 3) == 2)
-                    std::printf("[oni:gif] local->local (%s) bitbltbuf %016llx trxpos %016llx trxreg %016llx\n", g_source,
+                // Local to local: a copy between the kept images (Texmove_entry's texture scrolls).
+                if ((value & 3) == 2 && !oni::tex::copyLocal(gs.bitbltbuf, gs.trxpos, gs.trxreg) && trace())
+                    std::printf("[oni:gif] local->local (%s) bitbltbuf %016llx trxpos %016llx trxreg %016llx not made\n", g_source,
                                 (unsigned long long)gs.bitbltbuf, (unsigned long long)gs.trxpos, (unsigned long long)gs.trxreg);
                 break;
             case 0x4c:
@@ -1000,6 +1002,7 @@ namespace oni::vu1
             void start()
             {
                 std::thread([this] {
+                    bozo::app::profiler::registerThread("vu1"); // (the Profiler tab, PS2X_PROFILE)
                     for (;;)
                     {
                         Job job;
