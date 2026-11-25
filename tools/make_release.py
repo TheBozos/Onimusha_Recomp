@@ -96,6 +96,15 @@ def log(*a):
     print(*a, flush=True)
 
 
+# The changelog and notes are UTF-8 (arrows, accents): printed as such even on a Windows console whose code page cannot
+# show them (the release workflow's runner: cp1252, where a "→" stopped the changelog check).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
+
+
 def sha256_file(path):
     h = hashlib.sha256()
     with open(path, 'rb') as f:
