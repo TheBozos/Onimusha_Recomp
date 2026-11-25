@@ -59,6 +59,7 @@ namespace oni::sprite
         {
             float x, y, u, v;
             uint32_t rgba;
+            uint32_t z = 0; // the GS's Z (XYZ2's upper word)
         };
 
         // A coordinate word (x low, y high) to GS screen units on the 640 x 448 frame.
@@ -79,8 +80,14 @@ namespace oni::sprite
         {
             Material m;
             m.textured = textured;
-            m.depthTest = false;
-            m.depthWrite = false;
+            // Ot_draw's environment: TEST_2 0x7000d (ZTE, ZTST GREATER) against the frame's Z buffer, which ZBUF_2 lets an
+            // opaque primitive write and a blended one not (ZMSK). The 3D effects queued in the table carry their own Z (the
+            // red wall sealing a fight's doorway, esp080c_lock_wall: its sides go behind the room's walls). Pit_trans's
+            // sprites (the fades, the HUD) draw over everything.
+            static const bool depth = [] { const char *e = std::getenv("ONI_2D_DEPTH"); return !(e && *e == '0'); }(); // diagnostic
+            m.depthTest = depth && !g_pit;
+            m.depthGreater = true;
+            m.depthWrite = depth && !g_pit && !(attr & 0x40u);
             // Point sampling: the menus' sprites map texels 1:1 (a filtered edge would bleed the neighbouring row).
             m.nearest = true;
             m.clampU = m.clampV = true;
@@ -122,7 +129,7 @@ namespace oni::sprite
             Vertex v;
             v.x = p.x;
             v.y = p.y;
-            v.z = 0;
+            v.z = static_cast<float>(p.z);
             v.u = tw > 0 ? p.u / tw : 0;
             v.v = th > 0 ? p.v / th : 0;
             v.rgba = p.rgba;
@@ -214,6 +221,7 @@ namespace oni::sprite
                 {
                     p[i].rgba = read32(ram, at + 8 + 12u * i);
                     position(read32(ram, at + 0xc + 12u * i), gs, p[i].x, p[i].y);
+                    p[i].z = read32(ram, at + 0x10 + 12u * i);
                 }
                 emit(attr, p, 2, 0);
                 return;
@@ -226,6 +234,7 @@ namespace oni::sprite
                     p[i].rgba = read32(ram, at + 8 + 16u * i);
                     uv(p[i], read32(ram, at + 0xc + 16u * i));
                     position(read32(ram, at + 0x10 + 16u * i), gs, p[i].x, p[i].y);
+                    p[i].z = read32(ram, at + 0x14 + 16u * i);
                 }
                 const uint32_t texp = read32(ram, at + (layout == 3 ? 0x40 : 0x50));
                 emit(attr, p, n, (attr & 0x10u) && texp ? read64(ram, texp) : 0);
@@ -237,8 +246,10 @@ namespace oni::sprite
                 p[0].rgba = p[1].rgba = rgba;
                 uv(p[0], read32(ram, at + 0xc));
                 position(read32(ram, at + 0x10), gs, p[0].x, p[0].y);
+                p[0].z = read32(ram, at + 0x14);
                 uv(p[1], read32(ram, at + 0x18));
                 position(read32(ram, at + 0x1c), gs, p[1].x, p[1].y);
+                p[1].z = read32(ram, at + 0x20);
                 const uint32_t texp = read32(ram, at + 0x24);
                 if (trace() >= 3)
                     std::printf("[oni:2d] sprite %#x attr %08x rgba %08x uv %g,%g-%g,%g xy %g,%g-%g,%g tex0 %016llx\n", at, attr,
