@@ -106,7 +106,7 @@ list(APPEND oni_sources ${oni_modules_cpp})
 add_custom_target(oni_generate DEPENDS ${oni_sources})
 
 add_library(oni_game STATIC ${oni_sources})
-target_link_libraries(oni_game PUBLIC bozo_runtime_headers)
+target_link_libraries(oni_game PUBLIC bozo_runtime_headers bozo_profiler)
 target_include_directories(oni_game PUBLIC ${oni_gen})
 target_compile_options(oni_game PRIVATE -O1 -w -ffp-contract=off)
 

@@ -10,6 +10,7 @@
 #include "bozo/render/texture.h"
 #include "bozo/state.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -313,6 +314,98 @@ namespace oni::tex
             return;
         }
         keep(p, texels, need);
+    }
+
+    namespace
+    {
+        // Local-to-local destinations that hold another format than the kept image there (block 0x1a40: the
+        // background movie's CT32 canvas, used by Texmove_entry as an 8-bit scratch row): kept apart, by block and format.
+        std::map<uint64_t, Upload> g_scratch;
+
+        // A kept image of block `bp` in format `psm` (a whole upload at (0,0), `bw` wide), the upload's or the scratch's.
+        Upload *image(uint32_t bp, uint32_t bw, uint32_t psm)
+        {
+            auto u = g_uploads.find(bp);
+            if (u != g_uploads.end() && u->second.p.psm == psm && !u->second.p.x && !u->second.p.y && u->second.p.dbw == bw)
+                return &u->second;
+            auto s = g_scratch.find(uint64_t(bp) << 8 | psm);
+            return s == g_scratch.end() ? nullptr : &s->second;
+        }
+
+        uint32_t texel(const Upload &u, uint32_t bpp, uint32_t x, uint32_t y)
+        {
+            const size_t i = static_cast<size_t>(y) * u.p.w + x;
+            switch (bpp)
+            {
+            case 4: return (u.bytes[i / 2] >> ((i & 1) * 4)) & 0xfu;
+            case 8: return u.bytes[i];
+            case 16: { uint16_t v; std::memcpy(&v, &u.bytes[i * 2], 2); return v; }
+            case 24: return u.bytes[i * 3] | u.bytes[i * 3 + 1] << 8 | u.bytes[i * 3 + 2] << 16;
+            default: { uint32_t v; std::memcpy(&v, &u.bytes[i * 4], 4); return v; }
+            }
+        }
+
+        void setTexel(Upload &u, uint32_t bpp, uint32_t x, uint32_t y, uint32_t v)
+        {
+            const size_t i = static_cast<size_t>(y) * u.p.w + x;
+            switch (bpp)
+            {
+            case 4: u.bytes[i / 2] = static_cast<uint8_t>((u.bytes[i / 2] & ~(0xfu << ((i & 1) * 4))) | (v & 0xfu) << ((i & 1) * 4)); break;
+            case 8: u.bytes[i] = static_cast<uint8_t>(v); break;
+            case 16: { const uint16_t h = static_cast<uint16_t>(v); std::memcpy(&u.bytes[i * 2], &h, 2); break; }
+            case 24: u.bytes[i * 3] = v & 0xffu; u.bytes[i * 3 + 1] = (v >> 8) & 0xffu; u.bytes[i * 3 + 2] = (v >> 16) & 0xffu; break;
+            default: std::memcpy(&u.bytes[i * 4], &v, 4); break;
+            }
+        }
+    } // namespace
+
+    bool copyLocal(uint64_t bitbltbuf, uint64_t trxpos, uint64_t trxreg)
+    {
+        std::lock_guard<std::recursive_mutex> lock(g_lock);
+        const uint32_t sbp = static_cast<uint32_t>(bitbltbuf) & 0x3fffu, sbw = static_cast<uint32_t>(bitbltbuf >> 16) & 0x3fu,
+                       spsm = static_cast<uint32_t>(bitbltbuf >> 24) & 0x3fu;
+        const uint32_t dbp = static_cast<uint32_t>(bitbltbuf >> 32) & 0x3fffu, dbw = static_cast<uint32_t>(bitbltbuf >> 48) & 0x3fu,
+                       dpsm = static_cast<uint32_t>(bitbltbuf >> 56) & 0x3fu;
+        const uint32_t sx = static_cast<uint32_t>(trxpos) & 0x7ffu, sy = static_cast<uint32_t>(trxpos >> 16) & 0x7ffu;
+        const uint32_t dx = static_cast<uint32_t>(trxpos >> 32) & 0x7ffu, dy = static_cast<uint32_t>(trxpos >> 48) & 0x7ffu;
+        const uint32_t dir = static_cast<uint32_t>(trxpos >> 59) & 3u;
+        const uint32_t w = static_cast<uint32_t>(trxreg) & 0xfffu, h = static_cast<uint32_t>(trxreg >> 32) & 0xfffu;
+        const uint32_t bpp = bitsPerPixel(spsm);
+        const Upload *src = image(sbp, sbw, spsm);
+        if (!bpp || spsm != dpsm || !w || !h || !src || sx + w > src->p.w || sy + h > src->p.h)
+            return false;
+        Upload *dst = image(dbp, dbw, dpsm);
+        if (!dst)
+        {
+            // A scratch image the width of the buffer, grown to the rows written.
+            Upload &s = g_scratch[uint64_t(dbp) << 8 | dpsm];
+            s.p = Params{dbp, dbw, dpsm, 0, 0, std::max(dbw * 64u, dx + w), 0};
+            dst = &s;
+        }
+        const auto kept = g_uploads.find(dbp);
+        const bool upload = kept != g_uploads.end() && &kept->second == dst;
+        if (dx + w > dst->p.w)
+            return false;
+        if (dst->p.h < dy + h)
+        {
+            if (upload)
+                return false; // (an upload is not grown; a scratch image is)
+            dst->p.h = dy + h;
+            dst->bytes.resize((static_cast<size_t>(dst->p.w) * dst->p.h * bpp + 7) / 8, 0);
+        }
+        // Row by row in the transfer's direction (TRXPOS DIR: bit 1 bottom to top, bit 0 right to left), as the GS
+        // moves it: a buffer copied onto itself (rows 2.. up by 2) reads each row before it is overwritten.
+        for (uint32_t r = 0; r < h; ++r)
+        {
+            const uint32_t y = (dir & 2u) ? h - 1u - r : r;
+            for (uint32_t c = 0; c < w; ++c)
+            {
+                const uint32_t x = (dir & 1u) ? w - 1u - c : c;
+                setTexel(*dst, bpp, dx + x, dy + y, texel(*src, bpp, sx + x, sy + y));
+            }
+        }
+        dst->generation = ++g_generation;
+        return true;
     }
 
     void state(bozo::state::Archive &a)

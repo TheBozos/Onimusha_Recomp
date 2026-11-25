@@ -749,9 +749,35 @@ its copies of the early legs pick them up on the way.
   (-7600, 13000), where the Ocarina is taken too. Leg 68 presses there after every floor; an empty spot does
   nothing.
 
+## The window under load, texture scrolls, the profiler (2026-11-25)
 
+Frame time in a hidden window (paced, rendered offscreen; no sound device, so underruns are not counted: a frame over
+16.7 ms is what crackled before), the bot playing with the cheats, `PS2X_FRAME_STATS=1` (`build/story/perf.sh`):
 
+| Scene (leg) | Seconds | Work per frame, average | Worst 2 s window, p95 | Frames over 16.7 ms |
+| --- | --- | --- | --- | --- |
+| Boss 3 (48) | 66 | 4.1 ms | 15.0 ms | 7 / 3921 |
+| The ogre boss (10) | 112 | 5.6 ms | 13.0 ms | 6 / 5970 |
+| The Queen Bee (64) | 98 | 5.0 ms | 12.8 ms | 1 / 5911 |
+| Marcellus, the Demon Realm (65) | 98 | 3.6 ms | 7.3 ms | 6 / 5898 |
+| The King's Chamber (66) | 98 | 4.5 ms | 9.3 ms | 5 / 5895 |
+| Fortinbras (67) | 98 | 3.0 ms | 8.3 ms | 7 / 5908 |
+| The Dark Realm's first floors (68) | 148 | 4.5 ms | 12.0 ms | 1-3 / 8925 |
 
+Steady 60 fps; the frames over are single spikes at room loads. (A first Dark Realm run showed 35-45 fps stretches
+that two later runs did not: something else loading the machine; it also took 172 s for the same frames.)
 
-
+- Texture scrolls: `Texmove_entry` 0x197240 moves a texture's rows with GS local-to-local transfers (TRXDIR 2): the
+  first rows saved to block 0x1a40, the rest moved up, the saved rows put back at the bottom; one or two rows a frame.
+  The lock walls' two noise layers (`esp080c_lock_wall`, 8-bit 128 x 128: stage 2 rooms 39 and 42, stage 5 room 30)
+  and the Demon Gate's energy (stage 4 room 0, 256 wide, 56 rows a move) scroll that way. The port had only printed
+  each transfer (thousands of lines a fight, slow on a console) and drawn them still: `oni::tex::copyLocal` now makes
+  the copy between the kept images of the same format (an 8-bit scratch image for 0x1a40, whose kept image is the
+  background movie's CT32 canvas). In 300 frames of each of 105 story states, only those rooms move textures this way.
+- BozoEngine's sampling profiler (engine PR #144): F2's Profiler tab, or `PS2X_PROFILE=<from>:<to>[:<file>]` with
+  the window build (`--hidden` for scripted runs). Threads "game" and "window" from the engine, "vu1" from
+  `oni_vu1.cpp`'s worker. The Dark Realm's arrival: the game thread mostly waiting
+  (`ntdll.dll!ZwWaitForSingleObject`, the frame pacer and the VU1 worker), then the VU1 programs (`oni_vu1_std_nc`,
+  `oni_vu1_std_cl`), the background movies (`decodeIpuMovie`, `mpeg2_decode_block_intra`), the game's code
+  (`body_0x...`).
 

@@ -73,6 +73,12 @@ what remains open.
 
 ## Screenshots
 
+**2026-11-25.** The window under load: the late fights (the ogre boss, Boss 3, the Queen Bee, Marcellus, the King's
+Chamber, Fortinbras) and the Dark Realm's floors hold 60 frames a second with 3 to 6 ms of work a frame; the frames
+over budget are single spikes at room loads. On the way, the lock walls' mist and the Demon Gate's energy move again
+(the game scrolls them with GS copies inside video memory, which the port had dropped), and BozoEngine gained a
+sampling profiler in the settings window (F2, Profiler) that names the game's own functions.
+
 **2026-11-25.** What finishing earns, checked from the bot's full run (twenty Fluorites): after the RESULT screen the
 game names three unlocks and saves them as GAME CLEAR DATA on the card. After a reboot the title gains Special
 Feature, with the Special Trailer (the Onimusha 2 teaser) and the Oni Spirits mini-game (its scene, the twelve holy
@@ -375,7 +381,7 @@ The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR -
 
 | In the window | |
 |---|---|
-| F2 | Settings: controls (rebindable), video (render scale, anti-aliasing, texture upscaling, fast-forward speed), cheats |
+| F2 | Settings: controls (rebindable), video (render scale, anti-aliasing, texture upscaling, fast-forward speed), cheats, profiler (where each thread's time goes; a report saved to `%APPDATA%\Onimusha_Recomp\profiles`) |
 | ` (hold; rebindable) | Fast forward (3x by default; the sound keeps its pace) |
 | F5 / F7 | Save state / load state (ten slots) |
 | Game saves | The memory cards live in `%APPDATA%\Onimusha_Recomp\mc0` and `mc1`: an in-game save outlives the session, also one made after loading a save state (`--card-dir DIR` elsewhere; `ONI_MEMORY_CARDS=1` keeps them in memory; the story bot and hidden captures keep them in memory unless given `--card-dir`) |
