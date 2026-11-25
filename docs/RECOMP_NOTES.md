@@ -833,8 +833,9 @@ below 5). Stage 4 room 7, twelve grounds (G+0x93f9 = 0x287229, 0 to 11):
 | The Dark Realm's floors (68) | 150 | 0, 0 (163 once) | 6.9 ms |
 
   The two runs with many were the machine busy (a 43 fps stretch at the ending movie in one run, none in two
-  others). Boss 3's few underruns repeat: at the doorway into room 42 (stage 2 room 44's cut 2 to room 42's cut
-  0, frames ~244560 and ~245040), a room load whose frame runs long (58 fps for two seconds): a crackle or two there.
+  others). Boss 3's few underruns were the test's own: leg 48 ends with the bot's `save`, an 84 MB save state written
+  on the game's thread (frame ~247906); without that step, 0 underruns and 60 fps in two runs. (A player's F5 save
+  state can crackle the same way.)
 - OPTION (from the title, and the pause menu's): Language (voice), Subtitle, Subtit. Display, Sound Settings,
   B.G.M. and S.E. volume, Vibration, Brightness (the monitor bars), Screen Adjust (moves the GS display; the
   window keeps the picture centred), Controls (the pad's chart), BACK, DEFAULT: all open and draw.
@@ -846,4 +847,21 @@ below 5). Stage 4 room 7, twelve grounds (G+0x93f9 = 0x287229, 0 to 11):
   `Onisol_seika_disp` reads it; the bonus spirits count more). `3_grounds.txt` now holds CIRCLE five seconds after
   each quota: from scratch all twelve grounds again (ground 9 at its third try), the RESULT at 09:14:41 with 28470
   SPIRITS Pts.
+
+## PC options: the Video tab applied, widescreen (2026-11-25)
+
+- The window never set `WindowOptions::videoSettings`: the F2 Video tab drew its choices and none was applied (only
+  `PS2X_ANTI_ALIASING` read). Now `video::loadAtStartup` (video.ini in the user folder, the environment over it) as
+  Dark Cloud's: render scale (supersampling, then filtered to the window), anti-aliasing, texture smoothing and
+  upscaling, the frame rate (above 60 interpolated), the window's size and mode, the texture pack. A hidden window
+  reads no file (`PS2X_VIDEO_CONFIG` pointed at a missing one): its captures stay the environment's alone. Checked in
+  Boss 3's room and the castle gate: render scale 2, MSAA 8x, 16x smoothing and 4x upscaling each change the
+  characters' edges and textures (the pre-rendered rooms are pictures of their own resolution).
+- Widescreen (`oni_display.cpp`, the F2 Game tab, `onimusha.ini`, `ONI_WIDESCREEN`): the rooms cannot show more at
+  the sides, so the picture is zoomed to 16:9 (BozoEngine `setPictureCrop`, #149): its width fills the window, an
+  eighth cut at the top and at the bottom. On in play and at the doors (G+0x44b0 2 or 3: the events too) and in the
+  movies (640 x 336-360: their bars go); off in the menus (mode 8, the title, the saves: their art spans the frame,
+  pillarboxed 4:3). The 2D in screen units (Ot_draw's primitives without GS coordinates, Pit_trans's HUD) is drawn
+  at 3/4 around the frame's centre, inside the band; what spans the frame's whole width (fades, full-screen pictures,
+  the events' cinema bars, which then fall outside the band) as it is. The default window is 1280 x 720 then.
 

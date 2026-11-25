@@ -10,7 +10,7 @@ Built on [BozoEngine](https://github.com/TheBozos/BozoEngine), The Bozos' own to
 ![Platform](https://img.shields.io/badge/platform-Windows%20(Linux%20later)-1b8cff)
 ![Compiler](https://img.shields.io/badge/compiler-GCC%20%7C%20Clang-1b8cff)
 ![Based on](https://img.shields.io/badge/based%20on-BozoEngine-17a35b)
-![Status](https://img.shields.io/badge/status-bring--up-d01f3c)
+![Status](https://img.shields.io/badge/status-playable%20start%20to%20finish-17a35b)
 
 </div>
 
@@ -25,18 +25,14 @@ Built on [BozoEngine](https://github.com/TheBozos/BozoEngine), The Bozos' own to
 
 ## Status
 
-**Bring-up: from the boot to the first room in play, characters included, natively in a window, at 60 frames a second.**
-The executable and its 98 code overlays are recompiled; Capcom's sound driver and Sony's synthesizer run as statically
-compiled native code (the title music plays); the pre-rendered backgrounds are decoded from the disc's IPU streams and
-the 2D (logos' fades, "PRESS START BUTTON", the menu and its frame) is drawn from the game's own sprites and textures.
-The movies (the attract sequence, New Game's intro and letter) play with their sound through BozoEngine's native
-libmpeg, and START skips them. New Game reaches the first room: its opening event plays with its voiced dialogue and
-subtitles over the pre-rendered cuts, then the game hands over with the HUD. The characters are drawn: the game's own
-VU1 microprograms, translated to C++, run on the models' VIF1 chains and their GIF packets become the frame's draws,
-with the room's own depth (the cut's Z buffer) so the scenery stands in front of them, and their shadow volumes cast on
-the pre-rendered ground; the animated backgrounds (the rooms' IPU movies) play in their place. Save states work, the
-port's own state included; the game's own effect chains (dust, glints, the motion blur) are drawn. Next: the rest of
-the game, scene by scene.
+**Playable from start to finish, natively in a window, at 60 frames a second.** The executable and its 98 code overlays
+are recompiled; Capcom's sound driver and Sony's synthesizer run as statically compiled native code; the pre-rendered
+rooms, their animated backgrounds and the movies (with their captions) are decoded natively; the characters are drawn
+by the game's own VU1 microprograms translated to C++, with the rooms' depth and their shadows. The whole story has
+been played through by a scripted bot, with the optional Dark Realm, every Fluorite, the post-game unlocks and Oni
+Spirits' twelve holy grounds; saving and loading go through the game's own memory-card menus. PC options: widescreen
+(a 16:9 zoom), render scale, anti-aliasing, texture smoothing and upscaling, higher frame rates. Next: Linux, and a
+human playthrough's feedback.
 
 | Milestone on BozoEngine | |
 |---|:---:|
@@ -55,7 +51,7 @@ the game, scene by scene.
 | Native 3D models: the 15 VU1 microprograms translated to C++, the models' VIF1 chains run natively, their GIF packets drawn (Samanosuke, Kaede, the soldiers) | ✅ |
 | Shadows (the shadow volumes counted in an off-screen buffer, then darkening the frame), depth against the pre-rendered rooms (the cut's Z buffer) | ✅ |
 | The game playable: the first room drawn and controllable, its fight, the next room's event | ✅ |
-| The rest of the game, room by room (so far: the gauntlet's event, rooms 1, 2, 3 and 6: the gate, the storehouse, the soldiers, the forest road and its cave) | 🔧 |
+| The rest of the game, room by room: every stage, boss, puzzle and event through to the ending (the bot's run below) | ✅ |
 | Save states (the port's own state included: the sound modules' IOP, the textures, VU1) | ✅ |
 | Memory-card saves on disk (the user folder), fast forward | ✅ |
 | Cheats (F2 → Cheats): infinite health, magic, souls and items, one-hit kills; a room warp to the 116 rooms a door leads into | ✅ |
@@ -66,7 +62,8 @@ the game, scene by scene.
 | After the credits: the GAME CLEAR DATA save and its unlocks, Special Feature (the Special Trailer, the Oni Spirits mini-game) and Samanosuke EXTRA (the panda costume) | ✅ |
 | Oni Spirits played through its twelve holy grounds by the bot, its farewell scene and RESULT | ✅ |
 | Movie captions (the epilogue's narration), the OPTION menu, Easy mode after four game overs | ✅ |
-| PC options: widescreen, render scale, anti-aliasing, frame interpolation, more cheats | ⏳ |
+| PC options: widescreen (a 16:9 zoom: the rooms are 4:3 pictures), render scale, anti-aliasing, texture smoothing and upscaling, frame rate above 60 (interpolated), window size and mode, saved in the user folder | ✅ |
+| Linux build (BozoEngine and its CI build on Linux; the port's own runtime is untried there) | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
 
@@ -74,6 +71,18 @@ the game, scene by scene.
 what remains open.
 
 ## Screenshots
+
+**2026-11-25.** PC options: F2's Video tab now applies (the port had never turned the player's video settings on, so
+the render scale, texture smoothing and upscaling and the window's size and mode did nothing), and a new Game tab has
+widescreen. The rooms are pre-rendered 4:3 pictures that cannot show more at the sides, so widescreen zooms the
+picture to 16:9 in play, in the events and in the movies (their bars go), with the HUD and the subtitles drawn a
+little smaller to stay in view; the menus stay 4:3. Also: Boss 3's suspected sound hitch was the test bot writing a
+save state, not the game.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-25-bozo-widescreen-gate.png" width="400" alt="Widescreen 16:9: the castle gate at night, Samanosuke between two soldiers, the HUD in the corner">
+  <img src="docs/screenshots/2026-11-25-bozo-widescreen-event.png" width="400" alt="Widescreen 16:9: the opening event, Samanosuke and a guard, subtitle: The western path or the northern passage.">
+</p>
 
 **2026-11-25.** The movies' captions: the epilogue's narration (`LINKS04`, `LINKS05`) is captioned by the game from a
 sheet it keeps in video memory, which the port had not drawn; now it shows at each line's picture, in every language
@@ -345,8 +354,8 @@ backgrounds decoded natively, the logo's fade drawn from the game's fade sprite.
 ## Goal
 
 A fully playable *Onimusha: Warlords* as a native PC program, from the opening to the ending, drawing and playing
-sound directly from the game's data. Accuracy and complete gameplay coverage come first; Linux, widescreen and
-additional presentation options follow.
+sound directly from the game's data. Accuracy and complete gameplay coverage come first (done: the whole game plays);
+presentation options (widescreen, render scale, anti-aliasing) are in; Linux follows.
 
 ## How it works
 
@@ -405,7 +414,7 @@ The window: `build/bozo/onimusha.exe` (keyboard or gamepad; `--capture-dir DIR -
 
 | In the window | |
 |---|---|
-| F2 | Settings: controls (rebindable), video (render scale, anti-aliasing, texture upscaling, fast-forward speed), cheats, profiler (where each thread's time goes; a report saved to `%APPDATA%\Onimusha_Recomp\profiles`) |
+| F2 | Settings: controls (rebindable), video (render scale, anti-aliasing, texture smoothing and upscaling, frame rate, window size and mode, fast-forward speed: `video.ini`), game (widescreen: `onimusha.ini`), cheats, profiler (where each thread's time goes; a report saved to `%APPDATA%\Onimusha_Recomp\profiles`) |
 | ` (hold; rebindable) | Fast forward (3x by default; the sound keeps its pace) |
 | F5 / F7 | Save state / load state (ten slots) |
 | Game saves | The memory cards live in `%APPDATA%\Onimusha_Recomp\mc0` and `mc1`: an in-game save outlives the session, also one made after loading a save state (`--card-dir DIR` elsewhere; `ONI_MEMORY_CARDS=1` keeps them in memory; the story bot and hidden captures keep them in memory unless given `--card-dir`) |
