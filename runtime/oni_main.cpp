@@ -22,6 +22,11 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#endif
 #ifdef ONI_WITH_WINDOW
 #include "bozo/app/app.h"
 #include "bozo/app/audio_device.h"
@@ -29,6 +34,42 @@
 #include "bozo/app/window.h"
 #include "bozo/app/video_settings.h"
 #endif
+
+namespace
+{
+    // The folder of this executable ("" when unknown).
+    std::filesystem::path executableFolder()
+    {
+#ifdef _WIN32
+        std::wstring buffer(32768, L'\0');
+        const DWORD n = GetModuleFileNameW(nullptr, buffer.data(), static_cast<DWORD>(buffer.size()));
+        if (n == 0 || n >= buffer.size())
+            return {};
+        buffer.resize(n);
+        return std::filesystem::path(buffer).parent_path();
+#else
+        std::error_code ec;
+        const std::filesystem::path self = std::filesystem::read_symlink("/proc/self/exe", ec);
+        return ec ? std::filesystem::path() : self.parent_path();
+#endif
+    }
+
+    // A game folder staged by tools/oni_build.py (the release's launcher builds it on the player's machine) holds what
+    // the build's absolute paths name in a developer's tree: the prepared ELF (oni.elf) and disc.iso beside the
+    // executable. Each is taken from there when present, so the folder can be moved; --elf and --iso still come first.
+    // Only a folder the stage step made (it writes oni_build.json): a developer's build folder is left as it is.
+    void useStagedFolder(bozo::host::FreeOptions &options)
+    {
+        const std::filesystem::path here = executableFolder();
+        std::error_code ec;
+        if (here.empty() || !std::filesystem::exists(here / "oni_build.json", ec))
+            return;
+        if (std::filesystem::exists(here / "oni.elf", ec))
+            options.elf = (here / "oni.elf").string();
+        if (std::filesystem::exists(here / "disc.iso", ec))
+            options.iso = (here / "disc.iso").string();
+    }
+} // namespace
 
 int main(int argc, char **argv)
 {
@@ -45,6 +86,7 @@ int main(int argc, char **argv)
 #endif
     options.elf = ONI_DEFAULT_ELF;
     options.iso = ONI_DEFAULT_ISO;
+    useStagedFolder(options); // (a release's game folder: oni.elf and disc.iso beside the executable)
     options.frames = window ? 0 : 600;
     options.printGameOutput = true;
     // CpEEInit_RpcClient busy-waits (CpEEWait, no syscall) for Capcom's driver to register its RPC servers before

@@ -23,6 +23,23 @@ Built on [BozoEngine](https://github.com/TheBozos/BozoEngine), The Bozos' own to
 > |---|---|
 > | `SLUS_200.18` | `21166f0c7ec1ee2e6dfb87e81af242efaf521dc7` |
 
+## For players (Windows)
+
+Download **`Onimusha_Recomp-<version>-bozo.zip`** from [Releases](https://github.com/TheBozos/Onimusha_Recomp/releases/latest),
+check its `.sha256`, and extract it to a writable folder such as `D:\Games\Onimusha_Recomp_Bozo` (not Program Files).
+Open **Onimusha Launcher.exe**, select your own USA disc image (`.iso` or `.bin`/`.cue`), click **Prepare the game**,
+then **Play**. Preparation runs locally with the bundled offline tools (a compiler, CMake, Python, FFmpeg); no developer
+software is needed, and it can be cancelled and resumed. The launcher (English and French) follows the other Bozos
+ports' layout.
+
+You need Windows 10 version 1903 or newer (or Windows 11), an AVX2/FMA CPU, OpenGL 3.3 and about **10 GB free**.
+Only the unmodified `SLUS-20018` disc is supported (its executable is verified). The unsigned launcher may trigger
+Windows SmartScreen. Game files and generated game code are never distributed.
+
+In the game, **F2** opens the settings (Video, Game: widescreen, Controls, Cheats, Save states, Profiler). Saves, controls,
+video settings and cheats are stored in `%APPDATA%\Onimusha_Recomp` and survive launcher updates. See
+[CHANGELOG.md](CHANGELOG.md) for what each release changes.
+
 ## Status
 
 **Playable from start to finish, natively in a window, at 60 frames a second.** The executable and its 98 code overlays
