@@ -1,5 +1,6 @@
 // The window's Cheats tab (F2, beside Controls and Video): ImGui widgets for oni_cheats.h. Only in the window build.
 #include "oni_cheats.h"
+#include "oni_display.h"
 
 #include "bozo/app/settings_tabs.h"
 #include "imgui.h"
@@ -22,6 +23,18 @@ namespace oni::cheats
 
     void registerMenu()
     {
+        bozo::app::ui::registerTab("Game", [] {
+            bool wide = oni::display::widescreen();
+            if (ImGui::Checkbox("Widescreen (16:9)", &wide))
+            {
+                oni::display::setWidescreen(wide);
+                oni::display::save();
+            }
+            ImGui::TextWrapped("The rooms are pre-rendered 4:3 pictures: widescreen zooms the picture to 16:9 in play, at "
+                               "the doors and in the movies, cutting an eighth at the top and at the bottom; the HUD and "
+                               "messages are drawn a little smaller to stay in view. The menus stay 4:3. Saved in "
+                               "onimusha.ini. A 16:9 window size (Video tab) or full screen suits it.");
+        });
         bozo::app::ui::registerTab("Cheats", [] {
             auto toggle = [](const char *label, Cheat cheat, const char *description) {
                 bool on = enabled(cheat);

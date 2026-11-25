@@ -11,12 +11,15 @@
 #include "oni_cheats.h"
 #include "oni_vu1.h"
 #include "oni_port.h"
+#include "oni_display.h"
+#include "oni_render.h"
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <filesystem>
 #include <string>
 #include <vector>
 #ifdef ONI_WITH_WINDOW
@@ -24,6 +27,7 @@
 #include "bozo/app/audio_device.h"
 #include "bozo/app/device_pad.h"
 #include "bozo/app/window.h"
+#include "bozo/app/video_settings.h"
 #endif
 
 int main(int argc, char **argv)
@@ -253,6 +257,11 @@ int main(int argc, char **argv)
             last = key;
         }
         oni::bot::frame(d.runtime().memory.ram(), f); // the story bot's next input (ONI_BOT)
+        // Widescreen (oni_display.h): the next frame's zoom from the game's mode, the window's crop with it.
+        oni::display::frame(d.runtime().memory.ram(), oni::movie::shown() != nullptr);
+#ifdef ONI_WITH_WINDOW
+        bozo::app::setPictureCrop(oni::display::zoomed() ? 16.0f / 9.0f : 0.0f);
+#endif
         oni::cheats::apply(d.runtime().memory.ram()); // the frame boundary: the game thread
         pacer.frameEnd();
         // ONI_AUDIO_STATS: the frame rate every 120 frames, on stderr beside the sound device's lines.
@@ -363,6 +372,28 @@ int main(int argc, char **argv)
 #ifdef ONI_WITH_WINDOW
     if (window)
     {
+        // The player's video settings (video.ini in the user folder, the F2 Video tab: window size and mode, render
+        // scale, anti-aliasing, frame rate, texture smoothing and upscaling, texture pack) over the defaults, the
+        // environment over the file (PS2X_RENDER_SCALE, ...). A hidden window (a scripted run, captures) reads no file:
+        // the environment alone, so a player's settings never change a test's pictures. Without this the Video tab drew
+        // its choices and none of them was applied.
+        if (windowOptions.hidden && !std::getenv("PS2X_VIDEO_CONFIG"))
+        {
+            const std::string none = (std::filesystem::temp_directory_path() / "oni_no_video.ini").string();
+#ifdef _WIN32
+            _putenv_s("PS2X_VIDEO_CONFIG", none.c_str());
+#else
+            setenv("PS2X_VIDEO_CONFIG", none.c_str(), 1);
+#endif
+        }
+        // The port's own options (onimusha.ini; ONI_WIDESCREEN over it; a hidden window: the environment alone).
+        oni::display::load(windowOptions.hidden ? nullptr : bozo::app::userDirectory().string().c_str());
+        if (oni::display::widescreen())
+            windowOptions.width = 1280, windowOptions.height = 720; // (the default window 16:9 then)
+        bozo::app::video::loadAtStartup(windowOptions.width, windowOptions.height);
+        if (windowOptions.fullscreen)
+            bozo::app::video::edited().mode = bozo::app::video::WindowMode::Borderless;
+        windowOptions.videoSettings = true;
         bozo::app::Game game;
         game.run = run;
         game.stop = [&] { host.requestStop(); };

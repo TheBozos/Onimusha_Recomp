@@ -15,10 +15,12 @@
 #include "oni_render.h"
 #include "oni_vu1.h"
 #include "oni_tex.h"
+#include "oni_display.h"
 
 #include "bozo/ee/dispatcher.h"
 #include "oni_functions.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -194,6 +196,26 @@ namespace oni::sprite
             // has the GS's own blend, the alpha test and point sampling (the overlay pass reduces them to plain blends).
             static constexpr float kScreen[16] = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
             (void)kScreen;
+            // Widescreen's zoom (oni_display.h): the 2D in screen units (not GS coordinates: those are the 3D effects
+            // projected into the frame) at 3/4 of its size around the frame's centre, inside the 16:9 band; what spans
+            // the frame's whole width (a fade, a full-screen picture, an event's cinema bars, which then fall outside
+            // the band and are cut with it) as it is.
+            if (oni::display::zoomed() && (g_pit || !(attr & 0x800u)) && !tris.empty())
+            {
+                const bozo::render::Screen s = oni::render::screen();
+                float x0 = 1e9f, y0 = 1e9f, x1 = -1e9f, y1 = -1e9f;
+                for (const Vertex &v : tris)
+                    x0 = std::min(x0, v.x), x1 = std::max(x1, v.x), y0 = std::min(y0, v.y), y1 = std::max(y1, v.y);
+                if (x1 - x0 < s.width * 0.9f)
+                {
+                    const float cx = s.originX + s.width * 0.5f, cy = s.originY + s.height * 0.5f;
+                    for (Vertex &v : tris)
+                    {
+                        v.x = cx + (v.x - cx) * oni::display::kZoom2d;
+                        v.y = cy + (v.y - cy) * oni::display::kZoom2d;
+                    }
+                }
+            }
             oni::vu1::queueDraw(material(attr, pts[count - 1].rgba, tex0, textured), tris.data(), static_cast<uint32_t>(tris.size()),
                                 texture);
             ++g_drawn;
