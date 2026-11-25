@@ -11,6 +11,7 @@
 // it also ends the game frame while a movie shows, since the main thread sleeps through the movie.
 #include "oni_render.h"
 #include "oni_vu1.h"
+#include "oni_tex.h"
 
 #include "bozo/ee/dispatcher.h"
 #include "bozo/render/movie.h"
@@ -31,6 +32,13 @@ namespace oni::movie
         constexpr uint32_t kFadeLevel = kGp - 0x6b00, kFadeTimer = kGp - 0x6afc, kFadeType = kGp - 0x6ae8; // int, short, short
         constexpr uint32_t kVoBuf = 0x460ec0;     // +4 tags, +8 next index, +0xc count, +0x10 size
         constexpr uint32_t kTagStride = 0x34c40;  // VoTag: its state, then the odd (+0x40) and even (+0x1a640) chains
+        // Captions (movies 04 and 05: the caption04* / caption05* lists Movie_task_exe picks by the text and voice
+        // languages, 0x2875ce and 0x287600): Movie_cap_ptr walks pairs (picture count, caption), the count being
+        // 0x460f48; the caption is a 56-row band of a 512-wide sheet the game keeps in VRAM (Vram_info_get 0x1211
+        // English, 0x1111 Japanese: its TEX0 at gp - 0x6af0), the band a list's count names being empty. 0x287cbe set:
+        // no captions.
+        constexpr uint32_t kCaptionPtr = kGp - 0x6ad4, kCaption = kGp - 0x6af8, kCaptionTex0 = kGp - 0x6af0;
+        constexpr uint32_t kCaptionCount = 0x460f48, kCaptionsOff = 0x287cbe;
 
         uint32_t read32(const uint8_t *ram, uint32_t a)
         {
@@ -55,6 +63,8 @@ namespace oni::movie
         // darkening. Once termAll removes the handler the game's frames are its own again (the fade level stays where
         // the movie's end left it, black, until the next movie).
         bool g_inHandler = false;
+        int32_t g_caption = -1; // the caption shown (-1: none: the movie has no list, or captions are off)
+        uint64_t g_captionTex0 = 0;
 
         void onPicture(uint32_t, uint32_t width, uint32_t height, const uint8_t *rgba)
         {
@@ -110,6 +120,27 @@ namespace oni::movie
                     const int32_t next = static_cast<int32_t>(read32(ram, kVoBuf + 0x8));
                     const uint32_t oldest = static_cast<uint32_t>(((next - count) % size + size) % size);
                     const uint32_t tag = read32(ram, kVoBuf + 0x4) + oldest * kTagStride;
+                    // vblankHandler's captions: the list's next pair once the picture count reaches it (one a field);
+                    // dispSetTags's sprite starts on band 0, the list's first pair blanks it at once.
+                    uint16_t off;
+                    std::memcpy(&off, ram + kCaptionsOff, 2);
+                    const uint32_t ptr = read32(ram, kCaptionPtr);
+                    const int32_t at = ptr ? static_cast<int32_t>(read32(ram, ptr)) : -1;
+                    if (off || !ptr)
+                        g_caption = -1;
+                    else if (at >= 0)
+                    {
+                        if (g_caption < 0)
+                            g_caption = 0;
+                        const int32_t count = static_cast<int32_t>(read32(ram, kCaptionCount));
+                        if (count > 0 && count >= at)
+                        {
+                            g_caption = static_cast<int32_t>(read32(ram, ptr + 4));
+                            write32(ram, kCaption, static_cast<uint32_t>(g_caption));
+                            write32(ram, kCaptionPtr, ptr + 8);
+                        }
+                    }
+                    std::memcpy(&g_captionTex0, ram + kCaptionTex0, 8);
                     const uint32_t state = read32(ram, tag);
                     if ((field == 0 && state == 2u) || (field == 1 && state == 1u))
                     {
@@ -180,6 +211,7 @@ namespace oni::movie
                 g_showing = false;
             }
             g_brightness = 1.0f;
+            g_caption = -1; // (its own captions, if any)
             const uint32_t d = ctx->r[4].uw[0];
             write32(ram, d + 0x30, ctx->r[5].uw[0]);
             write32(ram, d + 0x34, ctx->r[6].uw[0]);
@@ -299,6 +331,34 @@ namespace oni::movie
             }
             oni::vu1::queueDraw(black, b, 6, nullptr);
             oni::vu1::queueDraw(m, v, 6, picture);
+            // The caption over the picture's bottom: dispSetTags's sprite, x 64..576, field lines 168..196 (frame
+            // 336..392), its band of the caption sheet (u 0..512, v caption * 56 ..+56), alpha-tested (TEST_1).
+            const auto sheet = g_caption >= 0 && g_captionTex0 ? oni::tex::fromTex0(g_captionTex0) : nullptr;
+            if (sheet && sheet->width && sheet->height)
+            {
+                bozo::render::Material c;
+                c.textured = true;
+                c.depthTest = c.depthWrite = false;
+                c.blend = bozo::render::Material::Blend::Opaque;
+                c.alphaTest = true;
+                c.alphaFunc = bozo::render::Material::AlphaFunc::Greater;
+                c.alphaRef = 0;
+                c.nearest = true;
+                c.clampU = c.clampV = true;
+                c.tex0 = g_captionTex0;
+                const float tw = static_cast<float>(sheet->width), th = static_cast<float>(sheet->height);
+                const float v0 = static_cast<float>(g_caption) * 56.0f;
+                bozo::render::Vertex cv[6];
+                for (int i = 0; i < 6; ++i)
+                {
+                    cv[i].x = s.originX + 64.0f + xs[i] * 512.0f;
+                    cv[i].y = s.originY + 336.0f + ys[i] * 56.0f;
+                    cv[i].u = xs[i] * 512.0f / tw;
+                    cv[i].v = (v0 + ys[i] * 56.0f) / th;
+                    cv[i].rgba = 0x80808080u;
+                }
+                oni::vu1::queueDraw(c, cv, 6, sheet);
+            }
         }
         if (g_brightness < 1.0f)
         {

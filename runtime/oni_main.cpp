@@ -292,15 +292,31 @@ int main(int argc, char **argv)
             recording.write(pcm, count);
 #ifdef ONI_WITH_WINDOW
         if (window)
-            audio.push(pcm, count);
+        {
+            // A hidden window's device (ONI_AUDIO_STATS) gets silence of the same length: its clock, queue and
+            // underruns as a played game's, nothing heard. (SDL's dummy driver keeps no real clock: it took samples
+            // faster than 48 kHz and counted underruns that were its own.)
+            if (windowOptions.hidden)
+            {
+                static std::vector<int16_t> silence;
+                silence.assign(count * 2, 0); // (count: stereo frames)
+                audio.push(silence.data(), count);
+            }
+            else
+                audio.push(pcm, count);
+        }
 #endif
     };
     auto run = [&]()
     {
 #ifdef ONI_WITH_WINDOW
         if (window)
-            if (!windowOptions.hidden)
+        {
+            // A hidden window plays no sound; with ONI_AUDIO_STATS it opens the device and gives it silence (below):
+            // a scripted run's underruns counted on the real device's clock, nothing heard.
+            if (!windowOptions.hidden || std::getenv("ONI_AUDIO_STATS"))
                 audio.open();
+        }
 #endif
         uint64_t frames = 0;
         try

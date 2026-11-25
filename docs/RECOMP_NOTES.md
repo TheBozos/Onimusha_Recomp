@@ -211,8 +211,16 @@ Native:
 - `switchThread` `0x1bd4c0` (`RotateThreadReadyQueue(1)`, which the player's threads spin on while they wait for each
   other) costs 0.1 ms of EE time per pass: tens of thousands of passes a field dropped the window to 54 frames/s,
   steady 60 now.
-- Captions (`Movie_cap_ptr`, the `caption*` tables) are not drawn yet; the US movies carry their English text in the
-  picture.
+- Captions (2026-11-25): movies 04 and 05 (the epilogue's narration over the army and Princess Yuki) have them, in all
+  four language settings (`Movie_task_exe` picks `movie_caption_tbl`, `_ve`, `_e` or `_e_vj` by the subtitle and
+  voice languages, 0x2875ce and 0x287600; the US default is `caption05e`), and nothing in the picture: the PSS are
+  640 x 336. A list is pairs (picture count, caption), the count being 0x460f48, -1 its end; `vblankHandler` takes
+  the next pair once the count reaches it, and `dispSetTags` draws a 512 x 56 sprite at x 64, field line 168, from
+  the caption sheet (VRAM `Vram_info_get` 0x1211 English, 0x1111 Japanese; its TEX0 at gp - 0x6af0), band `caption`
+  (an empty one between lines); 0x287cbe set: none. Natively `vblankHandler` walks the list the same way and
+  `drawOver` puts the band over the picture (alpha test). Checked on `LINKS05` (stage 2 room 1 by the warp): "The
+  demons' ambitions were shattered...", "However, when Yoshitatsu Saito died...", "...With Sokyu's blessing, she
+  left in a ship to see the world..." at their pictures.
 
 Result (2026-11-23): the attract movie (the opening) and New Game's intro and letter play in the window with their
 sound, 60 frames/s; START skips them; New Game reaches the first room's loading.
@@ -433,7 +441,7 @@ frames a second through the fight, the sound kept to real time (the host skips t
 
 ## Next
 
-- Movie captions; the effects of later scenes (magic, the souls), checked as they are reached.
+- The effects of later scenes (magic, the souls), checked as they are reached. (Movie captions: drawn since 2026-11-25.)
 - The six 640 x 64 CT32 uploads into block 0 (the frame buffer) at boot: not drawn yet, origin to find.
 
 ## The story bot (runtime/oni_bot.cpp, 2026-11-23)
@@ -806,4 +814,36 @@ below 5). Stage 4 room 7, twelve grounds (G+0x93f9 = 0x287229, 0 to 11):
   not be found" error, then "OK to create a file", YES), the boot into ground 1 (`2_boot.txt`), each ground from its
   own state (`3_grounds.txt`), a lost one played again a few frames later (up to four tries: ground 9 is won about
   five times in six). From scratch: all twelve won, the RESULT at 07:17:01.
+
+## Sound under load, the OPTION menu, Easy mode, spirit points (2026-11-25)
+
+- Sound: `ONI_AUDIO_STATS=1` with `--hidden` now opens the real playback device and feeds it silence of the
+  frames' length, so a scripted run's queue and underruns are measured on the device's own clock without being heard.
+  (SDL's dummy driver keeps no real clock: it read faster than 48 kHz and counted hundreds of underruns of its own.)
+  `build/story/perfa.sh` per scene, 32 ms queue target:
+
+| Scene (leg) | Seconds | Underruns | Lowest queue |
+| --- | --- | --- | --- |
+| The ogre boss (10) | 100 | 0 | 12.9 ms |
+| Boss 3 (48) | 66 | 6, 10 | 0.1 ms |
+| The Queen Bee (64) | 100 | 0 | 8.1 ms |
+| Marcellus (65) | 100 | 0 | 8.1 ms |
+| The King's Chamber (66) | 100 | 7, 0 | 10.2 ms |
+| Fortinbras and the ending (67) | 100 | 0, 0 (168 once) | 8.6 ms |
+| The Dark Realm's floors (68) | 150 | 0, 0 (163 once) | 6.9 ms |
+
+  The two runs with many were the machine busy (a 43 fps stretch at the ending movie in one run, none in two
+  others). Boss 3's few underruns repeat: at the doorway into room 42 (stage 2 room 44's cut 2 to room 42's cut
+  0, frames ~244560 and ~245040), a room load whose frame runs long (58 fps for two seconds): a crackle or two there.
+- OPTION (from the title, and the pause menu's): Language (voice), Subtitle, Subtit. Display, Sound Settings,
+  B.G.M. and S.E. volume, Vibration, Brightness (the monitor bars), Screen Adjust (moves the GS display; the
+  window keeps the picture centred), Controls (the pad's chart), BACK, DEFAULT: all open and draw.
+- Easy mode: `game_sp_move` 0x127aa0 counts the game overs at G+0x9771 (0x2875a1, kept in the save, capped at 100);
+  the fourth (or the third once story flag 0x1a is set) shows "Beginner mode, EASY, has become available." before
+  the title, and NEW GAME then offers Easy Mode / Normal Mode (enemies' life from `emNN_life_easy`). Checked with a
+  bot `poke 2875a1 3` and a fourth death at the ogre boss; an Easy game starts in the first room.
+- Oni Spirits' points: CIRCLE absorbs the released spirits, 100 SPIRITS Pts. each (0x287cb8; the RESULT's
+  `Onisol_seika_disp` reads it; the bonus spirits count more). `3_grounds.txt` now holds CIRCLE five seconds after
+  each quota: from scratch all twelve grounds again (ground 9 at its third try), the RESULT at 09:14:41 with 28470
+  SPIRITS Pts.
 
