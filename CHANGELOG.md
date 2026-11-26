@@ -4,6 +4,8 @@ All notable changes for players. The format follows [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-27
+
 ### Added
 - Settings inside the game: in the OPTION screen (from the title, or SELECT in play), L1 / R1 turn to Graphics (display mode, resolution, render scale, anti-aliasing, texture filter, frame rate, widescreen), Cheats (and the room warp), Save States (ten slots) and Close Game, drawn like the game's own Options and driven by the pad. F2 keeps control rebinding and the profiler.
 
