@@ -2,6 +2,7 @@
 // runtime, the kernel, the libraries and the host; the port adds the sound modules' IOP host (compiled IRX), the
 // texture uploads (GS memory as the game filled it) and VIF1 / VU1 / GS state (the models' programs keep theirs between
 // frames). The pictures derived from EE memory (the room's picture and depth) are rebuilt after a load.
+#include "oni_menu.h"
 #include "oni_port.h"
 #include "oni_render.h"
 #include "oni_tex.h"
@@ -23,7 +24,10 @@ namespace oni
                           oni::tex::state(a);
                           oni::vu1::state(a);
                           if (a.loading())
+                          {
                               oni::bg::stateLoaded();
+                              oni::menu::stateLoaded();
+                          }
                       },
                       []
                       {
