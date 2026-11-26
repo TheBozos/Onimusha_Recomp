@@ -12,6 +12,7 @@
 #include "oni_vu1.h"
 #include "oni_port.h"
 #include "oni_display.h"
+#include "oni_menu.h"
 #include "oni_render.h"
 #include <algorithm>
 #include <chrono>
@@ -168,6 +169,7 @@ int main(int argc, char **argv)
     d.setFunctions(oni_function_table, oni_function_count, oni_resume_table, oni_resume_count);
     bozo::port::Registry registry;
     oni::install(d.runtime(), registry);
+    oni::menu::install(registry); // the port's pages in the game's OPTION screen
     oni::installState(*host.stateSections());
     oni::vu1::setThreaded(window); // the models' chains on a thread of their own in real time
     std::string error;
@@ -299,6 +301,8 @@ int main(int argc, char **argv)
             last = key;
         }
         oni::bot::frame(d.runtime().memory.ram(), f); // the story bot's next input (ONI_BOT)
+        if (oni::menu::takeQuitRequest()) // OPTION's Close Game page
+            host.requestStop();
         // Widescreen (oni_display.h): the next frame's zoom from the game's mode, the window's crop with it.
         oni::display::frame(d.runtime().memory.ram(), oni::movie::shown() != nullptr);
 #ifdef ONI_WITH_WINDOW
@@ -442,6 +446,19 @@ int main(int argc, char **argv)
         game.framesEnded = [&] { return host.framesEnded(); };
         game.saveState = [&](int slot) { host.requestSave(bozo::app::stateSlotPath(slot)); };
         game.loadState = [&](int slot) { host.requestLoad(bozo::app::stateSlotPath(slot)); };
+        // OPTION's pages: the Graphics page edits the Video tab's settings, the Save States page the F5 / F7 slots.
+        oni::menu::Access access;
+        access.videoShared = [] { return bozo::app::video::shared(); };
+        access.videoPost = [](const bozo::app::video::Settings &s, bool save) { bozo::app::video::post(s, save); };
+        access.slotSummary = [](int slot) { return bozo::app::stateSlotSummary(slot); };
+        access.saveSlot = [&](int slot)
+        {
+            game.saveState(slot);
+            bozo::app::captureStatePicture(slot); // the slot's picture in the F2 Save states tab
+        };
+        access.loadSlot = game.loadState;
+        access.slots = bozo::app::kStateSlots;
+        oni::menu::setAccess(std::move(access));
         host.onStateMessage = [](bool, const std::string &message) { bozo::app::notify(message); };
         result = bozo::app::runWindow(windowOptions, game, &devices);
     }

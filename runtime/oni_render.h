@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace oni::render
 {
@@ -47,5 +48,17 @@ namespace oni::sprite
 {
     // The 2D the game drew this frame, submitted to the overlay before it is published.
     void submit(uint8_t *ram);
+    // The port's own 2D in the game's style (the in-game pages, oni_menu.cpp): sprites as Ot_draw's (attr the
+    // primitive's Attribute word, tex0 a texture the game uploaded, 0 untextured), in frame units (640 x 448). Drawn
+    // at the start of the next Pit_trans (over the frame's table, under the fades and the HUD), then dropped.
+    struct Sprite
+    {
+        uint32_t attr;
+        float x0, y0, x1, y1;
+        float u0, v0, u1, v1;
+        uint32_t rgba;
+        uint64_t tex0;
+    };
+    void overlay(std::vector<Sprite> sprites);
     void install(bozo::port::Registry &registry);
 } // namespace oni::sprite

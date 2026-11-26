@@ -36,7 +36,11 @@ You need Windows 10 version 1903 or newer (or Windows 11), an AVX2/FMA CPU, Open
 Only the unmodified `SLUS-20018` disc is supported (its executable is verified). The unsigned launcher may trigger
 Windows SmartScreen. Game files and generated game code are never distributed.
 
-In the game, **F2** opens the settings (Video, Game: widescreen, Controls, Cheats, Save states, Profiler). Saves, controls,
+With a controller, the game's own **OPTION** screen (from the title, or SELECT in play) turns with **L1 / R1** to the
+port's pages, drawn like Options and driven by the pad: **Graphics** (display mode, resolution, render scale,
+anti-aliasing, texture filter, frame rate, widescreen; APPLY keeps them), **Cheats** (and the room warp), **Save States**
+(ten slots, save and load) and **Close Game**. In the game, **F2** opens the settings (Video, Game: widescreen, Controls,
+Cheats, Save states, Profiler); rebinding the controls and the profiler stay there. Saves, controls,
 video settings and cheats are stored in `%APPDATA%\Onimusha_Recomp` and survive launcher updates. See
 [CHANGELOG.md](CHANGELOG.md) for what each release changes.
 
@@ -80,6 +84,7 @@ human playthrough's feedback.
 | Oni Spirits played through its twelve holy grounds by the bot, its farewell scene and RESULT | ✅ |
 | Movie captions (the epilogue's narration), the OPTION menu, Easy mode after four game overs | ✅ |
 | PC options: widescreen (a 16:9 zoom: the rooms are 4:3 pictures), render scale, anti-aliasing, texture smoothing and upscaling, frame rate above 60 (interpolated), window size and mode, saved in the user folder | ✅ |
+| In-game pages in the game's OPTION screen (L1 / R1): Graphics, Cheats, Save States, Close Game, pad-driven, drawn with the game's own font and parts | ✅ |
 | Linux build (BozoEngine and its CI build on Linux; the port's own runtime is untried there) | ⏳ |
 
 ✅ works · 🔧 in progress · ⏳ not reached yet
@@ -88,6 +93,15 @@ human playthrough's feedback.
 what remains open.
 
 ## Screenshots
+
+**2026-11-26.** The settings inside the game: the OPTION screen's L1 / R1 now turn to the port's own pages, drawn the
+way Options draws itself (its scroll, orbs, arrows and highlight, the game's message font) and driven by the pad. A
+choice not applied yet shows in orange until APPLY; a save state made here gets its picture in F2's Save states tab.
+
+<p align="center">
+  <img src="docs/screenshots/2026-11-26-bozo-ingame-graphics.png" width="400" alt="The OPTION screen's Graphics page: Display Window, Resolution 960x720, Render Scale 150% in orange (not applied yet), Anti-Aliasing, Texture Filter, Frame Rate, Widescreen; BACK and APPLY">
+  <img src="docs/screenshots/2026-11-26-bozo-ingame-save-states.png" width="400" alt="The OPTION screen's Save States page: Slot 0, saved 2026-11-26 20:35, Save State: Saved, Load State">
+</p>
 
 **2026-11-25.** PC options: F2's Video tab now applies (the port had never turned the player's video settings on, so
 the render scale, texture smoothing and upscaling and the window's size and mode did nothing), and a new Game tab has

@@ -865,3 +865,26 @@ below 5). Stage 4 room 7, twelve grounds (G+0x93f9 = 0x287229, 0 to 11):
   at 3/4 around the frame's centre, inside the band; what spans the frame's whole width (fades, full-screen pictures,
   the events' cinema bars, which then fall outside the band) as it is. The default window is 1280 x 720 then.
 
+## In-game pages in the OPTION screen (2026-11-26)
+
+- `runtime/oni_menu.cpp`. OPTION is option.c's `Syousai` task (`syousai_work` 0x410530, its own EE thread): each frame
+  the routine `Rno_0` picks (`syou_init` 0x1b4a00, `syou_move` 0x1b4ac0, `syou_exit`), then `sprite_disp` 0x1b5330
+  (orbs, arrows, sliders: the frame's table) and `mess_disp` 0x1b57e0 (labels: `Mess_print`, drawn by Pit_trans).
+  `syou_move` reads G+0x4004 (pressed) and G+0x4010 (pressed, directions repeating); TRIANGLE leaves, UP / DOWN move
+  `Cursor` (+4: rows 0-9, BACK 10, DEFAULT 11), LEFT / RIGHT change, CROSS picks; nothing while `Get_Fade_Status`
+  (0x27c372) is 1. L1 / R1 are unused there: the port's four overrides turn pages with them (Options, Graphics,
+  Cheats, Save States, Close Game). On a page of the port's the original list's input and drawing are skipped; the
+  task, its backdrop, fades and exit run as before. Nothing is written to the game's memory, and nothing is added to
+  save states (a new section would stop every older state loading): a load returns to the Options page.
+- The look is the game's: the backdrop (an `ipum` picture, cut 0x1d1) has the scroll's ten blank rows (y 82, 29
+  apart) and two buttons; the orbs and arrows are Options' textures (TEX0 0x2003586621411a40, 0x2003580621411a40), the
+  highlight its untextured additive bar (0x20804040). Text is the message font Mess_print uses (TEX0
+  0x2004700621412300: ASCII from v 32 in 16 x 16 cells, the button glyphs after '~'), each glyph's left and width from
+  `Prop_tbl` 0x1fe4c0, drawn 1.5 times its texels and 24 high; colours from `Moji_color` 0x203570 (a choice not
+  applied yet in its orange). The port's sprites go through the native 2D (`oni::sprite::overlay`), drawn at the
+  start of Pit_trans: over the frame's table, under the fades.
+- Graphics edits the F2 Video tab's settings (`video::shared` / `post`; APPLY saves `video.ini`), widescreen at once
+  (`onimusha.ini`); Save States uses the F5 / F7 slots (`stateSlotPath`), its picture via BozoEngine's
+  `captureStatePicture`; Close Game stops the host at the frame's end. Headless: Graphics and Save States say they are
+  not available. Checked by the bot from the title and from SELECT's Options in play (widescreen on): every page,
+  a value changed on each, a save, a load into another slot's later story state, Close Game ending the run.

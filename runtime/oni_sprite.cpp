@@ -56,6 +56,9 @@ namespace oni::sprite
         // and pixels from the usual 0x6c0, 0xf20) and its fixed-alpha blend, which scales by the destination's alpha.
         bool g_pit = false;
         float g_offsetX = 0, g_offsetY = 0;
+        // The port's own sprites (overlay()): drawn over the frame without its depth, blended as the game's.
+        bool g_overlay = false;
+        std::vector<Sprite> g_sprites;
 
         struct Point
         {
@@ -87,9 +90,9 @@ namespace oni::sprite
             // red wall sealing a fight's doorway, esp080c_lock_wall: its sides go behind the room's walls). Pit_trans's
             // sprites (the fades, the HUD) draw over everything.
             static const bool depth = [] { const char *e = std::getenv("ONI_2D_DEPTH"); return !(e && *e == '0'); }(); // diagnostic
-            m.depthTest = depth && !g_pit;
+            m.depthTest = depth && !g_pit && !g_overlay;
             m.depthGreater = true;
-            m.depthWrite = depth && !g_pit && !(attr & 0x40u);
+            m.depthWrite = depth && !g_pit && !g_overlay && !(attr & 0x40u);
             // Point sampling: the menus' sprites map texels 1:1 (a filtered edge would bleed the neighbouring row).
             m.nearest = true;
             m.clampU = m.clampV = true;
@@ -324,6 +327,21 @@ namespace oni::sprite
         {
             const uint32_t ra = ctx->r[31].uw[0];
             const int32_t count = static_cast<int32_t>(read32(ram, 0x214604));
+            if (!g_sprites.empty())
+            {
+                const bozo::render::Screen s = oni::render::screen();
+                g_overlay = true;
+                for (const Sprite &q : g_sprites)
+                {
+                    Point p[2] = {};
+                    p[0].rgba = p[1].rgba = q.rgba;
+                    p[0].x = s.originX + q.x0, p[0].y = s.originY + q.y0, p[0].u = q.u0, p[0].v = q.v0;
+                    p[1].x = s.originX + q.x1, p[1].y = s.originY + q.y1, p[1].u = q.u1, p[1].v = q.v1;
+                    emit(q.attr, p, 2, q.tex0);
+                }
+                g_overlay = false;
+                g_sprites.clear();
+            }
             int16_t ox, oy;
             std::memcpy(&ox, ram + 0x28e420, 2);
             std::memcpy(&oy, ram + 0x28e422, 2);
@@ -374,6 +392,8 @@ namespace oni::sprite
                         (unsigned long long)g_drawn, (unsigned long long)g_missing);
         g_prims = g_drawn = g_missing = 0;
     }
+
+    void overlay(std::vector<Sprite> sprites) { g_sprites = std::move(sprites); }
 
     void install(bozo::port::Registry &r)
     {
