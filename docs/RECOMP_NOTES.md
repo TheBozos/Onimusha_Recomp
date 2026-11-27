@@ -888,3 +888,12 @@ below 5). Stage 4 room 7, twelve grounds (G+0x93f9 = 0x287229, 0 to 11):
   `captureStatePicture`; Close Game stops the host at the frame's end. Headless: Graphics and Save States say they are
   not available. Checked by the bot from the title and from SELECT's Options in play (widescreen on): every page,
   a value changed on each, a save, a load into another slot's later story state, Close Game ending the run.
+
+## BozoEngine e53dd3c (2026-11-27)
+
+- From 5d34d41 to e53dd3c: #161 (libmpeg off the reference layout, as here: the stream callback entries from the end
+  of the game's sceMpegCreate work area), #164 (the window's sound held to the host's time by resampling a small
+  surplus, a real leap cross-faded), the rest opt-in (#150, #154 widescreen setting not offered: Onimusha keeps its own
+  crop, #157, #160, #163). Checked: NEW GAME's intro movie (3,781 pictures, sound with it), the ogre boss (leg 10)
+  and the Queen Bee (leg 64) 100 s each through perfa.sh under the bench lock: 0 underruns, 60 fps, lowest queue
+  15.3 / 5.1 ms; the older story states load; the OPTION pages, a save state written and loaded back.
